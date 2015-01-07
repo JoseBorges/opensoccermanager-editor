@@ -20,6 +20,9 @@ class Window(Gtk.Window):
         self.maximize()
         self.connect("destroy", self.close_application)
 
+        accelgroup = Gtk.AccelGroup()
+        self.add_accel_group(accelgroup)
+
         self.grid = Gtk.Grid()
         self.add(self.grid)
 
@@ -33,14 +36,20 @@ class Window(Gtk.Window):
         menuitem.set_submenu(menu)
 
         menuitem = widgets.MenuItem("_Open Database")
+        key, mod = Gtk.accelerator_parse("<CONTROL>O")
+        menuitem.add_accelerator("activate", accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
         menuitem.connect("activate", self.open_database)
         menu.append(menuitem)
         menuitem = widgets.MenuItem("_Save Database")
+        key, mod = Gtk.accelerator_parse("<CONTROL>S")
+        menuitem.add_accelerator("activate", accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
         menuitem.connect("activate", self.save_database)
         menu.append(menuitem)
         separator = Gtk.SeparatorMenuItem()
         menu.append(separator)
         menuitem = widgets.MenuItem("_Quit")
+        key, mod = Gtk.accelerator_parse("<CONTROL>Q")
+        menuitem.add_accelerator("activate", accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
         menuitem.connect("activate", self.close_application)
         menu.append(menuitem)
 
@@ -50,12 +59,14 @@ class Window(Gtk.Window):
         menu = Gtk.Menu()
         menuitem.set_submenu(menu)
 
-        menuitem = Gtk.MenuItem("_Previous")
-        menuitem.set_use_underline(True)
+        menuitem = widgets.MenuItem("_Previous Tab")
+        key, mod = Gtk.accelerator_parse("<ALT>Left")
+        menuitem.add_accelerator("activate", accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
         menuitem.connect("activate", self.move_notebook_page, -1)
         menu.append(menuitem)
-        menuitem = Gtk.MenuItem("_Next")
-        menuitem.set_use_underline(True)
+        menuitem = widgets.MenuItem("_Next Tab")
+        key, mod = Gtk.accelerator_parse("<ALT>Right")
+        menuitem.add_accelerator("activate", accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
         menuitem.connect("activate", self.move_notebook_page, 1)
         menu.append(menuitem)
 
@@ -64,6 +75,8 @@ class Window(Gtk.Window):
 
         for count, label in enumerate(("Players", "Clubs", "Nations", "Stadiums")):
             menuitem = widgets.MenuItem("_%s" % (label))
+            key, mod = Gtk.accelerator_parse("<ALT>%i" % (count + 1))
+            menuitem.add_accelerator("activate", accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
             menuitem.connect("activate", self.switch_notebook_page, count)
             menu.append(menuitem)
 
@@ -229,7 +242,8 @@ class Window(Gtk.Window):
         self.show_all()
 
     def close_application(self, widget):
-        db.disconnect()
+        if db.cursor is not None:
+            db.disconnect()
 
         Gtk.main_quit()
 
