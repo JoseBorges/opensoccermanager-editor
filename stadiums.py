@@ -20,7 +20,7 @@ class Stadiums(Gtk.Grid):
         scrolledwindow.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         self.attach(scrolledwindow, 0, 0, 1, 1)
 
-        self.liststore = Gtk.ListStore(int, str, int)
+        self.liststore = Gtk.ListStore(int, str, int, int, int, int, int, int, int, int, int)
         treemodelsort = Gtk.TreeModelSort(self.liststore)
         treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
 
@@ -38,6 +38,22 @@ class Stadiums(Gtk.Grid):
         treeviewcolumn = Gtk.TreeViewColumn("Name", cellrenderertext, text=1)
         treeview.append_column(treeviewcolumn)
         treeviewcolumn = Gtk.TreeViewColumn("Capacity", cellrenderertext, text=2)
+        treeview.append_column(treeviewcolumn)
+        treeviewcolumn = Gtk.TreeViewColumn("North", cellrenderertext, text=3)
+        treeview.append_column(treeviewcolumn)
+        treeviewcolumn = Gtk.TreeViewColumn("West", cellrenderertext, text=4)
+        treeview.append_column(treeviewcolumn)
+        treeviewcolumn = Gtk.TreeViewColumn("South", cellrenderertext, text=5)
+        treeview.append_column(treeviewcolumn)
+        treeviewcolumn = Gtk.TreeViewColumn("East", cellrenderertext, text=6)
+        treeview.append_column(treeviewcolumn)
+        treeviewcolumn = Gtk.TreeViewColumn("North West", cellrenderertext, text=7)
+        treeview.append_column(treeviewcolumn)
+        treeviewcolumn = Gtk.TreeViewColumn("North East", cellrenderertext, text=8)
+        treeview.append_column(treeviewcolumn)
+        treeviewcolumn = Gtk.TreeViewColumn("South West", cellrenderertext, text=9)
+        treeview.append_column(treeviewcolumn)
+        treeviewcolumn = Gtk.TreeViewColumn("South East", cellrenderertext, text=10)
         treeview.append_column(treeviewcolumn)
 
     def row_activated(self, treeview, path, column):
@@ -63,7 +79,16 @@ class Stadiums(Gtk.Grid):
     def populate(self):
         self.liststore.clear()
 
-        for key, stadium in data.stadiums.items():
-            self.liststore.append([key,
+        for stadiumid, stadium in data.stadiums.items():
+            self.liststore.append([stadiumid,
                                    stadium.name,
-                                   stadium.capacity])
+                                   stadium.capacity,
+                                   stadium.stands[0],
+                                   stadium.stands[1],
+                                   stadium.stands[2],
+                                   stadium.stands[3],
+                                   stadium.stands[4],
+                                   stadium.stands[5],
+                                   stadium.stands[6],
+                                   stadium.stands[7],
+                                   ])

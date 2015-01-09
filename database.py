@@ -105,6 +105,8 @@ class Database:
             stadium.stadiumid = item[0]
             stadium.name = item[1]
             stadium.capacity = sum(item[2:14])
+            stadium.stands = list(item[2:14])
+            stadium.buildings = list(item[30:38])
             data.stadiums[stadium.stadiumid] = stadium
 
             if stadium.stadiumid > data.idnumbers.stadiumid:

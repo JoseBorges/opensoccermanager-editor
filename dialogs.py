@@ -488,6 +488,53 @@ def add_stadium_dialog(stadiumid=None):
     entryName = Gtk.Entry()
     grid.attach(entryName, 1, 0, 1, 1)
 
+    notebook = Gtk.Notebook()
+    notebook.set_hexpand(True)
+    grid.attach(notebook, 0, 1, 3, 1)
+
+    grid1 = Gtk.Grid()
+    grid1.set_border_width(5)
+    grid1.set_row_spacing(5)
+    grid1.set_column_spacing(5)
+    notebook.append_page(grid1, Gtk.Label("Stand"))
+
+    capacities = []
+
+    for count, stand in enumerate(("North", "West", "South", "East", "North West", "North East", "South West", "South East")):
+        label = widgets.Label(stand)
+        grid1.attach(label, 0, count, 1, 1)
+
+        spinbutton = Gtk.SpinButton()
+
+        if count < 4:
+            spinbutton.set_range(0, 15000)
+        else:
+            spinbutton.set_range(0, 3000)
+
+        spinbutton.set_increments(1000, 1000)
+        spinbutton.set_value(stadium.stands[count])
+
+        grid1.attach(spinbutton, 1, count, 1, 1)
+
+    grid2 = Gtk.Grid()
+    grid2.set_border_width(5)
+    grid2.set_row_spacing(5)
+    grid2.set_column_spacing(5)
+    notebook.append_page(grid2, Gtk.Label("Buildings"))
+
+    buildings = []
+
+    for count, building in enumerate(("Stall", "Programme Vendor", "Small Shop", "Large Shop", "Bar", "Burger Bar", "Cafe", "Restaurant")):
+        label = widgets.Label(building)
+        grid2.attach(label, 0, count, 1, 1)
+
+        spinbutton = Gtk.SpinButton()
+        spinbutton.set_range(0, 8)
+        spinbutton.set_increments(1, 1)
+        spinbutton.set_value(stadium.buildings[count])
+        buildings.append(spinbutton)
+        grid2.attach(spinbutton, 1, count, 1, 1)
+
     if stadiumid is not None:
         entryName.set_text(stadium.name)
 
