@@ -8,6 +8,10 @@ import data
 import dialogs
 
 
+skill_short = ("KP", "TK", "PS", "SH", "HD", "PC", "ST", "BC", "SP")
+skill = ("Keeping", "Tackling", "Passing", "Shooting", "Heading", "Pace", "Stamina", "Ball Control", "Set Pieces")
+
+
 class Players(Gtk.Grid):
     selected = 0
 
@@ -33,8 +37,8 @@ class Players(Gtk.Grid):
         treeview.set_vexpand(True)
         treeview.set_model(treemodelsort)
         treeview.connect("row-activated", self.row_activated)
-        treeselection = treeview.get_selection()
-        treeselection.connect("changed", self.selection_changed)
+        self.treeselection = treeview.get_selection()
+        self.treeselection.connect("changed", self.selection_changed)
         scrolledwindow.add(treeview)
 
         cellrenderertext = Gtk.CellRendererText()
@@ -53,9 +57,14 @@ class Players(Gtk.Grid):
         treeviewcolumn = Gtk.TreeViewColumn("Position", cellrenderertext, text=7)
         treeview.append_column(treeviewcolumn)
 
-        for count, item in enumerate(("Keeping", "Tackling", "Passing", "Shooting", "Heading", "Pace", "Stamina", "Ball Control", "Set Pieces"), start=8):
-            treeviewcolumn = Gtk.TreeViewColumn(item, cellrenderertext, text=count)
-            treeviewcolumn.set_fixed_width(75)
+        for count, item in enumerate(skill, start=8):
+            label = Gtk.Label(skill_short[count - 8])
+            label.set_tooltip_text(item)
+            label.show()
+            treeviewcolumn = Gtk.TreeViewColumn()
+            treeviewcolumn.set_widget(label)
+            treeviewcolumn.pack_start(cellrenderertext, True)
+            treeviewcolumn.add_attribute(cellrenderertext, "text", count)
             treeview.append_column(treeviewcolumn)
 
         treeviewcolumn = Gtk.TreeViewColumn("Training", cellrenderertext, text=17)
@@ -71,13 +80,14 @@ class Players(Gtk.Grid):
             self.populate()
 
     def selection_changed(self, treeselection):
-        model, treeiter = treeselection.get_selected()
+        model, treeiter = self.treeselection.get_selected()
 
         if treeiter:
             self.selected = model[treeiter][0]
             widgets.toolbuttonEdit.set_sensitive(True)
             widgets.toolbuttonRemove.set_sensitive(True)
         else:
+            self.selected = 0
             widgets.toolbuttonEdit.set_sensitive(False)
             widgets.toolbuttonRemove.set_sensitive(False)
 
@@ -108,4 +118,6 @@ class Players(Gtk.Grid):
                                    player.training_value])
 
     def run(self):
+        self.selection_changed(self.treeselection)
+
         self.show_all()
