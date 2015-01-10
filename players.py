@@ -106,3 +106,6 @@ class Players(Gtk.Grid):
                                    player.ball_control,
                                    player.set_pieces,
                                    player.training_value])
+
+    def run(self):
+        self.show_all()

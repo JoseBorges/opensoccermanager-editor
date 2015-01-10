@@ -81,3 +81,6 @@ class Clubs(Gtk.Grid):
                                    club.chairman,
                                    stadium,
                                    club.reputation])
+
+    def run(self):
+        self.show_all()

@@ -13,6 +13,11 @@ import database
 
 
 class Window(Gtk.Window):
+    grid = None
+    menuView = None
+    menuitemSave = None
+    toolbar = None
+
     def __init__(self):
         Gtk.Window.__init__(self)
         self.set_title("Editor")
@@ -27,6 +32,7 @@ class Window(Gtk.Window):
         self.add(self.grid)
 
         menubar = Gtk.MenuBar()
+        menubar.set_hexpand(True)
         self.grid.attach(menubar, 0, 0, 1, 1)
 
         menuitem = widgets.MenuItem("_File")
@@ -38,13 +44,14 @@ class Window(Gtk.Window):
         menuitem = widgets.MenuItem("_Open Database")
         key, mod = Gtk.accelerator_parse("<CONTROL>O")
         menuitem.add_accelerator("activate", accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
-        menuitem.connect("activate", self.open_database)
+        menuitem.connect("activate", open_database)
         menu.append(menuitem)
-        menuitem = widgets.MenuItem("_Save Database")
+        self.menuitemSave = widgets.MenuItem("_Save Database")
         key, mod = Gtk.accelerator_parse("<CONTROL>S")
-        menuitem.add_accelerator("activate", accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
-        menuitem.connect("activate", self.save_database)
-        menu.append(menuitem)
+        self.menuitemSave.add_accelerator("activate", accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
+        self.menuitemSave.set_sensitive(False)
+        self.menuitemSave.connect("activate", self.save_database)
+        menu.append(self.menuitemSave)
         separator = Gtk.SeparatorMenuItem()
         menu.append(separator)
         menuitem = widgets.MenuItem("_Quit")
@@ -53,11 +60,12 @@ class Window(Gtk.Window):
         menuitem.connect("activate", self.close_application)
         menu.append(menuitem)
 
-        menuitem = widgets.MenuItem("_View")
-        menubar.append(menuitem)
+        self.menuView = widgets.MenuItem("_View")
+        self.menuView.set_sensitive(False)
+        menubar.append(self.menuView)
 
         menu = Gtk.Menu()
-        menuitem.set_submenu(menu)
+        self.menuView.set_submenu(menu)
 
         menuitem = widgets.MenuItem("_Previous Tab")
         key, mod = Gtk.accelerator_parse("<ALT>Left")
@@ -90,54 +98,34 @@ class Window(Gtk.Window):
         menuitem.connect("activate", lambda i: dialogs.about())
         menu.append(menuitem)
 
-        toolbar = Gtk.Toolbar()
-        self.grid.attach(toolbar, 0, 1, 1, 1)
+        self.toolbar = Gtk.Toolbar()
+        self.toolbar.set_sensitive(False)
+        self.grid.attach(self.toolbar, 0, 1, 1, 1)
         toolbuttonAdd = Gtk.ToolButton(label="_Add")
         toolbuttonAdd.set_use_underline(True)
         toolbuttonAdd.set_icon_name("gtk-add")
         toolbuttonAdd.connect("clicked", self.add_data)
-        toolbar.add(toolbuttonAdd)
+        self.toolbar.add(toolbuttonAdd)
         toolbuttonEdit = Gtk.ToolButton(label="_Edit")
         widgets.toolbuttonEdit = toolbuttonEdit
         toolbuttonEdit.set_use_underline(True)
         toolbuttonEdit.set_icon_name("gtk-edit")
         toolbuttonEdit.connect("clicked", self.edit_data)
-        toolbar.add(toolbuttonEdit)
+        self.toolbar.add(toolbuttonEdit)
         toolbuttonRemove = Gtk.ToolButton(label="_Remove")
         widgets.toolbuttonRemove = toolbuttonRemove
         toolbuttonRemove.set_use_underline(True)
         toolbuttonRemove.set_icon_name("gtk-remove")
         toolbuttonRemove.connect("clicked", self.remove_data)
-        toolbar.add(toolbuttonRemove)
+        self.toolbar.add(toolbuttonRemove)
         separator = Gtk.SeparatorToolItem()
-        toolbar.add(separator)
+        self.toolbar.add(separator)
         toolbuttonSave = Gtk.ToolButton(label="_Save")
         toolbuttonSave.set_use_underline(True)
         toolbuttonSave.set_icon_name("gtk-save")
         toolbuttonSave.set_tooltip_text("Save Changes to Database")
         toolbuttonSave.connect("clicked", self.save_database)
-        toolbar.add(toolbuttonSave)
-
-        self.notebook = Gtk.Notebook()
-        self.notebook.set_hexpand(True)
-        self.notebook.set_vexpand(True)
-        self.notebook.set_border_width(5)
-        self.grid.attach(self.notebook, 0, 2, 1, 1)
-
-    def open_database(self, widget=None):
-        filename = dialogs.open_dialog()
-
-        if filename:
-            if db.cursor:
-                db.disconnect()
-
-            if db.connect(filename) is not False:
-                db.load()
-                self.update_title(filename)
-                players.populate()
-                clubs.populate()
-                nations.populate()
-                stadiums.populate()
+        self.toolbar.add(toolbuttonSave)
 
     def save_database(self, widget):
         db.save()
@@ -146,7 +134,7 @@ class Window(Gtk.Window):
         self.set_title("Editor - %s" % (filename))
 
     def add_data(self, toolbutton):
-        page = self.notebook.get_current_page()
+        page = maineditor.get_current_page()
 
         if page == 0:
             state = dialogs.add_player_dialog()
@@ -170,7 +158,7 @@ class Window(Gtk.Window):
                 stadiums.populate()
 
     def edit_data(self, toolbutton):
-        page = self.notebook.get_current_page()
+        page = maineditor.get_current_page()
 
         if page == 0:
             state = dialogs.add_player_dialog(players.selected)
@@ -194,7 +182,7 @@ class Window(Gtk.Window):
                 stadiums.populate()
 
     def remove_data(self, toolbutton):
-        page = self.notebook.get_current_page()
+        page = maineditor.get_current_page()
 
         state = dialogs.remove_dialog(page)
 
@@ -224,20 +212,15 @@ class Window(Gtk.Window):
 
     def move_notebook_page(self, menuitem, direction):
         if direction == -1:
-            self.notebook.prev_page()
+            maineditor.prev_page()
         elif direction == 1:
-            self.notebook.next_page()
+            maineditor.next_page()
 
     def switch_notebook_page(self, menuitem, page):
-        self.notebook.set_current_page(page)
+        maineditor.set_current_page(page)
 
     def run(self):
-        self.open_database()
-
-        self.notebook.append_page(players, Gtk.Label("Players"))
-        self.notebook.append_page(clubs, Gtk.Label("Clubs"))
-        self.notebook.append_page(nations, Gtk.Label("Nations"))
-        self.notebook.append_page(stadiums, Gtk.Label("Stadiums"))
+        self.grid.attach(mainmenu, 0, 2, 1, 1)
 
         self.show_all()
 
@@ -248,7 +231,89 @@ class Window(Gtk.Window):
         Gtk.main_quit()
 
 
+class MainMenu(Gtk.Grid):
+    def __init__(self):
+        Gtk.Grid.__init__(self)
+        self.set_hexpand(True)
+        self.set_vexpand(True)
+        self.set_column_spacing(5)
+        self.set_row_homogeneous(True)
+        self.set_column_homogeneous(True)
+
+        label = Gtk.Label()
+        self.attach(label, 0, 0, 1, 2)
+        label = Gtk.Label()
+        self.attach(label, 3, 2, 1, 2)
+
+        image = Gtk.Image.new_from_icon_name("gtk-new",
+                                             Gtk.IconSize.DIALOG)
+
+        buttonNew = widgets.Button("_New Database")
+        buttonNew.set_always_show_image(True)
+        buttonNew.set_image(image)
+        buttonNew.set_image_position(Gtk.PositionType.TOP)
+        self.attach(buttonNew, 1, 1, 1, 1)
+
+        image = Gtk.Image.new_from_icon_name("gtk-open",
+                                             Gtk.IconSize.DIALOG)
+
+        buttonOpen = widgets.Button("_Open Database")
+        buttonOpen.set_always_show_image(True)
+        buttonOpen.set_image(image)
+        buttonOpen.set_image_position(Gtk.PositionType.TOP)
+        buttonOpen.connect("clicked", open_database)
+        self.attach(buttonOpen, 2, 1, 1, 1)
+
+    def run(self):
+        self.show_all()
+
+
+class MainEditor(Gtk.Notebook):
+    def __init__(self):
+        Gtk.Notebook.__init__(self)
+        self.set_hexpand(True)
+        self.set_vexpand(True)
+        self.set_border_width(5)
+
+    def run(self):
+        widgets.window.menuView.set_sensitive(True)
+        widgets.window.menuitemSave.set_sensitive(True)
+        widgets.window.toolbar.set_sensitive(True)
+
+        players.run()
+        clubs.run()
+        nations.run()
+        stadiums.run()
+
+        self.append_page(players, Gtk.Label("Players"))
+        self.append_page(clubs, Gtk.Label("Clubs"))
+        self.append_page(nations, Gtk.Label("Nations"))
+        self.append_page(stadiums, Gtk.Label("Stadiums"))
+
+        self.show_all()
+
+
+def open_database(widget=None):
+    filename = dialogs.open_dialog()
+
+    if filename:
+        if db.connect(filename) is not False:
+            db.load()
+            players.populate()
+            clubs.populate()
+            nations.populate()
+            stadiums.populate()
+
+            widgets.window.update_title(filename)
+
+            widgets.window.grid.remove(mainmenu)
+            maineditor.run()
+            widgets.window.grid.attach(maineditor, 0, 2, 1, 1)
+
+
 widgets.window = Window()
+mainmenu = MainMenu()
+maineditor = MainEditor()
 players = players.Players()
 clubs = clubs.Clubs()
 nations = nations.Nations()

@@ -68,3 +68,6 @@ class Nations(Gtk.Grid):
             self.liststore.append([nationid,
                                    nation.name,
                                    nation.denonym])
+
+    def run(self):
+        self.show_all()

@@ -92,3 +92,6 @@ class Stadiums(Gtk.Grid):
                                    stadium.stands[6],
                                    stadium.stands[7],
                                    ])
+
+    def run(self):
+        self.show_all()
