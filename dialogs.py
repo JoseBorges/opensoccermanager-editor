@@ -46,7 +46,6 @@ class AddPlayerDialog(Gtk.Dialog):
     def __init__(self):
         Gtk.Dialog.__init__(self)
         self.set_transient_for(widgets.window)
-        self.set_title("Add Player")
         self.set_border_width(5)
         self.connect("response", self.response_handler)
         self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
