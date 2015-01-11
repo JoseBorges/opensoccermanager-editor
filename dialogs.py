@@ -270,6 +270,8 @@ class AddPlayerDialog(Gtk.Dialog):
 
         buttonSave = self.get_widget_for_response(Gtk.ResponseType.OK)
 
+        self.show_all()
+
         if playerid is None:
             self.set_title("Add Player")
             self.buttonSave.set_label("_Add")
@@ -278,6 +280,7 @@ class AddPlayerDialog(Gtk.Dialog):
         else:
             self.set_title("Edit Player")
             self.buttonSave.set_label("_Edit")
+            self.checkbuttonMulti.set_visible(False)
 
             player = data.players[playerid]
 
@@ -307,7 +310,6 @@ class AddPlayerDialog(Gtk.Dialog):
             self.spinbuttonSP.set_value(player.set_pieces)
             self.spinbuttonTraining.set_value(player.training_value)
 
-        self.show_all()
         self.run()
 
     def clear_fields(self):
