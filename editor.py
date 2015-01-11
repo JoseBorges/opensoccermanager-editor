@@ -22,7 +22,7 @@ class Window(Gtk.Window):
         Gtk.Window.__init__(self)
         self.set_title("Editor")
         self.set_default_size(640, 480)
-        self.maximize()
+        #self.maximize()
         self.connect("destroy", self.close_application)
 
         accelgroup = Gtk.AccelGroup()
@@ -137,9 +137,9 @@ class Window(Gtk.Window):
         page = maineditor.get_current_page()
 
         if page == 0:
-            state = dialogs.add_player_dialog()
+            players_dialog.display(playerid=None)
 
-            if state:
+            if players_dialog.state:
                 players.populate()
         elif page == 1:
             state = dialogs.add_club_dialog()
@@ -161,9 +161,9 @@ class Window(Gtk.Window):
         page = maineditor.get_current_page()
 
         if page == 0:
-            state = dialogs.add_player_dialog(players.selected)
+            players_dialog.display(playerid=players.selected)
 
-            if state:
+            if players_dialog.state:
                 players.populate()
         elif page == 1:
             state = dialogs.add_club_dialog(clubs.selected)
@@ -315,13 +315,14 @@ widgets.window = Window()
 mainmenu = MainMenu()
 maineditor = MainEditor()
 players = players.Players()
+players_dialog = dialogs.AddPlayerDialog()
+widgets.players_dialog = players_dialog
 clubs = clubs.Clubs()
 nations = nations.Nations()
 stadiums = stadiums.Stadiums()
 db = database.Database()
+widgets.window.run()
 
 
 if __name__ == "__main__":
-    widgets.window.run()
-
     Gtk.main()

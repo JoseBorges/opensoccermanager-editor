@@ -39,269 +39,298 @@ def about():
     aboutdialog.destroy()
 
 
-def add_player_dialog(playerid=None):
-    def date_of_birth(button):
+class AddPlayerDialog(Gtk.Dialog):
+    playerid = None
+    state = False
+
+    def __init__(self):
+        Gtk.Dialog.__init__(self)
+        self.set_transient_for(widgets.window)
+        self.set_title("Add Player")
+        self.set_border_width(5)
+        self.connect("response", self.response_handler)
+        self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
+
+        action_area = self.get_action_area()
+
+        self.buttonSave = widgets.Button()
+        self.buttonSave.connect("clicked", self.save_handler)
+        action_area.add(self.buttonSave)
+
+        self.checkbuttonMulti = Gtk.CheckButton("Add Multiple Items")
+        action_area.add(self.checkbuttonMulti)
+
+        self.liststoreClub = Gtk.ListStore(str, str)
+        treemodelsortClub = Gtk.TreeModelSort(self.liststoreClub)
+        treemodelsortClub.set_sort_column_id(1, Gtk.SortType.ASCENDING)
+
+        self.liststoreNationality = Gtk.ListStore(str, str)
+        treemodelsortNationality = Gtk.TreeModelSort(self.liststoreNationality)
+        treemodelsortNationality.set_sort_column_id(1, Gtk.SortType.ASCENDING)
+
+        grid = Gtk.Grid()
+        grid.set_row_spacing(5)
+        grid.set_column_spacing(5)
+        self.vbox.add(grid)
+
+        label = widgets.Label("First Name")
+        grid.attach(label, 0, 0, 1, 1)
+        self.entryFirstName = Gtk.Entry()
+        grid.attach(self.entryFirstName, 1, 0, 2, 1)
+        label = widgets.Label("Second Name")
+        grid.attach(label, 0, 1, 1, 1)
+        self.entrySecondName = Gtk.Entry()
+        grid.attach(self.entrySecondName, 1, 1, 2, 1)
+        label = widgets.Label("Common Name")
+        grid.attach(label, 0, 2, 1, 1)
+        self.entryCommonName = Gtk.Entry()
+        grid.attach(self.entryCommonName, 1, 2, 2, 1)
+
+        label = widgets.Label("Date Of Birth")
+        grid.attach(label, 0, 3, 1, 1)
+        self.buttonDateOfBirth = widgets.Button()
+        self.buttonDateOfBirth.connect("clicked", self.date_of_birth)
+        grid.attach(self.buttonDateOfBirth, 1, 3, 1, 1)
+
+        self.calendar = Gtk.Calendar()
+        self.calendar.set_property("year", True)
+
+        cellrenderertext = Gtk.CellRendererText()
+
+        label = widgets.Label("Club")
+        grid.attach(label, 0, 4, 1, 1)
+        self.comboboxClub = Gtk.ComboBox()
+        self.comboboxClub.set_model(treemodelsortClub)
+        self.comboboxClub.set_id_column(0)
+        self.comboboxClub.pack_start(cellrenderertext, True)
+        self.comboboxClub.add_attribute(cellrenderertext, "text", 1)
+        grid.attach(self.comboboxClub, 1, 4, 1, 1)
+
+        label = widgets.Label("Nationality")
+        grid.attach(label, 0, 5, 1, 1)
+        self.comboboxNationality = Gtk.ComboBox()
+        self.comboboxNationality.set_model(treemodelsortNationality)
+        self.comboboxNationality.set_id_column(0)
+        self.comboboxNationality.pack_start(cellrenderertext, True)
+        self.comboboxNationality.add_attribute(cellrenderertext, "text", 1)
+        grid.attach(self.comboboxNationality, 1, 5, 1, 1)
+
+        label = widgets.Label("Position")
+        grid.attach(label, 0, 6, 1, 1)
+        self.comboboxPosition = Gtk.ComboBoxText()
+        grid.attach(self.comboboxPosition, 1, 6, 1, 1)
+
+        for position in ("GK", "DL", "DR", "DC", "D", "ML", "MR", "MC", "M", "AS", "AF"):
+            self.comboboxPosition.append(position, position)
+
+        grid1 = Gtk.Grid()
+        grid1.set_row_spacing(5)
+        grid1.set_column_spacing(5)
+        grid.attach(grid1, 0, 7, 6, 1)
+
+        label = widgets.Label("Keeping")
+        grid1.attach(label, 0, 0, 1, 1)
+        self.spinbuttonKP = Gtk.SpinButton.new_with_range(1, 99, 1)
+        grid1.attach(self.spinbuttonKP, 1, 0, 1, 1)
+
+        label = widgets.Label("Tackling")
+        grid1.attach(label, 0, 1, 1, 1)
+        self.spinbuttonTK = Gtk.SpinButton.new_with_range(1, 99, 1)
+        grid1.attach(self.spinbuttonTK, 1, 1, 1, 1)
+
+        label = widgets.Label("Passing")
+        grid1.attach(label, 0, 2, 1, 1)
+        self.spinbuttonPS = Gtk.SpinButton.new_with_range(1, 99, 1)
+        grid1.attach(self.spinbuttonPS, 1, 2, 1, 1)
+
+        label = widgets.Label("Shooting")
+        grid1.attach(label, 2, 0, 1, 1)
+        self.spinbuttonSH = Gtk.SpinButton.new_with_range(1, 99, 1)
+        grid1.attach(self.spinbuttonSH, 3, 0, 1, 1)
+
+        label = widgets.Label("Heading")
+        grid1.attach(label, 2, 1, 1, 1)
+        self.spinbuttonHD = Gtk.SpinButton.new_with_range(1, 99, 1)
+        grid1.attach(self.spinbuttonHD, 3, 1, 1, 1)
+
+        label = widgets.Label("Pace")
+        grid1.attach(label, 2, 2, 1, 1)
+        self.spinbuttonPC = Gtk.SpinButton.new_with_range(1, 99, 1)
+        grid1.attach(self.spinbuttonPC, 3, 2, 1, 1)
+
+        label = widgets.Label("Stamina")
+        grid1.attach(label, 4, 0, 1, 1)
+        self.spinbuttonST = Gtk.SpinButton.new_with_range(1, 99, 1)
+        grid1.attach(self.spinbuttonST, 5, 0, 1, 1)
+
+        label = widgets.Label("Ball Control")
+        grid1.attach(label, 4, 1, 1, 1)
+        self.spinbuttonBC = Gtk.SpinButton.new_with_range(1, 99, 1)
+        grid1.attach(self.spinbuttonBC, 5, 1, 1, 1)
+
+        label = widgets.Label("Set Pieces")
+        grid1.attach(label, 4, 2, 1, 1)
+        self.spinbuttonSP = Gtk.SpinButton.new_with_range(1, 99, 1)
+        grid1.attach(self.spinbuttonSP, 5, 2, 1, 1)
+
+        label = widgets.Label("Training Value")
+        grid.attach(label, 0, 8, 1, 1)
+        self.spinbuttonTraining = Gtk.SpinButton.new_with_range(1, 10, 1)
+        grid.attach(self.spinbuttonTraining, 1, 8, 1, 1)
+
+    def date_of_birth(self, button):
         dialog = Gtk.Dialog()
+        dialog.set_transient_for(self)
         dialog.set_title("Date Of Birth")
         dialog.add_button("_Cancel", Gtk.ResponseType.CANCEL)
         dialog.add_button("_OK", Gtk.ResponseType.OK)
         dialog.set_default_response(Gtk.ResponseType.OK)
-
-        dialog.vbox.add(calendar)
+        dialog.vbox.add(self.calendar)
 
         dialog.show_all()
 
         if dialog.run() == Gtk.ResponseType.OK:
-            year, month, day = calendar.get_date()
+            year, month, day = self.calendar.get_date()
 
             if day < 10:
                 day = "0%i" % (day)
-            else:
-                day = "%i" % (day)
 
             month = month + 1
 
             if month < 10:
                 month = "0%i" % (month)
-            else:
-                month = "%i" % (month)
 
             date_of_birth = "%i-%s-%s" % (year, month, day)
-
-            buttonDateOfBirth.set_label("%s" % (date_of_birth))
+            self.buttonDateOfBirth.set_label("%s" % (date_of_birth))
 
         dialog.destroy()
 
-    if playerid is None:
-        title = "Add Player"
-        button = "_Add"
-    else:
-        title = "Edit Player"
-        button = "_Edit"
+    def response_handler(self, dialog, response):
+        self.hide()
 
-    liststoreClub = Gtk.ListStore(str, str)
-    treemodelsort = Gtk.TreeModelSort(liststoreClub)
-    treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
+    def save_handler(self, button):
+        self.save_data()
+        self.clear_fields()
 
-    for clubid, club in data.clubs.items():
-        liststoreClub.append([str(clubid), club.name])
+        if not self.checkbuttonMulti.get_active():
+            self.hide()
 
-    liststoreNationality = Gtk.ListStore(str, str)
+        self.state = True
 
-    for nationid, nation in data.nations.items():
-        liststoreNationality.append([str(nationid), nation.name])
-
-    dialog = Gtk.Dialog()
-    dialog.set_transient_for(widgets.window)
-    dialog.set_title(title)
-    dialog.set_border_width(5)
-    dialog.add_button("_Cancel", Gtk.ResponseType.CANCEL)
-    dialog.add_button(button, Gtk.ResponseType.OK)
-    dialog.set_default_response(Gtk.ResponseType.OK)
-
-    grid = Gtk.Grid()
-    grid.set_row_spacing(5)
-    grid.set_column_spacing(5)
-    dialog.vbox.add(grid)
-
-    label = widgets.Label("First Name")
-    grid.attach(label, 0, 0, 1, 1)
-    entryFirstName = Gtk.Entry()
-    grid.attach(entryFirstName, 1, 0, 2, 1)
-    label = widgets.Label("Second Name")
-    grid.attach(label, 0, 1, 1, 1)
-    entrySecondName = Gtk.Entry()
-    grid.attach(entrySecondName, 1, 1, 2, 1)
-    label = widgets.Label("Common Name")
-    grid.attach(label, 0, 2, 1, 1)
-    entryCommonName = Gtk.Entry()
-    grid.attach(entryCommonName, 1, 2, 2, 1)
-
-    label = widgets.Label("Date Of Birth")
-    grid.attach(label, 0, 3, 1, 1)
-    buttonDateOfBirth = widgets.Button()
-    buttonDateOfBirth.connect("clicked", date_of_birth)
-    grid.attach(buttonDateOfBirth, 1, 3, 1, 1)
-
-    calendar = Gtk.Calendar()
-    calendar.set_property("year", True)
-
-    cellrenderertext = Gtk.CellRendererText()
-
-    label = widgets.Label("Club")
-    grid.attach(label, 0, 4, 1, 1)
-    comboboxClub = Gtk.ComboBox()
-    comboboxClub.set_model(treemodelsort)
-    comboboxClub.set_id_column(0)
-    comboboxClub.pack_start(cellrenderertext, True)
-    comboboxClub.add_attribute(cellrenderertext, "text", 1)
-    grid.attach(comboboxClub, 1, 4, 1, 1)
-
-    label = widgets.Label("Nationality")
-    grid.attach(label, 0, 5, 1, 1)
-    comboboxNationality = Gtk.ComboBox()
-    comboboxNationality.set_model(liststoreNationality)
-    comboboxNationality.set_id_column(0)
-    comboboxNationality.pack_start(cellrenderertext, True)
-    comboboxNationality.add_attribute(cellrenderertext, "text", 1)
-    grid.attach(comboboxNationality, 1, 5, 1, 1)
-
-    label = widgets.Label("Position")
-    grid.attach(label, 0, 6, 1, 1)
-    comboboxPosition = Gtk.ComboBoxText()
-    grid.attach(comboboxPosition, 1, 6, 1, 1)
-
-    for position in ("GK", "DL", "DR", "DC", "D", "ML", "MR", "MC", "M", "AS", "AF"):
-        comboboxPosition.append(position, position)
-
-    grid1 = Gtk.Grid()
-    grid1.set_row_spacing(5)
-    grid1.set_column_spacing(5)
-    grid.attach(grid1, 0, 7, 6, 1)
-
-    spinbuttons = []
-
-    label = widgets.Label("Keeping")
-    grid1.attach(label, 0, 0, 1, 1)
-    spinbuttonKP = Gtk.SpinButton.new_with_range(1, 99, 1)
-    grid1.attach(spinbuttonKP, 1, 0, 1, 1)
-    spinbuttons.append(spinbuttonKP)
-
-    label = widgets.Label("Tackling")
-    grid1.attach(label, 0, 1, 1, 1)
-    spinbuttonTK = Gtk.SpinButton.new_with_range(1, 99, 1)
-    grid1.attach(spinbuttonTK, 1, 1, 1, 1)
-    spinbuttons.append(spinbuttonTK)
-
-    label = widgets.Label("Passing")
-    grid1.attach(label, 0, 2, 1, 1)
-    spinbuttonPS = Gtk.SpinButton.new_with_range(1, 99, 1)
-    grid1.attach(spinbuttonPS, 1, 2, 1, 1)
-    spinbuttons.append(spinbuttonPS)
-
-    label = widgets.Label("Shooting")
-    grid1.attach(label, 2, 0, 1, 1)
-    spinbuttonSH = Gtk.SpinButton.new_with_range(1, 99, 1)
-    grid1.attach(spinbuttonSH, 3, 0, 1, 1)
-    spinbuttons.append(spinbuttonSH)
-
-    label = widgets.Label("Heading")
-    grid1.attach(label, 2, 1, 1, 1)
-    spinbuttonHD = Gtk.SpinButton.new_with_range(1, 99, 1)
-    grid1.attach(spinbuttonHD, 3, 1, 1, 1)
-    spinbuttons.append(spinbuttonHD)
-
-    label = widgets.Label("Pace")
-    grid1.attach(label, 2, 2, 1, 1)
-    spinbuttonPC = Gtk.SpinButton.new_with_range(1, 99, 1)
-    grid1.attach(spinbuttonPC, 3, 2, 1, 1)
-    spinbuttons.append(spinbuttonPC)
-
-    label = widgets.Label("Stamina")
-    grid1.attach(label, 4, 0, 1, 1)
-    spinbuttonST = Gtk.SpinButton.new_with_range(1, 99, 1)
-    grid1.attach(spinbuttonST, 5, 0, 1, 1)
-    spinbuttons.append(spinbuttonST)
-
-    label = widgets.Label("Ball Control")
-    grid1.attach(label, 4, 1, 1, 1)
-    spinbuttonBC = Gtk.SpinButton.new_with_range(1, 99, 1)
-    grid1.attach(spinbuttonBC, 5, 1, 1, 1)
-    spinbuttons.append(spinbuttonBC)
-
-    label = widgets.Label("Set Pieces")
-    grid1.attach(label, 4, 2, 1, 1)
-    spinbuttonSP = Gtk.SpinButton.new_with_range(1, 99, 1)
-    grid1.attach(spinbuttonSP, 5, 2, 1, 1)
-    spinbuttons.append(spinbuttonSP)
-
-    label = widgets.Label("Training Value")
-    grid.attach(label, 0, 8, 1, 1)
-    spinbuttonTraining = Gtk.SpinButton.new_with_range(1, 10, 1)
-    grid.attach(spinbuttonTraining, 1, 8, 1, 1)
-
-    state = False
-
-    if playerid is not None:
-        player = data.players[playerid]
-
-        entryFirstName.set_text(player.first_name)
-        entrySecondName.set_text(player.second_name)
-        entryCommonName.set_text(player.common_name)
-        buttonDateOfBirth.set_label("%s" % (player.date_of_birth))
-        comboboxClub.set_active_id(str(player.club))
-        comboboxNationality.set_active_id(str(player.nationality))
-
-        date = player.date_of_birth.split("-")
-        date_of_birth = list(map(int, date))
-
-        calendar.select_day(date_of_birth[2])
-        calendar.select_month(date_of_birth[1] - 1, date_of_birth[0])
-
-        comboboxPosition.set_active_id(player.position)
-
-        spinbuttons[0].set_value(player.keeping)
-        spinbuttons[1].set_value(player.tackling)
-        spinbuttons[2].set_value(player.passing)
-        spinbuttons[3].set_value(player.shooting)
-        spinbuttons[4].set_value(player.heading)
-        spinbuttons[5].set_value(player.pace)
-        spinbuttons[6].set_value(player.stamina)
-        spinbuttons[7].set_value(player.ball_control)
-        spinbuttons[8].set_value(player.set_pieces)
-        spinbuttonTraining.set_value(player.training_value)
-
-    dialog.show_all()
-
-    if dialog.run() == Gtk.ResponseType.OK:
-        if playerid is not None:
-            player = data.players[playerid]
-        else:
+    def save_data(self):
+        if self.playerid is None:
             data.idnumbers.playerid += 1
 
             player = Player()
             data.players[data.idnumbers.playerid] = player
+        else:
+            player = data.players[self.playerid]
 
-        player.first_name = entryFirstName.get_text()
-        player.second_name = entrySecondName.get_text()
-        player.common_name = entryCommonName.get_text()
-        player.club = int(comboboxClub.get_active_id())
-        player.nationality = int(comboboxNationality.get_active_id())
+        player.first_name = self.entryFirstName.get_text()
+        player.second_name = self.entrySecondName.get_text()
+        player.common_name = self.entryCommonName.get_text()
+        player.club = int(self.comboboxClub.get_active_id())
+        player.nationality = int(self.comboboxNationality.get_active_id())
 
-        year, month, day = calendar.get_date()
+        year, month, day = self.calendar.get_date()
 
         if day < 10:
             day = "0%i" % (day)
-        else:
-            day = "%i" % (day)
 
         month = month + 1
 
         if month < 10:
             month = "0%i" % (month)
-        else:
-            month = "%i" % (month)
 
         player.date_of_birth = ("%i-%s-%s" % (year, month, day))
 
-        player.position = comboboxPosition.get_active_id()
+        player.position = self.comboboxPosition.get_active_id()
+        player.keeping = self.spinbuttonKP.get_value_as_int()
+        player.tackling = self.spinbuttonTK.get_value_as_int()
+        player.passing = self.spinbuttonPS.get_value_as_int()
+        player.shooting = self.spinbuttonSH.get_value_as_int()
+        player.heading = self.spinbuttonHD.get_value_as_int()
+        player.pace = self.spinbuttonPC.get_value_as_int()
+        player.stamina = self.spinbuttonST.get_value_as_int()
+        player.ball_control = self.spinbuttonBC.get_value_as_int()
+        player.set_pieces = self.spinbuttonSP.get_value_as_int()
+        player.training_value = self.spinbuttonTraining.get_value_as_int()
 
-        player.keeping = spinbuttonKP.get_value_as_int()
-        player.tackling = spinbuttonTK.get_value_as_int()
-        player.passing = spinbuttonPS.get_value_as_int()
-        player.shooting = spinbuttonSH.get_value_as_int()
-        player.heading = spinbuttonHD.get_value_as_int()
-        player.pace = spinbuttonPC.get_value_as_int()
-        player.stamina = spinbuttonST.get_value_as_int()
-        player.ball_control = spinbuttonBC.get_value_as_int()
-        player.set_pieces = spinbuttonSP.get_value_as_int()
-        player.training_value = spinbuttonTraining.get_value_as_int()
+    def display(self, playerid):
+        self.state = False
+        self.playerid = playerid
 
-        state = True
+        self.liststoreClub.clear()
+        self.liststoreNationality.clear()
 
-    dialog.destroy()
+        for clubid, club in data.clubs.items():
+            self.liststoreClub.append([str(clubid), club.name])
 
-    return state
+        for nationid, nation in data.nations.items():
+            self.liststoreNationality.append([str(nationid), nation.name])
+
+        buttonSave = self.get_widget_for_response(Gtk.ResponseType.OK)
+
+        if playerid is None:
+            self.set_title("Add Player")
+            self.buttonSave.set_label("_Add")
+
+            self.clear_fields()
+        else:
+            self.set_title("Edit Player")
+            self.buttonSave.set_label("_Edit")
+
+            player = data.players[playerid]
+
+            self.entryFirstName.set_text(player.first_name)
+            self.entrySecondName.set_text(player.second_name)
+            self.entryCommonName.set_text(player.common_name)
+            self.buttonDateOfBirth.set_label("%s" % (player.date_of_birth))
+            self.comboboxClub.set_active_id(str(player.club))
+            self.comboboxNationality.set_active_id(str(player.nationality))
+
+            date = player.date_of_birth.split("-")
+            date_of_birth = list(map(int, date))
+
+            self.calendar.select_day(date_of_birth[2])
+            self.calendar.select_month(date_of_birth[1] - 1, date_of_birth[0])
+
+            self.comboboxPosition.set_active_id(player.position)
+
+            self.spinbuttonKP.set_value(player.keeping)
+            self.spinbuttonTK.set_value(player.tackling)
+            self.spinbuttonPS.set_value(player.passing)
+            self.spinbuttonSH.set_value(player.shooting)
+            self.spinbuttonHD.set_value(player.heading)
+            self.spinbuttonPC.set_value(player.pace)
+            self.spinbuttonST.set_value(player.stamina)
+            self.spinbuttonBC.set_value(player.ball_control)
+            self.spinbuttonSP.set_value(player.set_pieces)
+            self.spinbuttonTraining.set_value(player.training_value)
+
+        self.show_all()
+        self.run()
+
+    def clear_fields(self):
+        self.entryFirstName.set_text("")
+        self.entrySecondName.set_text("")
+        self.entryCommonName.set_text("")
+        self.buttonDateOfBirth.set_label("")
+        self.comboboxClub.set_active(-1)
+        self.comboboxNationality.set_active(-1)
+
+        self.comboboxPosition.set_active(-1)
+
+        self.spinbuttonKP.set_value(1)
+        self.spinbuttonTK.set_value(1)
+        self.spinbuttonPS.set_value(1)
+        self.spinbuttonSH.set_value(1)
+        self.spinbuttonHD.set_value(1)
+        self.spinbuttonPC.set_value(1)
+        self.spinbuttonST.set_value(1)
+        self.spinbuttonBC.set_value(1)
+        self.spinbuttonSP.set_value(1)
+        self.spinbuttonTraining.set_value(1)
 
 
 def add_club_dialog(clubid=None):

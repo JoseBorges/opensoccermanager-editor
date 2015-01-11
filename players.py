@@ -8,10 +8,6 @@ import data
 import dialogs
 
 
-skill_short = ("KP", "TK", "PS", "SH", "HD", "PC", "ST", "BC", "SP")
-skill = ("Keeping", "Tackling", "Passing", "Shooting", "Heading", "Pace", "Stamina", "Ball Control", "Set Pieces")
-
-
 class Players(Gtk.Grid):
     selected = 0
 
@@ -57,8 +53,8 @@ class Players(Gtk.Grid):
         treeviewcolumn = Gtk.TreeViewColumn("Position", cellrenderertext, text=7)
         treeview.append_column(treeviewcolumn)
 
-        for count, item in enumerate(skill, start=8):
-            label = Gtk.Label(skill_short[count - 8])
+        for count, item in enumerate(data.skill, start=8):
+            label = Gtk.Label(data.skill_short[count - 8])
             label.set_tooltip_text(item)
             label.show()
             treeviewcolumn = Gtk.TreeViewColumn()
@@ -74,9 +70,9 @@ class Players(Gtk.Grid):
         model = treeview.get_model()
         playerid = model[path][0]
 
-        state = dialogs.add_player_dialog(playerid)
+        widgets.players_dialog.display(playerid)
 
-        if state:
+        if widgets.players_dialog.state:
             self.populate()
 
     def selection_changed(self, treeselection):
