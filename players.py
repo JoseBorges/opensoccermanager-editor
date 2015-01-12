@@ -9,7 +9,7 @@ import dialogs
 
 
 class Players(Gtk.Grid):
-    selected = 0
+    selected = None
 
     def __init__(self):
         Gtk.Grid.__init__(self)
@@ -34,6 +34,7 @@ class Players(Gtk.Grid):
         treeview.set_model(treemodelsort)
         treeview.connect("row-activated", self.row_activated)
         self.treeselection = treeview.get_selection()
+        self.treeselection.set_mode(Gtk.SelectionMode.MULTIPLE)
         self.treeselection.connect("changed", self.selection_changed)
         scrolledwindow.add(treeview)
 
@@ -76,14 +77,19 @@ class Players(Gtk.Grid):
             self.populate()
 
     def selection_changed(self, treeselection):
-        model, treeiter = self.treeselection.get_selected()
+        model, treepath = self.treeselection.get_selected_rows()
 
-        if treeiter:
-            self.selected = model[treeiter][0]
+        if treepath:
+            self.selected = []
+
+            for item in treepath:
+                value = model[item][0]
+                self.selected.append(value)
+
             widgets.toolbuttonEdit.set_sensitive(True)
             widgets.toolbuttonRemove.set_sensitive(True)
         else:
-            self.selected = 0
+            self.selected = None
             widgets.toolbuttonEdit.set_sensitive(False)
             widgets.toolbuttonRemove.set_sensitive(False)
 

@@ -208,22 +208,29 @@ class AddPlayerDialog(Gtk.Dialog):
         self.hide()
 
     def save_handler(self, button):
-        self.save_data()
+        self.save_data(self.current)
         self.clear_fields()
-
-        if not self.checkbuttonMulti.get_active():
-            self.hide()
 
         self.state = True
 
-    def save_data(self):
+        try:
+            self.current = self.generator.__next__()
+            self.load_fields(self.current)
+        except StopIteration:
+            self.hide()
+
+        if self.checkbuttonMulti.get_visible():
+            if not self.checkbuttonMulti.get_active():
+                self.hide()
+
+    def save_data(self, playerid):
         if self.playerid is None:
             data.idnumbers.playerid += 1
 
             player = Player()
             data.players[data.idnumbers.playerid] = player
         else:
-            player = data.players[self.playerid]
+            player = data.players[playerid]
 
         player.first_name = self.entryFirstName.get_text()
         player.second_name = self.entrySecondName.get_text()
@@ -282,35 +289,41 @@ class AddPlayerDialog(Gtk.Dialog):
             self.buttonSave.set_label("_Edit")
             self.checkbuttonMulti.set_visible(False)
 
-            player = data.players[playerid]
+            self.generator = self.playerid.__iter__()
+            self.current = self.generator.__next__()
 
-            self.entryFirstName.set_text(player.first_name)
-            self.entrySecondName.set_text(player.second_name)
-            self.entryCommonName.set_text(player.common_name)
-            self.buttonDateOfBirth.set_label("%s" % (player.date_of_birth))
-            self.comboboxClub.set_active_id(str(player.club))
-            self.comboboxNationality.set_active_id(str(player.nationality))
-
-            date = player.date_of_birth.split("-")
-            date_of_birth = list(map(int, date))
-
-            self.calendar.select_day(date_of_birth[2])
-            self.calendar.select_month(date_of_birth[1] - 1, date_of_birth[0])
-
-            self.comboboxPosition.set_active_id(player.position)
-
-            self.spinbuttonKP.set_value(player.keeping)
-            self.spinbuttonTK.set_value(player.tackling)
-            self.spinbuttonPS.set_value(player.passing)
-            self.spinbuttonSH.set_value(player.shooting)
-            self.spinbuttonHD.set_value(player.heading)
-            self.spinbuttonPC.set_value(player.pace)
-            self.spinbuttonST.set_value(player.stamina)
-            self.spinbuttonBC.set_value(player.ball_control)
-            self.spinbuttonSP.set_value(player.set_pieces)
-            self.spinbuttonTraining.set_value(player.training_value)
+            self.load_fields(self.current)
 
         self.run()
+
+    def load_fields(self, playerid):
+        player = data.players[playerid]
+
+        self.entryFirstName.set_text(player.first_name)
+        self.entrySecondName.set_text(player.second_name)
+        self.entryCommonName.set_text(player.common_name)
+        self.buttonDateOfBirth.set_label("%s" % (player.date_of_birth))
+        self.comboboxClub.set_active_id(str(player.club))
+        self.comboboxNationality.set_active_id(str(player.nationality))
+
+        date = player.date_of_birth.split("-")
+        date_of_birth = list(map(int, date))
+
+        self.calendar.select_day(date_of_birth[2])
+        self.calendar.select_month(date_of_birth[1] - 1, date_of_birth[0])
+
+        self.comboboxPosition.set_active_id(player.position)
+
+        self.spinbuttonKP.set_value(player.keeping)
+        self.spinbuttonTK.set_value(player.tackling)
+        self.spinbuttonPS.set_value(player.passing)
+        self.spinbuttonSH.set_value(player.shooting)
+        self.spinbuttonHD.set_value(player.heading)
+        self.spinbuttonPC.set_value(player.pace)
+        self.spinbuttonST.set_value(player.stamina)
+        self.spinbuttonBC.set_value(player.ball_control)
+        self.spinbuttonSP.set_value(player.set_pieces)
+        self.spinbuttonTraining.set_value(player.training_value)
 
     def clear_fields(self):
         self.entryFirstName.set_text("")

@@ -22,7 +22,7 @@ class Window(Gtk.Window):
         Gtk.Window.__init__(self)
         self.set_title("Editor")
         self.set_default_size(640, 480)
-        #self.maximize()
+        self.maximize()
         self.connect("destroy", self.close_application)
 
         accelgroup = Gtk.AccelGroup()
@@ -188,7 +188,9 @@ class Window(Gtk.Window):
 
         if state:
             if page == 0:
-                del(data.players[players.selected])
+                for item in players.selected:
+                    del(data.players[item])
+
                 players.populate()
             elif page == 1:
                 keys = [player.club for playerid, player in data.players.items()]
@@ -241,7 +243,7 @@ class MainMenu(Gtk.Grid):
         self.set_column_homogeneous(True)
 
         label = Gtk.Label()
-        self.attach(label, 0, 0, 1, 2)
+        self.attach(label, 0, 0, 1, 1)
         label = Gtk.Label()
         self.attach(label, 3, 2, 1, 2)
 
