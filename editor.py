@@ -16,6 +16,9 @@ class Window(Gtk.Window):
     grid = None
     menuView = None
     menuitemSave = None
+    menuitemSaveAs = None
+    menuitemImport = None
+    menuitemExport = None
     toolbar = None
 
     def __init__(self):
@@ -41,17 +44,33 @@ class Window(Gtk.Window):
         menu = Gtk.Menu()
         menuitem.set_submenu(menu)
 
-        menuitem = widgets.MenuItem("_Open Database")
+        menuitem = widgets.MenuItem("_New")
+        key, mod = Gtk.accelerator_parse("<CONTROL>N")
+        menuitem.add_accelerator("activate", accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
+        menuitem.connect("activate", new_database)
+        menu.append(menuitem)
+        menuitem = widgets.MenuItem("_Open")
         key, mod = Gtk.accelerator_parse("<CONTROL>O")
         menuitem.add_accelerator("activate", accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
         menuitem.connect("activate", open_database)
         menu.append(menuitem)
-        self.menuitemSave = widgets.MenuItem("_Save Database")
+        self.menuitemSave = widgets.MenuItem("_Save")
         key, mod = Gtk.accelerator_parse("<CONTROL>S")
         self.menuitemSave.add_accelerator("activate", accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
         self.menuitemSave.set_sensitive(False)
         self.menuitemSave.connect("activate", self.save_database)
         menu.append(self.menuitemSave)
+        self.menuitemSaveAs = widgets.MenuItem("_Save As...")
+        self.menuitemSaveAs.set_sensitive(False)
+        menu.append(self.menuitemSaveAs)
+        separator = Gtk.SeparatorMenuItem()
+        menu.append(separator)
+        self.menuitemImport = widgets.MenuItem("Import from CSV...")
+        self.menuitemImport.set_sensitive(False)
+        menu.append(self.menuitemImport)
+        self.menuitemExport = widgets.MenuItem("Export to CSV...")
+        self.menuitemExport.set_sensitive(False)
+        menu.append(self.menuitemExport)
         separator = Gtk.SeparatorMenuItem()
         menu.append(separator)
         menuitem = widgets.MenuItem("_Quit")
@@ -137,9 +156,9 @@ class Window(Gtk.Window):
         page = maineditor.get_current_page()
 
         if page == 0:
-            players_dialog.display(playerid=None)
+            widgets.players_dialog.display(playerid=None)
 
-            if players_dialog.state:
+            if widgets.players_dialog.state:
                 players.populate()
         elif page == 1:
             state = dialogs.add_club_dialog()
@@ -161,9 +180,9 @@ class Window(Gtk.Window):
         page = maineditor.get_current_page()
 
         if page == 0:
-            players_dialog.display(playerid=players.selected)
+            widgets.players_dialog.display(playerid=players.selected)
 
-            if players_dialog.state:
+            if widgets.players_dialog.state:
                 players.populate()
         elif page == 1:
             state = dialogs.add_club_dialog(clubs.selected)
@@ -254,6 +273,7 @@ class MainMenu(Gtk.Grid):
         buttonNew.set_always_show_image(True)
         buttonNew.set_image(image)
         buttonNew.set_image_position(Gtk.PositionType.TOP)
+        buttonNew.connect("clicked", new_database)
         self.attach(buttonNew, 1, 1, 1, 1)
 
         image = Gtk.Image.new_from_icon_name("gtk-open",
@@ -271,6 +291,8 @@ class MainMenu(Gtk.Grid):
 
 
 class MainEditor(Gtk.Notebook):
+    active = False
+
     def __init__(self):
         Gtk.Notebook.__init__(self)
         self.set_hexpand(True)
@@ -280,6 +302,9 @@ class MainEditor(Gtk.Notebook):
     def run(self):
         widgets.window.menuView.set_sensitive(True)
         widgets.window.menuitemSave.set_sensitive(True)
+        widgets.window.menuitemSaveAs.set_sensitive(True)
+        widgets.window.menuitemImport.set_sensitive(True)
+        widgets.window.menuitemExport.set_sensitive(True)
         widgets.window.toolbar.set_sensitive(True)
 
         players.run()
@@ -287,12 +312,39 @@ class MainEditor(Gtk.Notebook):
         nations.run()
         stadiums.run()
 
+        if not self.active:
+            self.add_tabs()
+            self.active = True
+
+        self.show_all()
+
+    def add_tabs(self):
+        widgets.window.grid.attach(self, 0, 2, 1, 1)
         self.append_page(players, Gtk.Label("Players"))
         self.append_page(clubs, Gtk.Label("Clubs"))
         self.append_page(nations, Gtk.Label("Nations"))
         self.append_page(stadiums, Gtk.Label("Stadiums"))
 
-        self.show_all()
+
+def new_database(widget=None):
+    filename = new_database.display()
+
+    if filename:
+        db.connect(filename=filename)
+
+        widgets.window.update_title(filename)
+
+        if widgets.window.grid.get_child_at(0, 2) is mainmenu:
+            widgets.window.grid.remove(mainmenu)
+
+        db.load()
+
+        players.populate()
+        clubs.populate()
+        nations.populate()
+        stadiums.populate()
+
+        maineditor.run()
 
 
 def open_database(widget=None):
@@ -301,6 +353,7 @@ def open_database(widget=None):
     if filename:
         if db.connect(filename) is not False:
             db.load()
+
             players.populate()
             clubs.populate()
             nations.populate()
@@ -308,21 +361,23 @@ def open_database(widget=None):
 
             widgets.window.update_title(filename)
 
-            widgets.window.grid.remove(mainmenu)
+            if widgets.window.grid.get_child_at(0, 2) is mainmenu:
+                widgets.window.grid.remove(mainmenu)
+
             maineditor.run()
-            widgets.window.grid.attach(maineditor, 0, 2, 1, 1)
 
 
 widgets.window = Window()
 mainmenu = MainMenu()
 maineditor = MainEditor()
 players = players.Players()
-players_dialog = dialogs.AddPlayerDialog()
-widgets.players_dialog = players_dialog
+widgets.players_dialog = dialogs.AddPlayerDialog()
 clubs = clubs.Clubs()
 nations = nations.Nations()
 stadiums = stadiums.Stadiums()
 db = database.Database()
+data.db = db
+new_database = dialogs.NewDatabase()
 widgets.window.run()
 
 

@@ -6,6 +6,7 @@ import os
 
 import widgets
 import data
+import database
 
 
 class Player:
@@ -37,6 +38,43 @@ def about():
 
     aboutdialog.run()
     aboutdialog.destroy()
+
+
+class NewDatabase(Gtk.Dialog):
+    def __init__(self):
+        Gtk.Dialog.__init__(self)
+        self.set_title("New Database")
+        self.set_transient_for(widgets.window)
+        self.set_border_width(5)
+        self.add_button("C_ancel", Gtk.ResponseType.CANCEL)
+        self.add_button("_Create", Gtk.ResponseType.OK)
+        self.set_default_response(Gtk.ResponseType.OK)
+
+        grid = Gtk.Grid()
+        grid.set_row_spacing(5)
+        grid.set_column_spacing(5)
+        self.vbox.add(grid)
+
+        label = widgets.Label("Season")
+        grid.attach(label, 0, 0, 1, 1)
+        self.spinbuttonSeason = Gtk.SpinButton.new_with_range(1950, 2049, 1)
+        grid.attach(self.spinbuttonSeason, 1, 0, 1, 1)
+
+    def display(self):
+        self.show_all()
+
+        filename = None
+
+        if self.run() == Gtk.ResponseType.OK:
+            season = self.spinbuttonSeason.get_value_as_int()
+            year = str(season)[2:4]
+            year1 = str(season + 1)[2:4]
+            data.season = season
+            filename = "osm%s%s.db" % (year, year1)
+
+        self.hide()
+
+        return filename
 
 
 class AddPlayerDialog(Gtk.Dialog):
@@ -213,18 +251,19 @@ class AddPlayerDialog(Gtk.Dialog):
 
         self.state = True
 
-        try:
-            self.current = self.generator.__next__()
-            self.load_fields(self.current)
-        except StopIteration:
-            self.hide()
+        if self.current:
+            try:
+                self.current = self.generator.__next__()
+                self.load_fields(self.current)
+            except StopIteration:
+                self.hide()
 
         if self.checkbuttonMulti.get_visible():
             if not self.checkbuttonMulti.get_active():
                 self.hide()
 
     def save_data(self, playerid):
-        if self.playerid is None:
+        if playerid is None:
             data.idnumbers.playerid += 1
 
             player = Player()
@@ -264,7 +303,9 @@ class AddPlayerDialog(Gtk.Dialog):
 
     def display(self, playerid):
         self.state = False
-        self.playerid = playerid
+
+        year = int(data.season) - 18
+        self.calendar.select_month(0, year)
 
         self.liststoreClub.clear()
         self.liststoreNationality.clear()
@@ -283,16 +324,19 @@ class AddPlayerDialog(Gtk.Dialog):
             self.set_title("Add Player")
             self.buttonSave.set_label("_Add")
 
+            self.current = None
+
             self.clear_fields()
         else:
             self.set_title("Edit Player")
             self.buttonSave.set_label("_Edit")
             self.checkbuttonMulti.set_visible(False)
 
-            self.generator = self.playerid.__iter__()
+            self.generator = playerid.__iter__()
             self.current = self.generator.__next__()
 
-            self.load_fields(self.current)
+            self.clear_fields()
+            self.load_fields(playerid=self.current)
 
         self.run()
 
@@ -548,6 +592,7 @@ def add_stadium_dialog(stadiumid=None):
         grid1.attach(label, 0, count, 1, 1)
 
         spinbutton = Gtk.SpinButton()
+        spinbutton.set_value(0)
 
         if count < 4:
             spinbutton.set_range(0, 15000)
@@ -555,8 +600,7 @@ def add_stadium_dialog(stadiumid=None):
             spinbutton.set_range(0, 3000)
 
         spinbutton.set_increments(1000, 1000)
-        spinbutton.set_value(stadium.stands[count])
-
+        capacities.append(spinbutton)
         grid1.attach(spinbutton, 1, count, 1, 1)
 
     grid2 = Gtk.Grid()
@@ -572,14 +616,20 @@ def add_stadium_dialog(stadiumid=None):
         grid2.attach(label, 0, count, 1, 1)
 
         spinbutton = Gtk.SpinButton()
+        spinbutton.set_value(0)
         spinbutton.set_range(0, 8)
         spinbutton.set_increments(1, 1)
-        spinbutton.set_value(stadium.buildings[count])
         buildings.append(spinbutton)
         grid2.attach(spinbutton, 1, count, 1, 1)
 
     if stadiumid is not None:
         entryName.set_text(stadium.name)
+
+        for count, widget in enumerate(capacities):
+            widget.set_value(stadium.stands[count])
+
+        for count, widget in enumerate(buildings):
+            widget.set_value(stadium.buildings[count])
 
     dialog.show_all()
 
@@ -595,7 +645,19 @@ def add_stadium_dialog(stadiumid=None):
             data.stadiums[data.idnumbers.stadiumid] = stadium
 
         stadium.name = entryName.get_text()
-        stadium.capacity = 0
+        stadium.stands = []
+        stadium.buildings = []
+
+        capacity = 0
+
+        for count, widget in enumerate(capacities):
+            capacity += widget.get_value_as_int()
+            stadium.stands.append(widget.get_value_as_int())
+
+        stadium.capacity = capacity
+
+        for count, widget in enumerate(buildings):
+            stadium.buildings.append(widget.get_value_as_int())
 
         state = True
 
