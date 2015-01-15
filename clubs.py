@@ -1,4 +1,4 @@
-#!/usrsel/bin/env python
+#!/usrsel/bin/env python3
 
 from gi.repository import Gtk
 

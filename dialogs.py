@@ -1,12 +1,12 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from gi.repository import Gtk
 from gi.repository import GdkPixbuf
 import os
 
-import widgets
 import data
 import database
+import widgets
 
 
 class Player:
@@ -82,6 +82,12 @@ class AddPlayerDialog(Gtk.Dialog):
     state = False
 
     def __init__(self):
+        def club_nation_changed(combobox):
+            if self.comboboxClub.get_active_id() is None or self.comboboxNationality.get_active_id() is None:
+                self.buttonSave.set_sensitive(False)
+            else:
+                self.buttonSave.set_sensitive(True)
+
         Gtk.Dialog.__init__(self)
         self.set_transient_for(widgets.window)
         self.set_border_width(5)
@@ -91,6 +97,7 @@ class AddPlayerDialog(Gtk.Dialog):
         action_area = self.get_action_area()
 
         self.buttonSave = widgets.Button()
+        self.buttonSave.set_sensitive(False)
         self.buttonSave.connect("clicked", self.save_handler)
         action_area.add(self.buttonSave)
 
@@ -141,6 +148,7 @@ class AddPlayerDialog(Gtk.Dialog):
         self.comboboxClub.set_id_column(0)
         self.comboboxClub.pack_start(cellrenderertext, True)
         self.comboboxClub.add_attribute(cellrenderertext, "text", 1)
+        self.comboboxClub.connect("changed", club_nation_changed)
         grid.attach(self.comboboxClub, 1, 4, 1, 1)
 
         label = widgets.Label("Nationality")
@@ -150,6 +158,7 @@ class AddPlayerDialog(Gtk.Dialog):
         self.comboboxNationality.set_id_column(0)
         self.comboboxNationality.pack_start(cellrenderertext, True)
         self.comboboxNationality.add_attribute(cellrenderertext, "text", 1)
+        self.comboboxNationality.connect("changed", club_nation_changed)
         grid.attach(self.comboboxNationality, 1, 5, 1, 1)
 
         label = widgets.Label("Position")
@@ -708,7 +717,8 @@ def open_dialog():
 
 def error(errorid):
     errors = {0: "Unable to delete club as a player is still assigned to it.",
-              1: "Unable to delete nation as a player is still assigned to it."}
+              1: "Unable to delete nation as a player is still assigned to it.",
+              }
 
     messagedialog = Gtk.MessageDialog(type=Gtk.MessageType.ERROR)
     messagedialog.set_transient_for(widgets.window)

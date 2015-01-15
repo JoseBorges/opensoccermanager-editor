@@ -1,11 +1,11 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from gi.repository import Gtk
 
-import widgets
-import database
 import data
+import database
 import dialogs
+import widgets
 
 
 class Players(Gtk.Grid):

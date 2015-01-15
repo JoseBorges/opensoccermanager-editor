@@ -1,10 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from gi.repository import Gtk
 
 import data
-import widgets
 import dialogs
+import widgets
 
 
 class Stadiums(Gtk.Grid):

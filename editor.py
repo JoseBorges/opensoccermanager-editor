@@ -1,15 +1,15 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from gi.repository import Gtk
 
-import data
-import widgets
-import players
 import clubs
-import nations
-import stadiums
-import dialogs
+import data
 import database
+import dialogs
+import nations
+import players
+import stadiums
+import widgets
 
 
 class Window(Gtk.Window):
@@ -147,7 +147,7 @@ class Window(Gtk.Window):
         self.toolbar.add(toolbuttonSave)
 
     def save_database(self, widget):
-        db.save()
+        data.db.save()
 
     def update_title(self, filename):
         self.set_title("Editor - %s" % (filename))
@@ -246,8 +246,8 @@ class Window(Gtk.Window):
         self.show_all()
 
     def close_application(self, widget):
-        if db.cursor is not None:
-            db.disconnect()
+        if data.db.cursor is not None:
+            data.db.disconnect()
 
         Gtk.main_quit()
 
@@ -330,14 +330,14 @@ def new_database(widget=None):
     filename = new_database.display()
 
     if filename:
-        db.connect(filename=filename)
+        data.db.connect(filename=filename)
 
         widgets.window.update_title(filename)
 
         if widgets.window.grid.get_child_at(0, 2) is mainmenu:
             widgets.window.grid.remove(mainmenu)
 
-        db.load()
+        data.db.load()
 
         players.populate()
         clubs.populate()
@@ -351,8 +351,8 @@ def open_database(widget=None):
     filename = dialogs.open_dialog()
 
     if filename:
-        if db.connect(filename) is not False:
-            db.load()
+        if data.db.connect(filename) is not False:
+            data.db.load()
 
             players.populate()
             clubs.populate()
@@ -375,8 +375,7 @@ widgets.players_dialog = dialogs.AddPlayerDialog()
 clubs = clubs.Clubs()
 nations = nations.Nations()
 stadiums = stadiums.Stadiums()
-db = database.Database()
-data.db = db
+data.db = database.Database()
 new_database = dialogs.NewDatabase()
 widgets.window.run()
 
