@@ -62,10 +62,17 @@ class NewDatabase(Gtk.Dialog):
         self.spinbuttonSeason = Gtk.SpinButton.new_with_range(1950, 2049, 1)
         grid.attach(self.spinbuttonSeason, 1, 0, 1, 1)
 
+        label = widgets.Label("Location")
+        grid.attach(label, 0, 1, 1, 1)
+        self.filechooserLocation = Gtk.FileChooserButton()
+        self.filechooserLocation.set_hexpand(True)
+        self.filechooserLocation.set_action(Gtk.FileChooserAction.SELECT_FOLDER)
+        grid.attach(self.filechooserLocation, 1, 1, 2, 1)
+
     def display(self):
         self.show_all()
 
-        filename = None
+        filepath = None
 
         if self.run() == Gtk.ResponseType.OK:
             season = self.spinbuttonSeason.get_value_as_int()
@@ -74,9 +81,19 @@ class NewDatabase(Gtk.Dialog):
             data.season = season
             filename = "osm%s%s.db" % (year, year1)
 
+            if self.filechooserLocation.get_current_folder() is not None:
+                folder = self.filechooserLocation.get_current_folder()
+                filepath = os.path.join(folder, filename)
+            else:
+                if self.filechooserLocation.get_filename() is not None:
+                    folder = self.filechooserLocation.get_filename()
+                    filepath = os.path.join(folder, filename)
+                else:
+                    filepath = filename
+
         self.hide()
 
-        return filename
+        return filepath
 
 
 class AddPlayerDialog(Gtk.Dialog):
