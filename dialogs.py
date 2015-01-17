@@ -78,7 +78,6 @@ class NewDatabase(Gtk.Dialog):
 
 
 class AddPlayerDialog(Gtk.Dialog):
-    playerid = None
     state = False
 
     def __init__(self):
@@ -94,11 +93,10 @@ class AddPlayerDialog(Gtk.Dialog):
         self.connect("response", self.response_handler)
         self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
 
-        action_area = self.get_action_area()
-
         self.buttonSave = widgets.Button()
         self.buttonSave.set_sensitive(False)
         self.buttonSave.connect("clicked", self.save_handler)
+        action_area = self.get_action_area()
         action_area.add(self.buttonSave)
 
         self.checkbuttonMulti = Gtk.CheckButton("Add Multiple Items")
@@ -400,100 +398,104 @@ class AddPlayerDialog(Gtk.Dialog):
         self.spinbuttonTraining.set_value(1)
 
 
-def add_club_dialog(clubid=None):
-    if clubid is None:
-        title = "Add Club"
-        button = "_Add"
-    else:
-        title = "Edit Club"
-        button = "_Edit"
-
-    dialog = Gtk.Dialog()
-    dialog.set_transient_for(widgets.window)
-    dialog.set_title(title)
-    dialog.set_border_width(5)
-    dialog.add_button("_Cancel", Gtk.ResponseType.CANCEL)
-    dialog.add_button(button, Gtk.ResponseType.OK)
-    dialog.set_default_response(Gtk.ResponseType.OK)
-
-    grid = Gtk.Grid()
-    grid.set_row_spacing(5)
-    grid.set_column_spacing(5)
-    dialog.vbox.add(grid)
-
-    liststore = Gtk.ListStore(str, str)
-    [liststore.append([str(stadiumid), stadium.name]) for stadiumid, stadium in data.stadiums.items()]
-
-    label = widgets.Label("Name")
-    grid.attach(label, 0, 0, 1, 1)
-    entryName = Gtk.Entry()
-    grid.attach(entryName, 1, 0, 1, 1)
-
-    label = widgets.Label("Nickname")
-    grid.attach(label, 0, 1, 1, 1)
-    entryNickname = Gtk.Entry()
-    grid.attach(entryNickname, 1, 1, 1, 1)
-
-    label = widgets.Label("Manager")
-    grid.attach(label, 0, 2, 1, 1)
-    entryManager = Gtk.Entry()
-    grid.attach(entryManager, 1, 2, 1, 1)
-
-    label = widgets.Label("Chairman")
-    grid.attach(label, 0, 3, 1, 1)
-    entryChairman = Gtk.Entry()
-    grid.attach(entryChairman, 1, 3, 1, 1)
-
-    label = widgets.Label("Stadium")
-    grid.attach(label, 0, 4, 1, 1)
-    comboboxStadium = Gtk.ComboBox()
-    comboboxStadium.set_id_column(0)
-    comboboxStadium.set_model(liststore)
-    cellrenderertext = Gtk.CellRendererText()
-    comboboxStadium.pack_start(cellrenderertext, True)
-    comboboxStadium.add_attribute(cellrenderertext, "text", 1)
-    grid.attach(comboboxStadium, 1, 4, 1, 1)
-
-    label = widgets.Label("Reputation")
-    grid.attach(label, 0, 5, 1, 1)
-    spinbuttonReputation = Gtk.SpinButton.new_with_range(1, 20, 1)
-    grid.attach(spinbuttonReputation, 1, 5, 1, 1)
-
-    if clubid is not None:
-        club = data.clubs[clubid]
-
-        entryName.set_text(club.name)
-        entryNickname.set_text(club.nickname)
-        entryManager.set_text(club.manager)
-        entryChairman.set_text(club.chairman)
-        comboboxStadium.set_active_id(str(club.stadium))
-        spinbuttonReputation.set_value(club.reputation)
-
-    dialog.show_all()
-
+class AddClubDialog(Gtk.Dialog):
     state = False
 
-    if dialog.run() == Gtk.ResponseType.OK:
-        if clubid is not None:
-            club = data.clubs[clubid]
+    def __init__(self):
+        Gtk.Dialog.__init__(self)
+        self.set_transient_for(widgets.window)
+        self.set_border_width(5)
+        self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
+        self.connect("response", self.response_handler)
+
+        self.buttonSave = widgets.Button()
+        self.buttonSave.set_sensitive(False)
+        self.buttonSave.connect("clicked", self.save_handler)
+        action_area = self.get_action_area()
+        action_area.add(self.buttonSave)
+
+        grid = Gtk.Grid()
+        grid.set_row_spacing(5)
+        grid.set_column_spacing(5)
+        self.vbox.add(grid)
+
+        self.liststore = Gtk.ListStore(str, str)
+
+        label = widgets.Label("Name")
+        grid.attach(label, 0, 0, 1, 1)
+        self.entryName = Gtk.Entry()
+        grid.attach(self.entryName, 1, 0, 1, 1)
+
+        label = widgets.Label("Nickname")
+        grid.attach(label, 0, 1, 1, 1)
+        self.entryNickname = Gtk.Entry()
+        grid.attach(self.entryNickname, 1, 1, 1, 1)
+
+        label = widgets.Label("Manager")
+        grid.attach(label, 0, 2, 1, 1)
+        self.entryManager = Gtk.Entry()
+        grid.attach(self.entryManager, 1, 2, 1, 1)
+
+        label = widgets.Label("Chairman")
+        grid.attach(label, 0, 3, 1, 1)
+        self.entryChairman = Gtk.Entry()
+        grid.attach(self.entryChairman, 1, 3, 1, 1)
+
+        label = widgets.Label("Stadium")
+        grid.attach(label, 0, 4, 1, 1)
+        self.comboboxStadium = Gtk.ComboBox()
+        self.comboboxStadium.set_model(self.liststore)
+        self.comboboxStadium.set_id_column(0)
+        cellrenderertext = Gtk.CellRendererText()
+        self.comboboxStadium.pack_start(cellrenderertext, True)
+        self.comboboxStadium.add_attribute(cellrenderertext, "text", 1)
+        grid.attach(self.comboboxStadium, 1, 4, 1, 1)
+
+        label = widgets.Label("Reputation")
+        grid.attach(label, 0, 5, 1, 1)
+        self.spinbuttonReputation = Gtk.SpinButton.new_with_range(1, 20, 1)
+        grid.attach(self.spinbuttonReputation, 1, 5, 1, 1)
+
+    def display(self, clubid=None):
+        for stadiumid, stadium in data.stadiums.items():
+            self.liststore.append([str(stadiumid), stadium.name])
+
+        if clubid is None:
+            self.set_title("Add Club")
+            self.buttonSave.set_label("_Add")
         else:
-            data.idnumbers.clubid += 1
+            self.set_title("Edit Club")
+            self.buttonSave.set_label("_Edit")
 
-            club = Club()
-            data.clubs[data.idnumbers.clubid] = club
+            club = data.clubs[clubid]
 
-        club.name = entryName.get_text()
-        club.nickname = entryNickname.get_text()
-        club.manager = entryManager.get_text()
-        club.chairman = entryChairman.get_text()
-        club.stadium = int(comboboxStadium.get_active_id())
-        club.reputation = spinbuttonReputation.get_value_as_int()
+            self.entryName.set_text(club.name)
+            self.entryNickname.set_text(club.nickname)
+            self.entryManager.set_text(club.manager)
+            self.entryChairman.set_text(club.chairman)
+            self.comboboxStadium.set_active_id(str(club.stadium))
+            self.spinbuttonReputation.set_value(club.reputation)
 
-        state = True
+            self.buttonSave.set_sensitive(True)
 
-    dialog.destroy()
+        self.show_all()
+        self.run()
 
-    return state
+    def save_handler(self, button):
+        pass
+
+    def response_handler(self, dialog, response):
+        self.clear_fields()
+
+        self.hide()
+
+    def clear_fields(self):
+        self.entryName.set_text("")
+        self.entryNickname.set_text("")
+        self.entryManager.set_text("")
+        self.entryChairman.set_text("")
+        self.comboboxStadium.set_active(0)
+        self.spinbuttonReputation.set_value(1)
 
 
 def add_nation_dialog(nationid=None):

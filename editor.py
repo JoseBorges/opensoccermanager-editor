@@ -13,7 +13,6 @@ import widgets
 
 
 class Window(Gtk.Window):
-    grid = None
     menuView = None
     menuitemSave = None
     menuitemSaveAs = None
@@ -161,9 +160,9 @@ class Window(Gtk.Window):
             if widgets.players_dialog.state:
                 players.populate()
         elif page == 1:
-            state = dialogs.add_club_dialog()
+            widgets.clubs_dialog.display()
 
-            if state:
+            if widgets.clubs_dialog.state:
                 clubs.populate()
         elif page == 2:
             state = dialogs.add_nation_dialog()
@@ -185,9 +184,9 @@ class Window(Gtk.Window):
             if widgets.players_dialog.state:
                 players.populate()
         elif page == 1:
-            state = dialogs.add_club_dialog(clubs.selected)
+            widgets.clubs_dialog.display(clubid=clubs.selected)
 
-            if state:
+            if widgets.clubs_dialog.state:
                 clubs.populate()
         elif page == 2:
             state = dialogs.add_nation_dialog(nations.selected)
@@ -372,6 +371,7 @@ mainmenu = MainMenu()
 maineditor = MainEditor()
 players = players.Players()
 widgets.players_dialog = dialogs.AddPlayerDialog()
+widgets.clubs_dialog = dialogs.AddClubDialog()
 clubs = clubs.Clubs()
 nations = nations.Nations()
 stadiums = stadiums.Stadiums()

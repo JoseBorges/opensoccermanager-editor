@@ -83,4 +83,6 @@ class Clubs(Gtk.Grid):
                                    club.reputation])
 
     def run(self):
+        self.selection_changed(self.treeselection)
+
         self.show_all()
