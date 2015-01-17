@@ -33,6 +33,8 @@ def about():
     aboutdialog.set_transient_for(widgets.window)
     aboutdialog.set_program_name("Editor")
     aboutdialog.set_comments("Data editor for OpenSoccerManager")
+    aboutdialog.set_website("http://opensoccermanager.org/")
+    aboutdialog.set_website_label("Website")
     aboutdialog.set_license_type(Gtk.License.GPL_3_0)
     aboutdialog.set_logo(icon)
 
