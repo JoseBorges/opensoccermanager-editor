@@ -52,9 +52,9 @@ class Clubs(Gtk.Grid):
         model = treeview.get_model()
         clubid = model[path][0]
 
-        state = dialogs.add_club_dialog(clubid)
+        widgets.clubs_dialog.display(clubid)
 
-        if state:
+        if widgets.clubs_dialog.state:
             self.populate()
 
     def selection_changed(self, treeselection):

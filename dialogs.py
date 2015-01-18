@@ -269,6 +269,8 @@ class AddPlayerDialog(Gtk.Dialog):
         dialog.destroy()
 
     def response_handler(self, dialog, response):
+        self.clear_fields()
+
         self.hide()
 
     def save_handler(self, button):
@@ -351,8 +353,6 @@ class AddPlayerDialog(Gtk.Dialog):
             self.buttonSave.set_label("_Add")
 
             self.current = None
-
-            self.clear_fields()
         else:
             self.set_title("Edit Player")
             self.buttonSave.set_label("_Edit")
@@ -361,7 +361,6 @@ class AddPlayerDialog(Gtk.Dialog):
             self.generator = playerid.__iter__()
             self.current = self.generator.__next__()
 
-            self.clear_fields()
             self.load_fields(playerid=self.current)
 
         self.run()
@@ -482,38 +481,65 @@ class AddClubDialog(Gtk.Dialog):
         if clubid is None:
             self.set_title("Add Club")
             self.buttonSave.set_label("_Add")
+
+            self.current = None
         else:
             self.set_title("Edit Club")
             self.buttonSave.set_label("_Edit")
-
-            club = data.clubs[clubid]
-
-            self.entryName.set_text(club.name)
-            self.entryNickname.set_text(club.nickname)
-            self.entryManager.set_text(club.manager)
-            self.entryChairman.set_text(club.chairman)
-            self.comboboxStadium.set_active_id(str(club.stadium))
-            self.spinbuttonReputation.set_value(club.reputation)
-
             self.buttonSave.set_sensitive(True)
+
+            self.load_fields(clubid)
+
+            self.current = clubid
 
         self.show_all()
         self.run()
 
     def save_handler(self, button):
-        pass
+        self.save_data(clubid=self.current)
+        self.clear_fields()
+
+        self.state = True
+
+        self.hide()
+
+    def save_data(self, clubid):
+        if clubid is None:
+            data.idnumbers.clubid += 1
+
+            club = Club()
+            data.clubs[data.idnumbers.clubid] = club
+        else:
+            club = data.clubs[clubid]
+
+        club.name = self.entryName.get_text()
+        club.nickname = self.entryNickname.get_text()
+        club.manager = self.entryManager.get_text()
+        club.chairman = self.entryChairman.get_text()
+        club.stadium = int(self.comboboxStadium.get_active_id())
+        club.reputation = self.spinbuttonReputation.get_value_as_int()
 
     def response_handler(self, dialog, response):
         self.clear_fields()
 
         self.hide()
 
+    def load_fields(self, clubid):
+        club = data.clubs[clubid]
+
+        self.entryName.set_text(club.name)
+        self.entryNickname.set_text(club.nickname)
+        self.entryManager.set_text(club.manager)
+        self.entryChairman.set_text(club.chairman)
+        self.comboboxStadium.set_active_id(str(club.stadium))
+        self.spinbuttonReputation.set_value(club.reputation)
+
     def clear_fields(self):
         self.entryName.set_text("")
         self.entryNickname.set_text("")
         self.entryManager.set_text("")
         self.entryChairman.set_text("")
-        self.comboboxStadium.set_active(0)
+        self.comboboxStadium.set_active(-1)
         self.spinbuttonReputation.set_value(1)
 
 

@@ -71,6 +71,7 @@ class Players(Gtk.Grid):
         model = treeview.get_model()
         playerid = model[path][0]
 
+        playerid = [playerid]
         widgets.players_dialog.display(playerid)
 
         if widgets.players_dialog.state:
