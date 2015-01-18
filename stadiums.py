@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from gi.repository import Gtk
+from gi.repository import Gdk
 
 import data
 import dialogs
@@ -28,6 +29,7 @@ class Stadiums(Gtk.Grid):
         treeview.set_hexpand(True)
         treeview.set_vexpand(True)
         treeview.set_model(treemodelsort)
+        treeview.connect("key-press-event", self.row_delete)
         treeview.connect("row-activated", self.row_activated)
         self.treeselection = treeview.get_selection()
         self.treeselection.connect("changed", self.selection_changed)
@@ -64,6 +66,13 @@ class Stadiums(Gtk.Grid):
 
         if state:
             self.populate()
+
+    def row_delete(self, treeview, event):
+        key = Gdk.keyval_name(event.keyval)
+
+        if key == "Delete":
+            if dialogs.remove_dialog(3):
+                self.populate()
 
     def selection_changed(self, treeselection):
         model, treeiter = treeselection.get_selected()
