@@ -442,6 +442,7 @@ class AddClubDialog(Gtk.Dialog):
         Gtk.Dialog.__init__(self)
         self.set_transient_for(widgets.window)
         self.set_border_width(5)
+        self.set_resizable(False)
         self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
         self.connect("response", self.response_handler)
 
@@ -452,61 +453,96 @@ class AddClubDialog(Gtk.Dialog):
         action_area.add(self.buttonSave)
 
         grid = Gtk.Grid()
-        grid.set_row_spacing(5)
         grid.set_column_spacing(5)
         self.vbox.add(grid)
 
+        grid1 = Gtk.Grid()
+        grid1.set_row_spacing(5)
+        grid1.set_column_spacing(5)
+        grid.attach(grid1, 0, 0, 1, 1)
+
         label = widgets.Label("_Name")
-        grid.attach(label, 0, 0, 1, 1)
+        grid1.attach(label, 0, 0, 1, 1)
         self.entryName = Gtk.Entry()
         label.set_mnemonic_widget(self.entryName)
-        grid.attach(self.entryName, 1, 0, 1, 1)
+        grid1.attach(self.entryName, 1, 0, 2, 1)
 
         label = widgets.Label("_Nickname")
-        grid.attach(label, 0, 1, 1, 1)
+        grid1.attach(label, 0, 1, 1, 1)
         self.entryNickname = Gtk.Entry()
         label.set_mnemonic_widget(self.entryNickname)
-        grid.attach(self.entryNickname, 1, 1, 1, 1)
+        grid1.attach(self.entryNickname, 1, 1, 2, 1)
 
         label = widgets.Label("_Manager")
-        grid.attach(label, 0, 2, 1, 1)
+        grid1.attach(label, 0, 2, 1, 1)
         self.entryManager = Gtk.Entry()
         label.set_mnemonic_widget(self.entryManager)
-        grid.attach(self.entryManager, 1, 2, 1, 1)
+        grid1.attach(self.entryManager, 1, 2, 2, 1)
 
         label = widgets.Label("_Chairman")
-        grid.attach(label, 0, 3, 1, 1)
+        grid1.attach(label, 0, 3, 1, 1)
         self.entryChairman = Gtk.Entry()
         label.set_mnemonic_widget(self.entryChairman)
-        grid.attach(self.entryChairman, 1, 3, 1, 1)
-
-        self.liststore = Gtk.ListStore(str, str)
+        grid1.attach(self.entryChairman, 1, 3, 2, 1)
 
         cellrenderertext = Gtk.CellRendererText()
 
+        self.liststoreStadiums = Gtk.ListStore(str, str)
+
         label = widgets.Label("_Stadium")
-        grid.attach(label, 0, 4, 1, 1)
+        grid1.attach(label, 0, 4, 1, 1)
         self.comboboxStadium = Gtk.ComboBox()
-        self.comboboxStadium.set_model(self.liststore)
+        self.comboboxStadium.set_model(self.liststoreStadiums)
         self.comboboxStadium.set_id_column(0)
         self.comboboxStadium.pack_start(cellrenderertext, True)
         self.comboboxStadium.add_attribute(cellrenderertext, "text", 1)
         label.set_mnemonic_widget(self.comboboxStadium)
-        grid.attach(self.comboboxStadium, 1, 4, 1, 1)
+        grid1.attach(self.comboboxStadium, 1, 4, 2, 1)
 
         label = widgets.Label("_Reputation")
-        grid.attach(label, 0, 5, 1, 1)
+        grid1.attach(label, 0, 5, 1, 1)
         self.spinbuttonReputation = Gtk.SpinButton.new_with_range(1, 20, 1)
         label.set_mnemonic_widget(self.spinbuttonReputation)
-        grid.attach(self.spinbuttonReputation, 1, 5, 1, 1)
+        grid1.attach(self.spinbuttonReputation, 1, 5, 1, 1)
+
+        self.gridSquad = Gtk.Grid()
+        self.gridSquad.set_row_spacing(5)
+        self.gridSquad.set_column_spacing(5)
+        grid.attach(self.gridSquad, 1, 0, 1, 1)
+
+        frame = widgets.CommonFrame("Squad")
+        self.gridSquad.attach(frame, 0, 0, 1, 1)
+
+        scrolledwindow = Gtk.ScrolledWindow()
+        scrolledwindow.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        frame.insert(scrolledwindow)
+
+        self.liststorePlayers = Gtk.ListStore(str)
+        treemodelsort = Gtk.TreeModelSort(self.liststorePlayers)
+        treemodelsort.set_sort_column_id(0, Gtk.SortType.ASCENDING)
+
+        treeview = Gtk.TreeView()
+        treeview.set_vexpand(True)
+        treeview.set_hexpand(True)
+        treeview.set_model(treemodelsort)
+        treeview.set_headers_visible(False)
+        treeviewcolumn = Gtk.TreeViewColumn("", cellrenderertext, text=0)
+        treeview.append_column(treeviewcolumn)
+        scrolledwindow.add(treeview)
 
     def display(self, clubid=None):
+        self.show_all()
+
+        self.liststoreStadiums.clear()
+        self.liststorePlayers.clear()
+
         for stadiumid, stadium in data.stadiums.items():
-            self.liststore.append([str(stadiumid), stadium.name])
+            self.liststoreStadiums.append([str(stadiumid), stadium.name])
 
         if clubid is None:
             self.set_title("Add Club")
             self.buttonSave.set_label("_Add")
+            self.gridSquad.hide()
 
             self.current = None
         else:
@@ -516,9 +552,17 @@ class AddClubDialog(Gtk.Dialog):
 
             self.load_fields(clubid)
 
+            for playerid, player in data.players.items():
+                if player.club == clubid:
+                    if player.common_name != "":
+                        name = player.common_name
+                    else:
+                        name = "%s, %s" % (player.second_name, player.first_name)
+
+                    self.liststorePlayers.append([name])
+
             self.current = clubid
 
-        self.show_all()
         self.run()
 
     def save_handler(self, button):
