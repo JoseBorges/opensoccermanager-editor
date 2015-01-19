@@ -15,6 +15,7 @@ class Label(Gtk.Label):
         Gtk.Label.__init__(self)
         self.set_label(label)
         self.set_alignment(0, 0.5)
+        self.set_use_underline(True)
 
 
 class Button(Gtk.Button):

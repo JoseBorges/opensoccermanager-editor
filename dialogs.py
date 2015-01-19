@@ -57,16 +57,18 @@ class NewDatabase(Gtk.Dialog):
         grid.set_column_spacing(5)
         self.vbox.add(grid)
 
-        label = widgets.Label("Season")
+        label = widgets.Label("_Season")
         grid.attach(label, 0, 0, 1, 1)
         self.spinbuttonSeason = Gtk.SpinButton.new_with_range(1950, 2049, 1)
+        label.set_mnemonic_widget(self.spinbuttonSeason)
         grid.attach(self.spinbuttonSeason, 1, 0, 1, 1)
 
-        label = widgets.Label("Location")
+        label = widgets.Label("_Location")
         grid.attach(label, 0, 1, 1, 1)
         self.filechooserLocation = Gtk.FileChooserButton()
         self.filechooserLocation.set_hexpand(True)
         self.filechooserLocation.set_action(Gtk.FileChooserAction.SELECT_FOLDER)
+        label.set_mnemonic_widget(self.filechooserLocation)
         grid.attach(self.filechooserLocation, 1, 1, 2, 1)
 
     def display(self):
@@ -134,23 +136,27 @@ class AddPlayerDialog(Gtk.Dialog):
         grid.set_column_spacing(5)
         self.vbox.add(grid)
 
-        label = widgets.Label("First Name")
+        label = widgets.Label("_First Name")
         grid.attach(label, 0, 0, 1, 1)
         self.entryFirstName = Gtk.Entry()
+        label.set_mnemonic_widget(self.entryFirstName)
         grid.attach(self.entryFirstName, 1, 0, 2, 1)
-        label = widgets.Label("Second Name")
+        label = widgets.Label("_Second Name")
         grid.attach(label, 0, 1, 1, 1)
         self.entrySecondName = Gtk.Entry()
+        label.set_mnemonic_widget(self.entrySecondName)
         grid.attach(self.entrySecondName, 1, 1, 2, 1)
-        label = widgets.Label("Common Name")
+        label = widgets.Label("_Common Name")
         grid.attach(label, 0, 2, 1, 1)
         self.entryCommonName = Gtk.Entry()
+        label.set_mnemonic_widget(self.entryCommonName)
         grid.attach(self.entryCommonName, 1, 2, 2, 1)
 
-        label = widgets.Label("Date Of Birth")
+        label = widgets.Label("_Date Of Birth")
         grid.attach(label, 0, 3, 1, 1)
         self.buttonDateOfBirth = widgets.Button()
         self.buttonDateOfBirth.connect("clicked", self.date_of_birth)
+        label.set_mnemonic_widget(self.buttonDateOfBirth)
         grid.attach(self.buttonDateOfBirth, 1, 3, 1, 1)
 
         self.calendar = Gtk.Calendar()
@@ -158,7 +164,7 @@ class AddPlayerDialog(Gtk.Dialog):
 
         cellrenderertext = Gtk.CellRendererText()
 
-        label = widgets.Label("Club")
+        label = widgets.Label("_Club")
         grid.attach(label, 0, 4, 1, 1)
         self.comboboxClub = Gtk.ComboBox()
         self.comboboxClub.set_model(treemodelsortClub)
@@ -166,9 +172,10 @@ class AddPlayerDialog(Gtk.Dialog):
         self.comboboxClub.pack_start(cellrenderertext, True)
         self.comboboxClub.add_attribute(cellrenderertext, "text", 1)
         self.comboboxClub.connect("changed", club_nation_changed)
+        label.set_mnemonic_widget(self.comboboxClub)
         grid.attach(self.comboboxClub, 1, 4, 1, 1)
 
-        label = widgets.Label("Nationality")
+        label = widgets.Label("_Nationality")
         grid.attach(label, 0, 5, 1, 1)
         self.comboboxNationality = Gtk.ComboBox()
         self.comboboxNationality.set_model(treemodelsortNationality)
@@ -176,11 +183,13 @@ class AddPlayerDialog(Gtk.Dialog):
         self.comboboxNationality.pack_start(cellrenderertext, True)
         self.comboboxNationality.add_attribute(cellrenderertext, "text", 1)
         self.comboboxNationality.connect("changed", club_nation_changed)
+        label.set_mnemonic_widget(self.comboboxNationality)
         grid.attach(self.comboboxNationality, 1, 5, 1, 1)
 
-        label = widgets.Label("Position")
+        label = widgets.Label("_Position")
         grid.attach(label, 0, 6, 1, 1)
         self.comboboxPosition = Gtk.ComboBoxText()
+        label.set_mnemonic_widget(self.comboboxPosition)
         grid.attach(self.comboboxPosition, 1, 6, 1, 1)
 
         for position in ("GK", "DL", "DR", "DC", "D", "ML", "MR", "MC", "M", "AS", "AF"):
@@ -191,54 +200,64 @@ class AddPlayerDialog(Gtk.Dialog):
         grid1.set_column_spacing(5)
         grid.attach(grid1, 0, 7, 6, 1)
 
-        label = widgets.Label("Keeping")
+        label = widgets.Label("_Keeping")
         grid1.attach(label, 0, 0, 1, 1)
         self.spinbuttonKP = Gtk.SpinButton.new_with_range(1, 99, 1)
+        label.set_mnemonic_widget(self.spinbuttonKP)
         grid1.attach(self.spinbuttonKP, 1, 0, 1, 1)
 
-        label = widgets.Label("Tackling")
+        label = widgets.Label("_Tackling")
         grid1.attach(label, 0, 1, 1, 1)
         self.spinbuttonTK = Gtk.SpinButton.new_with_range(1, 99, 1)
+        label.set_mnemonic_widget(self.spinbuttonTK)
         grid1.attach(self.spinbuttonTK, 1, 1, 1, 1)
 
-        label = widgets.Label("Passing")
+        label = widgets.Label("_Passing")
         grid1.attach(label, 0, 2, 1, 1)
         self.spinbuttonPS = Gtk.SpinButton.new_with_range(1, 99, 1)
+        label.set_mnemonic_widget(self.spinbuttonPS)
         grid1.attach(self.spinbuttonPS, 1, 2, 1, 1)
 
-        label = widgets.Label("Shooting")
+        label = widgets.Label("_Shooting")
         grid1.attach(label, 2, 0, 1, 1)
         self.spinbuttonSH = Gtk.SpinButton.new_with_range(1, 99, 1)
+        label.set_mnemonic_widget(self.spinbuttonSH)
         grid1.attach(self.spinbuttonSH, 3, 0, 1, 1)
 
-        label = widgets.Label("Heading")
+        label = widgets.Label("_Heading")
         grid1.attach(label, 2, 1, 1, 1)
         self.spinbuttonHD = Gtk.SpinButton.new_with_range(1, 99, 1)
+        label.set_mnemonic_widget(self.spinbuttonHD)
         grid1.attach(self.spinbuttonHD, 3, 1, 1, 1)
 
-        label = widgets.Label("Pace")
+        label = widgets.Label("_Pace")
         grid1.attach(label, 2, 2, 1, 1)
         self.spinbuttonPC = Gtk.SpinButton.new_with_range(1, 99, 1)
+        label.set_mnemonic_widget(self.spinbuttonPC)
         grid1.attach(self.spinbuttonPC, 3, 2, 1, 1)
 
-        label = widgets.Label("Stamina")
+        label = widgets.Label("_Stamina")
         grid1.attach(label, 4, 0, 1, 1)
         self.spinbuttonST = Gtk.SpinButton.new_with_range(1, 99, 1)
+        label.set_mnemonic_widget(self.spinbuttonST)
         grid1.attach(self.spinbuttonST, 5, 0, 1, 1)
 
-        label = widgets.Label("Ball Control")
+        label = widgets.Label("_Ball Control")
         grid1.attach(label, 4, 1, 1, 1)
         self.spinbuttonBC = Gtk.SpinButton.new_with_range(1, 99, 1)
+        label.set_mnemonic_widget(self.spinbuttonBC)
         grid1.attach(self.spinbuttonBC, 5, 1, 1, 1)
 
-        label = widgets.Label("Set Pieces")
+        label = widgets.Label("_Set Pieces")
         grid1.attach(label, 4, 2, 1, 1)
         self.spinbuttonSP = Gtk.SpinButton.new_with_range(1, 99, 1)
+        label.set_mnemonic_widget(self.spinbuttonSP)
         grid1.attach(self.spinbuttonSP, 5, 2, 1, 1)
 
-        label = widgets.Label("Training Value")
+        label = widgets.Label("Training _Value")
         grid.attach(label, 0, 8, 1, 1)
         self.spinbuttonTraining = Gtk.SpinButton.new_with_range(1, 10, 1)
+        label.set_mnemonic_widget(self.spinbuttonTraining)
         grid.attach(self.spinbuttonTraining, 1, 8, 1, 1)
 
     def date_of_birth(self, button):
@@ -437,41 +456,48 @@ class AddClubDialog(Gtk.Dialog):
         grid.set_column_spacing(5)
         self.vbox.add(grid)
 
-        self.liststore = Gtk.ListStore(str, str)
-
-        label = widgets.Label("Name")
+        label = widgets.Label("_Name")
         grid.attach(label, 0, 0, 1, 1)
         self.entryName = Gtk.Entry()
+        label.set_mnemonic_widget(self.entryName)
         grid.attach(self.entryName, 1, 0, 1, 1)
 
-        label = widgets.Label("Nickname")
+        label = widgets.Label("_Nickname")
         grid.attach(label, 0, 1, 1, 1)
         self.entryNickname = Gtk.Entry()
+        label.set_mnemonic_widget(self.entryNickname)
         grid.attach(self.entryNickname, 1, 1, 1, 1)
 
-        label = widgets.Label("Manager")
+        label = widgets.Label("_Manager")
         grid.attach(label, 0, 2, 1, 1)
         self.entryManager = Gtk.Entry()
+        label.set_mnemonic_widget(self.entryManager)
         grid.attach(self.entryManager, 1, 2, 1, 1)
 
-        label = widgets.Label("Chairman")
+        label = widgets.Label("_Chairman")
         grid.attach(label, 0, 3, 1, 1)
         self.entryChairman = Gtk.Entry()
+        label.set_mnemonic_widget(self.entryChairman)
         grid.attach(self.entryChairman, 1, 3, 1, 1)
 
-        label = widgets.Label("Stadium")
+        self.liststore = Gtk.ListStore(str, str)
+
+        cellrenderertext = Gtk.CellRendererText()
+
+        label = widgets.Label("_Stadium")
         grid.attach(label, 0, 4, 1, 1)
         self.comboboxStadium = Gtk.ComboBox()
         self.comboboxStadium.set_model(self.liststore)
         self.comboboxStadium.set_id_column(0)
-        cellrenderertext = Gtk.CellRendererText()
         self.comboboxStadium.pack_start(cellrenderertext, True)
         self.comboboxStadium.add_attribute(cellrenderertext, "text", 1)
+        label.set_mnemonic_widget(self.comboboxStadium)
         grid.attach(self.comboboxStadium, 1, 4, 1, 1)
 
-        label = widgets.Label("Reputation")
+        label = widgets.Label("_Reputation")
         grid.attach(label, 0, 5, 1, 1)
         self.spinbuttonReputation = Gtk.SpinButton.new_with_range(1, 20, 1)
+        label.set_mnemonic_widget(self.spinbuttonReputation)
         grid.attach(self.spinbuttonReputation, 1, 5, 1, 1)
 
     def display(self, clubid=None):
@@ -563,14 +589,16 @@ class AddNationDialog(Gtk.Dialog):
         grid.set_column_spacing(5)
         self.vbox.add(grid)
 
-        label = widgets.Label("Name")
+        label = widgets.Label("_Name")
         grid.attach(label, 0, 0, 1, 1)
         self.entryName = Gtk.Entry()
+        label.set_mnemonic_widget(self.entryName)
         grid.attach(self.entryName, 1, 0, 1, 1)
 
-        label = widgets.Label("Denonym")
+        label = widgets.Label("_Denonym")
         grid.attach(label, 0, 1, 1, 1)
         self.entryDenonym = Gtk.Entry()
+        label.set_mnemonic_widget(self.entryDenonym)
         grid.attach(self.entryDenonym, 1, 1, 1, 1)
 
     def save_handler(self, button):
@@ -794,7 +822,7 @@ def error(errorid):
     messagedialog.set_transient_for(widgets.window)
     messagedialog.set_title("Error")
     messagedialog.add_button("_Close", Gtk.ResponseType.CLOSE)
-    messagedialog.set_markup("Foreign key error")
+    messagedialog.set_markup("<span size='12000'><b>Foreign key error</b></span>")
     messagedialog.format_secondary_text(errors[errorid])
 
     messagedialog.run()

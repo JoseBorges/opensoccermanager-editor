@@ -263,7 +263,7 @@ class Window(Gtk.Window):
             elif page == 3:
                 keys = [club.stadium for clubid, club in data.clubs.items()]
 
-                if stadium.selected in keys:
+                if stadiums.selected in keys:
                     dialogs.error(2)
                 else:
                     del(data.stadiums[stadiums.selected])
@@ -359,10 +359,10 @@ class MainEditor(Gtk.Notebook):
 
     def add_tabs(self):
         widgets.window.grid.attach(self, 0, 2, 1, 1)
-        self.append_page(players, Gtk.Label("Players"))
-        self.append_page(clubs, Gtk.Label("Clubs"))
-        self.append_page(nations, Gtk.Label("Nations"))
-        self.append_page(stadiums, Gtk.Label("Stadiums"))
+        self.append_page(players, widgets.Label("_Players"))
+        self.append_page(clubs, widgets.Label("_Clubs"))
+        self.append_page(nations, widgets.Label("_Nations"))
+        self.append_page(stadiums, widgets.Label("_Stadiums"))
 
 
 def new_database(widget=None):
