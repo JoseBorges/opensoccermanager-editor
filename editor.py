@@ -13,6 +13,7 @@ import widgets
 
 
 class Window(Gtk.Window):
+    menuEdit = None
     menuView = None
     menuitemSave = None
     menuitemSaveAs = None
@@ -79,6 +80,29 @@ class Window(Gtk.Window):
         key, mod = Gtk.accelerator_parse("<CONTROL>Q")
         menuitem.add_accelerator("activate", accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
         menuitem.connect("activate", self.close_application)
+        menu.append(menuitem)
+
+        self.menuEdit = widgets.MenuItem("_Edit")
+        self.menuEdit.set_sensitive(False)
+        menubar.append(self.menuEdit)
+
+        menu = Gtk.Menu()
+        self.menuEdit.set_submenu(menu)
+
+        menuitem = widgets.MenuItem("_Add Item")
+        key, mod = Gtk.accelerator_parse("<CONTROL>A")
+        menuitem.add_accelerator("activate", accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
+        menuitem.connect("activate", self.add_data)
+        menu.append(menuitem)
+        menuitem = widgets.MenuItem("_Edit Item")
+        key, mod = Gtk.accelerator_parse("<CONTROL>E")
+        menuitem.add_accelerator("activate", accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
+        menuitem.connect("activate", self.edit_data)
+        menu.append(menuitem)
+        menuitem = widgets.MenuItem("_Remove Item")
+        key, mod = Gtk.accelerator_parse("<CONTROL>R")
+        menuitem.add_accelerator("activate", accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
+        menuitem.connect("activate", self.remove_data)
         menu.append(menuitem)
 
         self.menuView = widgets.MenuItem("_View")
@@ -305,6 +329,7 @@ class MainEditor(Gtk.Notebook):
         self.set_border_width(5)
 
     def run(self):
+        widgets.window.menuEdit.set_sensitive(True)
         widgets.window.menuView.set_sensitive(True)
         widgets.window.menuitemSave.set_sensitive(True)
         widgets.window.menuitemSaveAs.set_sensitive(True)
@@ -375,9 +400,9 @@ def open_database(widget=None):
 widgets.window = Window()
 mainmenu = MainMenu()
 maineditor = MainEditor()
-players = players.Players()
 widgets.players_dialog = dialogs.AddPlayerDialog()
 widgets.clubs_dialog = dialogs.AddClubDialog()
+players = players.Players()
 clubs = clubs.Clubs()
 nations = nations.Nations()
 stadiums = stadiums.Stadiums()
