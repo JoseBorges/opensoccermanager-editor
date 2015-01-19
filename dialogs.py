@@ -787,6 +787,7 @@ def open_dialog():
 def error(errorid):
     errors = {0: "Unable to delete club as a player is still assigned to it.",
               1: "Unable to delete nation as a player is still assigned to it.",
+              2: "Unable to delete stadium as a club is still assigned to it.",
               }
 
     messagedialog = Gtk.MessageDialog(type=Gtk.MessageType.ERROR)

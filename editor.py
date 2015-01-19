@@ -256,13 +256,18 @@ class Window(Gtk.Window):
                 keys = [player.nationality for playerid, player in data.players.items()]
 
                 if nations.selected in keys:
-                    dialogs.error(0)
+                    dialogs.error(1)
                 else:
                     del(data.nations[nations.selected])
                     nations.populate()
             elif page == 3:
-                del(data.stadiums[stadiums.selected])
-                stadiums.populate()
+                keys = [club.stadium for clubid, club in data.clubs.items()]
+
+                if stadium.selected in keys:
+                    dialogs.error(2)
+                else:
+                    del(data.stadiums[stadiums.selected])
+                    stadiums.populate()
 
     def move_notebook_page(self, menuitem, direction):
         if direction == -1:

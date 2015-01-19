@@ -62,7 +62,7 @@ class Nations(Gtk.Grid):
                 keys = [player.nationality for playerid, player in data.players.items()]
 
                 if nationid in keys:
-                    dialogs.error(0)
+                    dialogs.error(1)
                 else:
                     del(data.nations[nationid])
 
