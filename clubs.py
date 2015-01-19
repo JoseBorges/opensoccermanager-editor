@@ -64,7 +64,17 @@ class Clubs(Gtk.Grid):
 
         if key == "Delete":
             if dialogs.remove_dialog(1):
-                self.populate()
+                model, treeiter = self.treeselection.get_selected()
+                clubid = model[treeiter][0]
+
+                keys = [player.club for playerid, player in data.players.items()]
+
+                if clubid in keys:
+                    dialogs.error(0)
+                else:
+                    del(data.clubs[clubid])
+
+                    self.populate()
 
     def selection_changed(self, treeselection):
         model, treeiter = treeselection.get_selected()

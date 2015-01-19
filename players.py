@@ -83,6 +83,12 @@ class Players(Gtk.Grid):
 
         if key == "Delete":
             if dialogs.remove_dialog(0):
+                model, treepath = self.treeselection.get_selected_rows()
+
+                for item in treepath:
+                    playerid = model[item][0]
+                    del(data.players[playerid])
+
                 self.populate()
 
     def selection_changed(self, treeselection):

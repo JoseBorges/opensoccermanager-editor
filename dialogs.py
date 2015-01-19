@@ -329,7 +329,7 @@ class AddPlayerDialog(Gtk.Dialog):
         player.set_pieces = self.spinbuttonSP.get_value_as_int()
         player.training_value = self.spinbuttonTraining.get_value_as_int()
 
-    def display(self, playerid):
+    def display(self, playerid=None):
         self.state = False
 
         year = int(data.season) - 18
@@ -543,64 +543,86 @@ class AddClubDialog(Gtk.Dialog):
         self.spinbuttonReputation.set_value(1)
 
 
-def add_nation_dialog(nationid=None):
-    if nationid is None:
-        title = "Add Nation"
-        button = "_Add"
-    else:
-        title = "Edit Nation"
-        button = "_Edit"
-
-    dialog = Gtk.Dialog()
-    dialog.set_transient_for(widgets.window)
-    dialog.set_title(title)
-    dialog.set_border_width(5)
-    dialog.add_button("_Cancel", Gtk.ResponseType.CANCEL)
-    dialog.add_button(button, Gtk.ResponseType.OK)
-    dialog.set_default_response(Gtk.ResponseType.OK)
-
-    grid = Gtk.Grid()
-    grid.set_row_spacing(5)
-    grid.set_column_spacing(5)
-    dialog.vbox.add(grid)
-
-    label = widgets.Label("Name")
-    grid.attach(label, 0, 0, 1, 1)
-    entryName = Gtk.Entry()
-    grid.attach(entryName, 1, 0, 1, 1)
-
-    label = widgets.Label("Denonym")
-    grid.attach(label, 0, 1, 1, 1)
-    entryDenonym = Gtk.Entry()
-    grid.attach(entryDenonym, 1, 1, 1, 1)
-
-    if nationid is not None:
-        nation = data.nations[nationid]
-
-        entryName.set_text(nation.name)
-        entryDenonym.set_text(nation.denonym)
-
-    dialog.show_all()
-
+class AddNationDialog(Gtk.Dialog):
     state = False
 
-    if dialog.run() == Gtk.ResponseType.OK:
-        if nationid is not None:
-            nation = data.nations[nationid]
-        else:
+    def __init__(self):
+        Gtk.Dialog.__init__(self)
+        self.set_transient_for(widgets.window)
+        self.set_border_width(5)
+        self.connect("response", self.response_handler)
+        self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
+
+        self.buttonSave = widgets.Button()
+        self.buttonSave.connect("clicked", self.save_handler)
+        action_area = self.get_action_area()
+        action_area.add(self.buttonSave)
+
+        grid = Gtk.Grid()
+        grid.set_row_spacing(5)
+        grid.set_column_spacing(5)
+        self.vbox.add(grid)
+
+        label = widgets.Label("Name")
+        grid.attach(label, 0, 0, 1, 1)
+        self.entryName = Gtk.Entry()
+        grid.attach(self.entryName, 1, 0, 1, 1)
+
+        label = widgets.Label("Denonym")
+        grid.attach(label, 0, 1, 1, 1)
+        self.entryDenonym = Gtk.Entry()
+        grid.attach(self.entryDenonym, 1, 1, 1, 1)
+
+    def save_handler(self, button):
+        self.save_data(nationid=self.current)
+        self.clear_fields()
+
+        self.state = True
+
+        self.hide()
+
+    def save_data(self, nationid):
+        if nationid is None:
             data.idnumbers.nationid += 1
 
             nation = Nation()
             data.nations[data.idnumbers.nationid] = nation
+        else:
+            nation = data.nations[nationid]
 
-        nation.name = entryName.get_text()
-        nation.denonym = entryDenonym.get_text()
+        nation.name = self.entryName.get_text()
+        nation.denonym = self.entryDenonym.get_text()
 
-        state = True
+    def response_handler(self, dialog, response):
+        self.hide()
 
-    dialog.destroy()
+    def display(self, nationid=None):
+        if nationid is None:
+            self.set_title("Add Nation")
+            self.buttonSave.set_label("_Add")
 
-    return state
+            self.current = None
+        else:
+            self.set_title("Edit Nation")
+            self.buttonSave.set_label("_Edit")
+            self.buttonSave.set_sensitive(True)
+
+            self.load_fields(nationid)
+
+            self.current = nationid
+
+        self.show_all()
+        self.run()
+
+    def clear_fields(self):
+        self.entryName.set_text("")
+        self.entryDenonym.set_text("")
+
+    def load_fields(self, nationid):
+        nation = data.nations[nationid]
+
+        self.entryName.set_text(nation.name)
+        self.entryDenonym.set_text(nation.denonym)
 
 
 def add_stadium_dialog(stadiumid=None):

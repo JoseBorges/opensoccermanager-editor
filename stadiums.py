@@ -72,6 +72,10 @@ class Stadiums(Gtk.Grid):
 
         if key == "Delete":
             if dialogs.remove_dialog(3):
+                model, treeiter = self.treeselection.get_selected()
+                stadiumid = model[treeiter][0]
+                del(data.stadiums[stadiumid])
+
                 self.populate()
 
     def selection_changed(self, treeselection):

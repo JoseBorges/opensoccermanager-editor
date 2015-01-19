@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from gi.repository import Gtk
+import os
 
 import clubs
 import data
@@ -22,8 +23,11 @@ class Window(Gtk.Window):
     toolbar = None
 
     def __init__(self):
+        iconpath = os.path.join("resources", "logo.svg")
+
         Gtk.Window.__init__(self)
         self.set_title("Editor")
+        self.set_icon_from_file(iconpath)
         self.set_default_size(640, 480)
         self.maximize()
         self.connect("destroy", self.close_application)
@@ -185,7 +189,7 @@ class Window(Gtk.Window):
         page = maineditor.get_current_page()
 
         if page == 0:
-            widgets.players_dialog.display(playerid=None)
+            widgets.players_dialog.display()
 
             if widgets.players_dialog.state:
                 players.populate()
@@ -195,9 +199,9 @@ class Window(Gtk.Window):
             if widgets.clubs_dialog.state:
                 clubs.populate()
         elif page == 2:
-            state = dialogs.add_nation_dialog()
+            widgets.nations_dialog.display()
 
-            if state:
+            if widgets.nations_dialog.state:
                 nations.populate()
         elif page == 3:
             state = dialogs.add_stadium_dialog()
@@ -219,9 +223,9 @@ class Window(Gtk.Window):
             if widgets.clubs_dialog.state:
                 clubs.populate()
         elif page == 2:
-            state = dialogs.add_nation_dialog(nations.selected)
+            widgets.nations_dialog.display(nationid=nations.selected)
 
-            if state:
+            if widgets.nations_dialog.state:
                 nations.populate()
         elif page == 3:
             state = dialogs.add_stadium_dialog(stadiums.selected)
@@ -402,6 +406,7 @@ mainmenu = MainMenu()
 maineditor = MainEditor()
 widgets.players_dialog = dialogs.AddPlayerDialog()
 widgets.clubs_dialog = dialogs.AddClubDialog()
+widgets.nations_dialog = dialogs.AddNationDialog()
 players = players.Players()
 clubs = clubs.Clubs()
 nations = nations.Nations()

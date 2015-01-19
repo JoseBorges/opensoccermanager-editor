@@ -46,9 +46,9 @@ class Nations(Gtk.Grid):
         model = treeview.get_model()
         nationid = model[path][0]
 
-        state = dialogs.add_nation_dialog(nationid)
+        widgets.nations_dialog.display(nationid)
 
-        if state:
+        if widgets.nations_dialog.state:
             self.populate()
 
     def row_delete(self, treeview, event):
@@ -56,7 +56,17 @@ class Nations(Gtk.Grid):
 
         if key == "Delete":
             if dialogs.remove_dialog(2):
-                self.populate()
+                model, treeiter = self.treeselection.get_selected()
+                nationid = model[treeiter][0]
+
+                keys = [player.nationality for playerid, player in data.players.items()]
+
+                if nationid in keys:
+                    dialogs.error(0)
+                else:
+                    del(data.nations[nationid])
+
+                    self.populate()
 
     def selection_changed(self, treeselection):
         model, treeiter = treeselection.get_selected()
