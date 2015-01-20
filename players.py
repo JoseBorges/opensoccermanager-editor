@@ -69,6 +69,10 @@ class Players(Gtk.Grid):
         treeviewcolumn = Gtk.TreeViewColumn("Training", cellrenderertext, text=17)
         treeview.append_column(treeviewcolumn)
 
+        self.labelCount = Gtk.Label()
+        self.labelCount.set_alignment(1, 0.5)
+        self.attach(self.labelCount, 0, 1, 1, 1)
+
     def row_activated(self, treeview, path, column):
         model = treeview.get_model()
         playerid = model[path][0]
@@ -112,6 +116,8 @@ class Players(Gtk.Grid):
     def populate(self):
         self.liststore.clear()
 
+        count = 0
+
         for playerid, player in data.players.items():
             club = display.club(player)
             nationality = data.nations[player.nationality].name
@@ -134,6 +140,10 @@ class Players(Gtk.Grid):
                                    player.ball_control,
                                    player.set_pieces,
                                    player.training_value])
+
+            count += 1
+
+        self.labelCount.set_text("%i Players in Database" % (count))
 
     def run(self):
         self.selection_changed(self.treeselection)
