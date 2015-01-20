@@ -3,9 +3,12 @@
 from gi.repository import Gtk
 from gi.repository import GdkPixbuf
 import os
+import unicodedata
+import re
 
 import data
 import database
+import display
 import widgets
 
 
@@ -511,30 +514,53 @@ class AddClubDialog(Gtk.Dialog):
         grid.attach(self.gridSquad, 1, 0, 1, 1)
 
         frame = widgets.CommonFrame("Squad")
-        self.gridSquad.attach(frame, 0, 0, 1, 1)
+        self.gridSquad.attach(frame, 0, 0, 1, 4)
+
+        grid = Gtk.Grid()
+        grid.set_row_spacing(5)
+        grid.set_column_spacing(5)
+        frame.insert(grid)
 
         scrolledwindow = Gtk.ScrolledWindow()
         scrolledwindow.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-        frame.insert(scrolledwindow)
+        grid.attach(scrolledwindow, 0, 0, 1, 1)
 
-        self.liststorePlayers = Gtk.ListStore(str)
+        self.liststorePlayers = Gtk.ListStore(int, str)
         treemodelsort = Gtk.TreeModelSort(self.liststorePlayers)
-        treemodelsort.set_sort_column_id(0, Gtk.SortType.ASCENDING)
+        treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
 
         treeview = Gtk.TreeView()
         treeview.set_vexpand(True)
         treeview.set_hexpand(True)
         treeview.set_model(treemodelsort)
         treeview.set_headers_visible(False)
-        treeviewcolumn = Gtk.TreeViewColumn("", cellrenderertext, text=0)
+        treeviewcolumn = Gtk.TreeViewColumn("", cellrenderertext, text=1)
         treeview.append_column(treeviewcolumn)
+        self.treeselection = treeview.get_selection()
+        self.treeselection.connect("changed", self.selection_changed)
         scrolledwindow.add(treeview)
+
+        buttonbox = Gtk.ButtonBox()
+        buttonbox.set_spacing(5)
+        buttonbox.set_layout(Gtk.ButtonBoxStyle.START)
+        buttonbox.set_orientation(Gtk.Orientation.VERTICAL)
+        grid.attach(buttonbox, 1, 0, 1, 1)
+
+        buttonAdd = Gtk.Button.new_from_icon_name("gtk-add", Gtk.IconSize.BUTTON)
+        buttonAdd.connect("clicked", self.add_player)
+        buttonbox.add(buttonAdd)
+        self.buttonRemove = Gtk.Button.new_from_icon_name("gtk-remove", Gtk.IconSize.BUTTON)
+        self.buttonRemove.set_sensitive(False)
+        self.buttonRemove.connect("clicked", self.remove_player)
+        buttonbox.add(self.buttonRemove)
+        buttonClear = Gtk.Button.new_from_icon_name("gtk-clear", Gtk.IconSize.BUTTON)
+        buttonClear.connect("clicked", self.clear_player)
+        buttonbox.add(buttonClear)
 
     def display(self, clubid=None):
         self.show_all()
 
         self.liststoreStadiums.clear()
-        self.liststorePlayers.clear()
 
         for stadiumid, stadium in data.stadiums.items():
             self.liststoreStadiums.append([str(stadiumid), stadium.name])
@@ -550,16 +576,9 @@ class AddClubDialog(Gtk.Dialog):
             self.buttonSave.set_label("_Edit")
             self.buttonSave.set_sensitive(True)
 
+            self.populate(clubid)
+
             self.load_fields(clubid)
-
-            for playerid, player in data.players.items():
-                if player.club == clubid:
-                    if player.common_name != "":
-                        name = player.common_name
-                    else:
-                        name = "%s, %s" % (player.second_name, player.first_name)
-
-                    self.liststorePlayers.append([name])
 
             self.current = clubid
 
@@ -611,6 +630,44 @@ class AddClubDialog(Gtk.Dialog):
         self.entryChairman.set_text("")
         self.comboboxStadium.set_active(-1)
         self.spinbuttonReputation.set_value(1)
+
+    def add_player(self, button):
+        playerid = playerselectiondialog.display(parent=self)
+
+        if playerid is not None:
+            data.players[playerid].club = self.current
+            self.populate(self.current)
+
+    def remove_player(self, button):
+        if remove_dialog(index=0, parent=self):
+            model, treeiter = self.treeselection.get_selected()
+            playerid = model[treeiter][0]
+
+            data.players[playerid].club = 0
+
+        self.populate(clubid=self.current)
+
+    def clear_player(self, button):
+        for item in self.liststorePlayers:
+            playerid = item[0]
+            data.players[playerid].club = 0
+
+        self.populate(clubid=self.current)
+
+    def populate(self, clubid):
+        self.liststorePlayers.clear()
+
+        for playerid, player in data.players.items():
+            if player.club == clubid:
+                name = display.name(player)
+
+                self.liststorePlayers.append([playerid, name])
+
+    def selection_changed(self, treeselection):
+        if treeselection.count_selected_rows() > 0:
+            self.buttonRemove.set_sensitive(True)
+        else:
+            self.buttonRemove.set_sensitive(False)
 
 
 class AddNationDialog(Gtk.Dialog):
@@ -816,11 +873,11 @@ def add_stadium_dialog(stadiumid=None):
     return state
 
 
-def remove_dialog(index):
+def remove_dialog(index, parent):
     item = ("Player", "Club", "Nation", "Stadium")[index]
 
     dialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION)
-    dialog.set_transient_for(widgets.window)
+    dialog.set_transient_for(parent)
     dialog.set_title("Remove %s" % (item))
     dialog.add_button("_Cancel", Gtk.ResponseType.CANCEL)
     dialog.add_button("_Remove", Gtk.ResponseType.OK)
@@ -845,6 +902,11 @@ def open_dialog():
     dialog.add_button("_Cancel", Gtk.ResponseType.CANCEL)
     dialog.add_button("_Open", Gtk.ResponseType.OK)
     dialog.set_default_response(Gtk.ResponseType.OK)
+
+    filefilter = Gtk.FileFilter()
+    filefilter.set_name("Database")
+    filefilter.add_pattern("*.db")
+    dialog.add_filter(filefilter)
 
     filename = None
 
@@ -871,3 +933,89 @@ def error(errorid):
 
     messagedialog.run()
     messagedialog.destroy()
+
+
+class PlayerSelectionDialog(Gtk.Dialog):
+    def __init__(self):
+        Gtk.Dialog.__init__(self)
+        self.set_border_width(5)
+        self.set_default_size(-1, 250)
+        self.set_title("Select Player")
+        self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
+        self.add_button("_Select", Gtk.ResponseType.OK)
+        self.set_default_response(Gtk.ResponseType.OK)
+
+        grid = Gtk.Grid()
+        grid.set_hexpand(True)
+        grid.set_row_spacing(5)
+        self.vbox.add(grid)
+
+        scrolledwindow = Gtk.ScrolledWindow()
+        grid.attach(scrolledwindow, 0, 0, 1, 1)
+
+        cellrenderertext = Gtk.CellRendererText()
+        self.liststore = Gtk.ListStore(int, str)
+
+        treeview = Gtk.TreeView()
+        treeview.set_hexpand(True)
+        treeview.set_vexpand(True)
+        treeview.set_model(self.liststore)
+        treeview.set_headers_visible(False)
+        treeviewcolumn = Gtk.TreeViewColumn("", cellrenderertext, text=1)
+        treeview.append_column(treeviewcolumn)
+        self.treeselection = treeview.get_selection()
+        scrolledwindow.add(treeview)
+
+        self.entrySearch = Gtk.SearchEntry()
+        self.entrySearch.connect("activate", self.activate_search)
+        self.entrySearch.connect("icon-press", self.clear_search)
+        grid.attach(self.entrySearch, 0, 1, 1, 1)
+
+    def display(self, parent):
+        self.set_transient_for(parent)
+        self.populate(data.players)
+        self.entrySearch.set_text("")
+
+        self.show_all()
+
+        player = None
+
+        if self.run() == Gtk.ResponseType.OK:
+            model, treeiter = self.treeselection.get_selected()
+            player = model[treeiter][0]
+
+        self.hide()
+
+        return player
+
+    def activate_search(self, entry):
+        criteria = entry.get_text()
+
+        if criteria is not "":
+            items = {}
+
+            for playerid, player in data.players.items():
+                for search in (player.second_name, player.first_name, player.common_name):
+                    search = ''.join((c for c in unicodedata.normalize('NFD', search) if unicodedata.category(c) != 'Mn'))
+
+                    if re.findall(criteria, search, re.IGNORECASE):
+                        items[playerid] = player
+
+                        break
+
+            self.populate(items)
+
+    def clear_search(self, entry, icon, event):
+        entry.set_text("")
+
+        self.populate(data.players)
+
+    def populate(self, data):
+        self.liststore.clear()
+
+        for playerid, player in data.items():
+            name = display.name(player)
+            self.liststore.append([playerid, name])
+
+
+playerselectiondialog = PlayerSelectionDialog()

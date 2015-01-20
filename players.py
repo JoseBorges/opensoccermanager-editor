@@ -5,6 +5,7 @@ from gi.repository import Gdk
 
 import data
 import dialogs
+import display
 import widgets
 
 
@@ -82,7 +83,7 @@ class Players(Gtk.Grid):
         key = Gdk.keyval_name(event.keyval)
 
         if key == "Delete":
-            if dialogs.remove_dialog(0):
+            if dialogs.remove_dialog(index=0, parent=widgets.window):
                 model, treepath = self.treeselection.get_selected_rows()
 
                 for item in treepath:
@@ -112,7 +113,7 @@ class Players(Gtk.Grid):
         self.liststore.clear()
 
         for playerid, player in data.players.items():
-            club = data.clubs[player.club].name
+            club = display.club(player)
             nationality = data.nations[player.nationality].name
 
             self.liststore.append([playerid,

@@ -63,7 +63,7 @@ class Clubs(Gtk.Grid):
         key = Gdk.keyval_name(event.keyval)
 
         if key == "Delete":
-            if dialogs.remove_dialog(1):
+            if dialogs.remove_dialog(index=1, parent=widgets.window):
                 model, treeiter = self.treeselection.get_selected()
                 clubid = model[treeiter][0]
 
@@ -90,10 +90,10 @@ class Clubs(Gtk.Grid):
     def populate(self):
         self.liststore.clear()
 
-        for key, club in data.clubs.items():
+        for clubid, club in data.clubs.items():
             stadium = "%s" % (data.stadiums[club.stadium].name)
 
-            self.liststore.append([key,
+            self.liststore.append([clubid,
                                    club.name,
                                    club.nickname,
                                    club.manager,
