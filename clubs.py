@@ -84,6 +84,7 @@ class Clubs(Gtk.Grid):
             widgets.toolbuttonEdit.set_sensitive(True)
             widgets.toolbuttonRemove.set_sensitive(True)
         else:
+            self.selected = None
             widgets.toolbuttonEdit.set_sensitive(False)
             widgets.toolbuttonRemove.set_sensitive(False)
 
@@ -102,6 +103,4 @@ class Clubs(Gtk.Grid):
                                    club.reputation])
 
     def run(self):
-        self.selection_changed(self.treeselection)
-
         self.show_all()

@@ -336,6 +336,7 @@ class MainEditor(Gtk.Notebook):
         self.set_hexpand(True)
         self.set_vexpand(True)
         self.set_border_width(5)
+        self.connect("switch-page", self.switch_page)
 
     def run(self):
         widgets.window.menuEdit.set_sensitive(True)
@@ -363,6 +364,14 @@ class MainEditor(Gtk.Notebook):
         self.append_page(clubs, widgets.Label("_Clubs"))
         self.append_page(nations, widgets.Label("_Nations"))
         self.append_page(stadiums, widgets.Label("_Stadiums"))
+
+    def switch_page(self, notebook, page, number):
+        if page.selected is None:
+            widgets.toolbuttonEdit.set_sensitive(False)
+            widgets.toolbuttonRemove.set_sensitive(False)
+        else:
+            widgets.toolbuttonEdit.set_sensitive(True)
+            widgets.toolbuttonRemove.set_sensitive(True)
 
 
 def new_database(widget=None):

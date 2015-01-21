@@ -162,6 +162,10 @@ class AddPlayerDialog(Gtk.Dialog):
         label.set_mnemonic_widget(self.buttonDateOfBirth)
         grid.attach(self.buttonDateOfBirth, 1, 3, 1, 1)
 
+        self.labelAge = widgets.Label()
+        self.labelAge.set_tooltip_text("Age at start of game")
+        grid.attach(self.labelAge, 2, 3, 1, 1)
+
         self.calendar = Gtk.Calendar()
         self.calendar.set_property("year", True)
 
@@ -277,6 +281,11 @@ class AddPlayerDialog(Gtk.Dialog):
         if dialog.run() == Gtk.ResponseType.OK:
             year, month, day = self.calendar.get_date()
 
+            age = data.season - year
+
+            if (month, day) > (8, 1):
+                age -= 1
+
             if day < 10:
                 day = "0%i" % (day)
 
@@ -286,7 +295,9 @@ class AddPlayerDialog(Gtk.Dialog):
                 month = "0%i" % (month)
 
             date_of_birth = "%i-%s-%s" % (year, month, day)
+
             self.buttonDateOfBirth.set_label("%s" % (date_of_birth))
+            self.labelAge.set_text("Age: %i" % (age))
 
         dialog.destroy()
 
@@ -402,6 +413,13 @@ class AddPlayerDialog(Gtk.Dialog):
 
         self.calendar.select_day(date_of_birth[2])
         self.calendar.select_month(date_of_birth[1] - 1, date_of_birth[0])
+
+        age = data.season - date_of_birth[0]
+
+        if (date_of_birth[1], date_of_birth[2]) > (8, 1):
+            age -= 1
+
+        self.labelAge.set_text("Age: %i" % (age))
 
         self.comboboxPosition.set_active_id(player.position)
 

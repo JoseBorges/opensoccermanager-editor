@@ -92,6 +92,7 @@ class Stadiums(Gtk.Grid):
             widgets.toolbuttonEdit.set_sensitive(True)
             widgets.toolbuttonRemove.set_sensitive(True)
         else:
+            self.selected = None
             widgets.toolbuttonEdit.set_sensitive(False)
             widgets.toolbuttonRemove.set_sensitive(False)
 

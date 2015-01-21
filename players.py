@@ -20,7 +20,7 @@ class Players(Gtk.Grid):
 
         scrolledwindow = Gtk.ScrolledWindow()
         scrolledwindow.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-        self.attach(scrolledwindow, 0, 0, 1, 1)
+        self.attach(scrolledwindow, 0, 0, 2, 1)
 
         self.liststore = Gtk.ListStore(int, str, str, str, str, str,
                                        str, str, int, int, int, int,
@@ -70,8 +70,13 @@ class Players(Gtk.Grid):
         treeview.append_column(treeviewcolumn)
 
         self.labelCount = Gtk.Label()
-        self.labelCount.set_alignment(1, 0.5)
+        self.labelCount.set_alignment(0, 0.5)
         self.attach(self.labelCount, 0, 1, 1, 1)
+
+        self.labelSelected = Gtk.Label()
+        self.labelSelected.set_hexpand(True)
+        self.labelSelected.set_alignment(0, 0.5)
+        self.attach(self.labelSelected, 1, 1, 1, 1)
 
     def row_activated(self, treeview, path, column):
         model = treeview.get_model()
@@ -113,6 +118,15 @@ class Players(Gtk.Grid):
             widgets.toolbuttonEdit.set_sensitive(False)
             widgets.toolbuttonRemove.set_sensitive(False)
 
+        count = self.treeselection.count_selected_rows()
+
+        if count == 0:
+            self.labelSelected.set_text("(No Items Selected)")
+        elif count == 1:
+            self.labelSelected.set_text("(1 Item Selected)")
+        else:
+            self.labelSelected.set_text("(%i Items Selected)" % (count))
+
     def populate(self):
         self.liststore.clear()
 
@@ -146,6 +160,4 @@ class Players(Gtk.Grid):
         self.labelCount.set_text("%i Players in Database" % (count))
 
     def run(self):
-        self.selection_changed(self.treeselection)
-
         self.show_all()
