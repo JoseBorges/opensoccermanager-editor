@@ -271,9 +271,15 @@ class Window(Gtk.Window):
 
     def move_notebook_page(self, menuitem, direction):
         if direction == -1:
-            maineditor.prev_page()
+            if maineditor.get_current_page() == 0:
+                maineditor.set_current_page(maineditor.get_n_pages() - 1)
+            else:
+                maineditor.prev_page()
         elif direction == 1:
-            maineditor.next_page()
+            if maineditor.get_n_pages() == maineditor.get_current_page() + 1:
+                maineditor.set_current_page(0)
+            else:
+                maineditor.next_page()
 
     def switch_notebook_page(self, menuitem, page):
         maineditor.set_current_page(page)
@@ -311,6 +317,7 @@ class MainMenu(Gtk.Grid):
         buttonNew.set_always_show_image(True)
         buttonNew.set_image(image)
         buttonNew.set_image_position(Gtk.PositionType.TOP)
+        buttonNew.set_tooltip_text("Create a new database file")
         buttonNew.connect("clicked", new_database)
         self.attach(buttonNew, 1, 1, 1, 1)
 
@@ -321,6 +328,7 @@ class MainMenu(Gtk.Grid):
         buttonOpen.set_always_show_image(True)
         buttonOpen.set_image(image)
         buttonOpen.set_image_position(Gtk.PositionType.TOP)
+        buttonOpen.set_tooltip_text("Open existing database file")
         buttonOpen.connect("clicked", open_database)
         self.attach(buttonOpen, 2, 1, 1, 1)
 

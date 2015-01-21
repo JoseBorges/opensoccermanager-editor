@@ -42,6 +42,10 @@ class Nations(Gtk.Grid):
         treeviewcolumn = Gtk.TreeViewColumn("Denonym", cellrenderertext, text=2)
         treeview.append_column(treeviewcolumn)
 
+        self.labelCount = Gtk.Label()
+        self.labelCount.set_alignment(0, 0.5)
+        self.attach(self.labelCount, 0, 1, 1, 1)
+
     def row_activated(self, treeview, path, column):
         model = treeview.get_model()
         nationid = model[path][0]
@@ -83,10 +87,12 @@ class Nations(Gtk.Grid):
     def populate(self):
         self.liststore.clear()
 
-        for nationid, nation in data.nations.items():
+        for count, (nationid, nation) in enumerate(data.nations.items(), start=1):
             self.liststore.append([nationid,
                                    nation.name,
                                    nation.denonym])
+
+        self.labelCount.set_text("%i Nations in Database" % (count))
 
     def run(self):
         self.show_all()

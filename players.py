@@ -121,7 +121,7 @@ class Players(Gtk.Grid):
         count = self.treeselection.count_selected_rows()
 
         if count == 0:
-            self.labelSelected.set_text("(No Items Selected)")
+            self.labelSelected.set_text("")
         elif count == 1:
             self.labelSelected.set_text("(1 Item Selected)")
         else:
@@ -130,9 +130,7 @@ class Players(Gtk.Grid):
     def populate(self):
         self.liststore.clear()
 
-        count = 0
-
-        for playerid, player in data.players.items():
+        for count, (playerid, player) in enumerate(data.players.items(), start=1):
             club = display.club(player)
             nationality = data.nations[player.nationality].name
 
@@ -154,8 +152,6 @@ class Players(Gtk.Grid):
                                    player.ball_control,
                                    player.set_pieces,
                                    player.training_value])
-
-            count += 1
 
         self.labelCount.set_text("%i Players in Database" % (count))
 

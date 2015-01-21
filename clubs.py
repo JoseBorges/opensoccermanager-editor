@@ -19,7 +19,7 @@ class Clubs(Gtk.Grid):
 
         scrolledwindow = Gtk.ScrolledWindow()
         scrolledwindow.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-        self.attach(scrolledwindow, 0, 0, 1, 1)
+        self.attach(scrolledwindow, 0, 0, 2, 1)
 
         self.liststore = Gtk.ListStore(int, str, str, str, str, str, int)
         treemodelsort = Gtk.TreeModelSort(self.liststore)
@@ -49,6 +49,10 @@ class Clubs(Gtk.Grid):
         treeview.append_column(treeviewcolumn)
         treeviewcolumn = Gtk.TreeViewColumn("Reputation", cellrenderertext, text=6)
         treeview.append_column(treeviewcolumn)
+
+        self.labelCount = Gtk.Label()
+        self.labelCount.set_alignment(0, 0.5)
+        self.attach(self.labelCount, 0, 1, 1, 1)
 
     def row_activated(self, treeview, path, column):
         model = treeview.get_model()
@@ -91,7 +95,7 @@ class Clubs(Gtk.Grid):
     def populate(self):
         self.liststore.clear()
 
-        for clubid, club in data.clubs.items():
+        for count, (clubid, club) in enumerate(data.clubs.items(), start=1):
             stadium = "%s" % (data.stadiums[club.stadium].name)
 
             self.liststore.append([clubid,
@@ -101,6 +105,8 @@ class Clubs(Gtk.Grid):
                                    club.chairman,
                                    stadium,
                                    club.reputation])
+
+        self.labelCount.set_text("%i Clubs in Database" % (count))
 
     def run(self):
         self.show_all()
