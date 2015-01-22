@@ -50,9 +50,9 @@ class Nations(Gtk.Grid):
         model = treeview.get_model()
         nationid = model[path][0]
 
-        widgets.nations_dialog.display(nationid)
+        dialogs.nations.display(nationid)
 
-        if widgets.nations_dialog.state:
+        if dialogs.nations.state:
             self.populate()
 
     def row_delete(self, treeview, event):
@@ -92,7 +92,7 @@ class Nations(Gtk.Grid):
                                    nation.name,
                                    nation.denonym])
 
-        self.labelCount.set_text("%i Nations in Database" % (count))
+        self.labelCount.set_label("%i Nations in Database" % (count))
 
     def run(self):
         self.show_all()

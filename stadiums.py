@@ -62,9 +62,9 @@ class Stadiums(Gtk.Grid):
         model = treeview.get_model()
         stadiumid = model[path][0]
 
-        state = dialogs.add_stadium_dialog(stadiumid)
+        dialogs.stadiums.display(stadiumid)
 
-        if state:
+        if dialogs.stadiums.state:
             self.populate()
 
     def row_delete(self, treeview, event):

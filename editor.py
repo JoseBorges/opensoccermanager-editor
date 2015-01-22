@@ -189,48 +189,48 @@ class Window(Gtk.Window):
         page = maineditor.get_current_page()
 
         if page == 0:
-            widgets.players_dialog.display()
+            dialogs.players.display()
 
-            if widgets.players_dialog.state:
+            if dialogs.players.state:
                 players.populate()
         elif page == 1:
-            widgets.clubs_dialog.display()
+            dialogs.clubs.display()
 
-            if widgets.clubs_dialog.state:
+            if dialogs.clubs.state:
                 clubs.populate()
         elif page == 2:
-            widgets.nations_dialog.display()
+            dialogs.nations.display()
 
-            if widgets.nations_dialog.state:
+            if dialogs.nations.state:
                 nations.populate()
         elif page == 3:
-            state = dialogs.add_stadium_dialog()
+            dialogs.stadiums.display()
 
-            if state:
+            if dialogs.stadiums.state:
                 stadiums.populate()
 
     def edit_data(self, toolbutton):
         page = maineditor.get_current_page()
 
         if page == 0:
-            widgets.players_dialog.display(playerid=players.selected)
+            dialogs.players.display(playerid=players.selected)
 
-            if widgets.players_dialog.state:
+            if dialogs.players.state:
                 players.populate()
         elif page == 1:
-            widgets.clubs_dialog.display(clubid=clubs.selected)
+            dialogs.clubs.display(clubid=clubs.selected)
 
-            if widgets.clubs_dialog.state:
+            if dialogs.clubs.state:
                 clubs.populate()
         elif page == 2:
-            widgets.nations_dialog.display(nationid=nations.selected)
+            dialogs.nations.display(nationid=nations.selected)
 
-            if widgets.nations_dialog.state:
+            if dialogs.nations.state:
                 nations.populate()
         elif page == 3:
-            state = dialogs.add_stadium_dialog(stadiums.selected)
+            dialogs.stadiums.display(stadiumid=stadiums.selected)
 
-            if state:
+            if dialogs.stadiums.state:
                 stadiums.populate()
 
     def remove_data(self, toolbutton):
@@ -426,9 +426,10 @@ def open_database(widget=None):
 widgets.window = Window()
 mainmenu = MainMenu()
 maineditor = MainEditor()
-widgets.players_dialog = dialogs.AddPlayerDialog()
-widgets.clubs_dialog = dialogs.AddClubDialog()
-widgets.nations_dialog = dialogs.AddNationDialog()
+dialogs.players = dialogs.AddPlayerDialog()
+dialogs.clubs = dialogs.AddClubDialog()
+dialogs.nations = dialogs.AddNationDialog()
+dialogs.stadiums = dialogs.AddStadiumDialog()
 players = players.Players()
 clubs = clubs.Clubs()
 nations = nations.Nations()

@@ -297,7 +297,7 @@ class AddPlayerDialog(Gtk.Dialog):
             date_of_birth = "%i-%s-%s" % (year, month, day)
 
             self.buttonDateOfBirth.set_label("%s" % (date_of_birth))
-            self.labelAge.set_text("Age: %i" % (age))
+            self.labelAge.set_label("Age: %i" % (age))
 
         dialog.destroy()
 
@@ -419,7 +419,7 @@ class AddPlayerDialog(Gtk.Dialog):
         if (date_of_birth[1], date_of_birth[2]) > (8, 1):
             age -= 1
 
-        self.labelAge.set_text("Age: %i" % (age))
+        self.labelAge.set_label("Age: %i" % (age))
 
         self.comboboxPosition.set_active_id(player.position)
 
@@ -439,6 +439,7 @@ class AddPlayerDialog(Gtk.Dialog):
         self.entrySecondName.set_text("")
         self.entryCommonName.set_text("")
         self.buttonDateOfBirth.set_label("")
+        self.labelAge.set_label("")
         self.comboboxClub.set_active(-1)
         self.comboboxNationality.set_active(-1)
 
@@ -761,134 +762,148 @@ class AddNationDialog(Gtk.Dialog):
         self.show_all()
         self.run()
 
-    def clear_fields(self):
-        self.entryName.set_text("")
-        self.entryDenonym.set_text("")
-
     def load_fields(self, nationid):
         nation = data.nations[nationid]
 
         self.entryName.set_text(nation.name)
         self.entryDenonym.set_text(nation.denonym)
 
+    def clear_fields(self):
+        self.entryName.set_text("")
+        self.entryDenonym.set_text("")
 
-def add_stadium_dialog(stadiumid=None):
-    if stadiumid is None:
-        title = "Add Stadium"
-        button = "_Add"
-    else:
-        title = "Edit Stadium"
-        button = "_Edit"
 
-        stadium = data.stadiums[stadiumid]
-
-    dialog = Gtk.Dialog()
-    dialog.set_transient_for(widgets.window)
-    dialog.set_title(title)
-    dialog.set_border_width(5)
-    dialog.add_button("_Cancel", Gtk.ResponseType.CANCEL)
-    dialog.add_button(button, Gtk.ResponseType.OK)
-    dialog.set_default_response(Gtk.ResponseType.OK)
-
-    grid = Gtk.Grid()
-    grid.set_row_spacing(5)
-    grid.set_column_spacing(5)
-    dialog.vbox.add(grid)
-
-    label = widgets.Label("Name")
-    grid.attach(label, 0, 0, 1, 1)
-    entryName = Gtk.Entry()
-    grid.attach(entryName, 1, 0, 1, 1)
-
-    notebook = Gtk.Notebook()
-    notebook.set_hexpand(True)
-    grid.attach(notebook, 0, 1, 3, 1)
-
-    grid1 = Gtk.Grid()
-    grid1.set_border_width(5)
-    grid1.set_row_spacing(5)
-    grid1.set_column_spacing(5)
-    notebook.append_page(grid1, Gtk.Label("Stand"))
-
-    capacities = []
-
-    for count, stand in enumerate(("North", "West", "South", "East", "North West", "North East", "South West", "South East")):
-        label = widgets.Label(stand)
-        grid1.attach(label, 0, count, 1, 1)
-
-        spinbutton = Gtk.SpinButton()
-        spinbutton.set_value(0)
-
-        if count < 4:
-            spinbutton.set_range(0, 15000)
-        else:
-            spinbutton.set_range(0, 3000)
-
-        spinbutton.set_increments(1000, 1000)
-        capacities.append(spinbutton)
-        grid1.attach(spinbutton, 1, count, 1, 1)
-
-    grid2 = Gtk.Grid()
-    grid2.set_border_width(5)
-    grid2.set_row_spacing(5)
-    grid2.set_column_spacing(5)
-    notebook.append_page(grid2, Gtk.Label("Buildings"))
-
-    buildings = []
-
-    for count, building in enumerate(("Stall", "Programme Vendor", "Small Shop", "Large Shop", "Bar", "Burger Bar", "Cafe", "Restaurant")):
-        label = widgets.Label(building)
-        grid2.attach(label, 0, count, 1, 1)
-
-        spinbutton = Gtk.SpinButton()
-        spinbutton.set_value(0)
-        spinbutton.set_range(0, 8)
-        spinbutton.set_increments(1, 1)
-        buildings.append(spinbutton)
-        grid2.attach(spinbutton, 1, count, 1, 1)
-
-    if stadiumid is not None:
-        entryName.set_text(stadium.name)
-
-        for count, widget in enumerate(capacities):
-            widget.set_value(stadium.stands[count])
-
-        for count, widget in enumerate(buildings):
-            widget.set_value(stadium.buildings[count])
-
-    dialog.show_all()
-
+class AddStadiumDialog(Gtk.Dialog):
     state = False
 
-    if dialog.run() == Gtk.ResponseType.OK:
-        if stadiumid is not None:
-            stadium = data.stadiums[stadiumid]
+    def __init__(self):
+        Gtk.Dialog.__init__(self)
+        self.set_transient_for(widgets.window)
+        self.set_border_width(5)
+        self.connect("response", self.response_handler)
+        self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
+
+        self.buttonSave = widgets.Button()
+        self.buttonSave.connect("clicked", self.save_handler)
+        action_area = self.get_action_area()
+        action_area.add(self.buttonSave)
+
+        grid = Gtk.Grid()
+        grid.set_row_spacing(5)
+        grid.set_column_spacing(5)
+        self.vbox.add(grid)
+
+        label = widgets.Label("Name")
+        grid.attach(label, 0, 0, 1, 1)
+        self.entryName = Gtk.Entry()
+        grid.attach(self.entryName, 1, 0, 1, 1)
+
+        notebook = Gtk.Notebook()
+        notebook.set_hexpand(True)
+        grid.attach(notebook, 0, 1, 3, 1)
+
+        grid1 = Gtk.Grid()
+        grid1.set_border_width(5)
+        grid1.set_row_spacing(5)
+        grid1.set_column_spacing(5)
+        notebook.append_page(grid1, Gtk.Label("Stand"))
+
+        self.capacities = []
+
+        for count, stand in enumerate(("North", "West", "South", "East", "North West", "North East", "South West", "South East")):
+            label = widgets.Label(stand)
+            grid1.attach(label, 0, count, 1, 1)
+
+            spinbutton = Gtk.SpinButton()
+            spinbutton.set_value(0)
+
+            if count < 4:
+                spinbutton.set_range(0, 15000)
+            else:
+                spinbutton.set_range(0, 3000)
+
+            spinbutton.set_increments(1000, 1000)
+            self.capacities.append(spinbutton)
+            grid1.attach(spinbutton, 1, count, 1, 1)
+
+        grid2 = Gtk.Grid()
+        grid2.set_border_width(5)
+        grid2.set_row_spacing(5)
+        grid2.set_column_spacing(5)
+        notebook.append_page(grid2, Gtk.Label("Buildings"))
+
+        self.buildings = []
+
+        for count, building in enumerate(("Stall", "Programme Vendor", "Small Shop", "Large Shop", "Bar", "Burger Bar", "Cafe", "Restaurant")):
+            label = widgets.Label(building)
+            grid2.attach(label, 0, count, 1, 1)
+
+            spinbutton = Gtk.SpinButton()
+            spinbutton.set_value(0)
+            spinbutton.set_range(0, 8)
+            spinbutton.set_increments(1, 1)
+            self.buildings.append(spinbutton)
+            grid2.attach(spinbutton, 1, count, 1, 1)
+
+    def display(self, stadiumid=None):
+        if stadiumid is None:
+            self.set_title("Add Stadium")
+            self.buttonSave.set_label("_Add")
+
+            self.current = None
         else:
+            self.set_title("Edit Stadium")
+            self.buttonSave.set_label("_Edit")
+
+            self.load_fields(stadiumid)
+
+            self.current = stadiumid
+
+        self.show_all()
+        self.run()
+
+    def response_handler(self, dialog, response):
+        self.clear_fields()
+
+        self.hide()
+
+    def save_handler(self, button):
+        self.save_data(stadiumid=self.current)
+        self.clear_fields()
+
+        self.state = True
+
+        self.hide()
+
+    def save_data(self, stadiumid):
+        if stadiumid is None:
             data.idnumbers.stadiumid += 1
 
             stadium = Stadium()
             data.stadiums[data.idnumbers.stadiumid] = stadium
+        else:
+            stadium = data.stadiums[stadiumid]
 
-        stadium.name = entryName.get_text()
-        stadium.stands = []
-        stadium.buildings = []
+        stadium.name = self.entryName.get_text()
 
-        capacity = 0
+    def load_fields(self, stadiumid):
+        stadium = data.stadiums[stadiumid]
 
-        for count, widget in enumerate(capacities):
-            capacity += widget.get_value_as_int()
-            stadium.stands.append(widget.get_value_as_int())
+        self.entryName.set_text(stadium.name)
 
-        stadium.capacity = capacity
+        for count, widget in enumerate(self.capacities):
+            widget.set_value(stadium.stands[count])
 
+        '''
         for count, widget in enumerate(buildings):
-            stadium.buildings.append(widget.get_value_as_int())
+            widget.set_value(stadium.buildings[count])
+        '''
 
-        state = True
+    def clear_fields(self):
+        self.entryName.set_text("")
 
-    dialog.destroy()
-
-    return state
+        for count, widget in enumerate(self.capacities):
+            widget.set_value(0)
 
 
 def remove_dialog(index, parent):
@@ -979,6 +994,8 @@ class PlayerSelectionDialog(Gtk.Dialog):
         treeview.set_vexpand(True)
         treeview.set_model(self.liststore)
         treeview.set_headers_visible(False)
+        treeview.set_enable_search(False)
+        treeview.set_search_column(-1)
         treeviewcolumn = Gtk.TreeViewColumn("", cellrenderertext, text=1)
         treeview.append_column(treeviewcolumn)
         self.treeselection = treeview.get_selection()
@@ -994,6 +1011,7 @@ class PlayerSelectionDialog(Gtk.Dialog):
         self.populate(data.players)
         self.entrySearch.set_text("")
 
+        self.set_focus(self.entrySearch)
         self.show_all()
 
         player = None
@@ -1013,8 +1031,10 @@ class PlayerSelectionDialog(Gtk.Dialog):
             items = {}
 
             for playerid, player in data.players.items():
-                for search in (player.second_name, player.first_name, player.common_name):
-                    search = ''.join((c for c in unicodedata.normalize('NFD', search) if unicodedata.category(c) != 'Mn'))
+                both = "%s %s" % (player.first_name, player.second_name)
+
+                for search in (player.second_name, player.first_name, player.common_name, both):
+                    search = "".join((c for c in unicodedata.normalize("NFD", search) if unicodedata.category(c) != "Mn"))
 
                     if re.findall(criteria, search, re.IGNORECASE):
                         items[playerid] = player

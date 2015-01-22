@@ -83,9 +83,9 @@ class Players(Gtk.Grid):
         playerid = model[path][0]
 
         playerid = [playerid]
-        widgets.players_dialog.display(playerid)
+        dialogs.players.display(playerid)
 
-        if widgets.players_dialog.state:
+        if dialogs.players.state:
             self.populate()
 
     def row_delete(self, treeview, event):
@@ -121,11 +121,11 @@ class Players(Gtk.Grid):
         count = self.treeselection.count_selected_rows()
 
         if count == 0:
-            self.labelSelected.set_text("")
+            self.labelSelected.set_label("")
         elif count == 1:
-            self.labelSelected.set_text("(1 Item Selected)")
+            self.labelSelected.set_label("(1 Item Selected)")
         else:
-            self.labelSelected.set_text("(%i Items Selected)" % (count))
+            self.labelSelected.set_label("(%i Items Selected)" % (count))
 
     def populate(self):
         self.liststore.clear()
@@ -153,7 +153,7 @@ class Players(Gtk.Grid):
                                    player.set_pieces,
                                    player.training_value])
 
-        self.labelCount.set_text("%i Players in Database" % (count))
+        self.labelCount.set_label("%i Players in Database" % (count))
 
     def run(self):
         self.show_all()

@@ -58,9 +58,9 @@ class Clubs(Gtk.Grid):
         model = treeview.get_model()
         clubid = model[path][0]
 
-        widgets.clubs_dialog.display(clubid)
+        dialogs.clubs.display(clubid)
 
-        if widgets.clubs_dialog.state:
+        if dialogs.clubs.state:
             self.populate()
 
     def row_delete(self, treeview, event):
@@ -106,7 +106,7 @@ class Clubs(Gtk.Grid):
                                    stadium,
                                    club.reputation])
 
-        self.labelCount.set_text("%i Clubs in Database" % (count))
+        self.labelCount.set_label("%i Clubs in Database" % (count))
 
     def run(self):
         self.show_all()
