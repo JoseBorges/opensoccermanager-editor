@@ -44,3 +44,15 @@ class CommonFrame(Gtk.Frame):
 
     def insert(self, child):
         self.grid.attach(child, 0, 0, 1, 1)
+
+
+class TreeViewColumn(Gtk.TreeViewColumn):
+    def __init__(self, title="", column=0):
+        Gtk.TreeViewColumn.__init__(self)
+
+        cellrenderertext = Gtk.CellRendererText()
+
+        self.set_expand(True)
+        self.set_title(title)
+        self.pack_start(cellrenderertext, True)
+        self.add_attribute(cellrenderertext, "text", column)

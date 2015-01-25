@@ -58,6 +58,10 @@ class Stadiums(Gtk.Grid):
         treeviewcolumn = Gtk.TreeViewColumn("South East", cellrenderertext, text=10)
         treeview.append_column(treeviewcolumn)
 
+        self.labelCount = Gtk.Label()
+        self.labelCount.set_alignment(0, 0.5)
+        self.attach(self.labelCount, 0, 1, 1, 1)
+
     def row_activated(self, treeview, path, column):
         model = treeview.get_model()
         stadiumid = model[path][0]
@@ -99,7 +103,7 @@ class Stadiums(Gtk.Grid):
     def populate(self):
         self.liststore.clear()
 
-        for stadiumid, stadium in data.stadiums.items():
+        for count, (stadiumid, stadium) in enumerate(data.stadiums.items(), start=1):
             self.liststore.append([stadiumid,
                                    stadium.name,
                                    stadium.capacity,
@@ -112,6 +116,8 @@ class Stadiums(Gtk.Grid):
                                    stadium.stands[6],
                                    stadium.stands[7],
                                    ])
+
+        self.labelCount.set_label("%i Stadiums in Database" % (count))
 
     def run(self):
         self.show_all()

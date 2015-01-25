@@ -8,7 +8,9 @@ import re
 
 import data
 import database
+import dialogs
 import display
+import preferences
 import widgets
 
 
@@ -43,6 +45,40 @@ def about():
 
     aboutdialog.run()
     aboutdialog.destroy()
+
+
+class Preferences(Gtk.Dialog):
+    def __init__(self):
+        Gtk.Dialog.__init__(self)
+        self.set_transient_for(widgets.window)
+        self.set_title("Preferences")
+        self.set_border_width(5)
+        self.add_button("_Close", Gtk.ResponseType.CLOSE)
+        self.connect("response", self.response_handler)
+
+        grid = Gtk.Grid()
+        grid.set_row_spacing(5)
+        grid.set_column_spacing(5)
+        self.vbox.add(grid)
+
+        self.checkbuttonQuit = Gtk.CheckButton("_Display confirmation dialog when quitting")
+        self.checkbuttonQuit.set_use_underline(True)
+        self.checkbuttonQuit.connect("toggled", self.quit_toggled)
+        grid.attach(self.checkbuttonQuit, 0, 0, 1, 1)
+
+    def response_handler(self, widget, event):
+        self.hide()
+
+    def quit_toggled(self, checkbutton):
+        data.options.confirm_quit = checkbutton.get_active()
+        data.options["INTERFACE"]["ConfirmQuit"] = str(data.options.confirm_quit)
+
+        data.options.write_file()
+
+    def run(self):
+        self.checkbuttonQuit.set_active(data.options.confirm_quit)
+
+        self.show_all()
 
 
 class NewDatabase(Gtk.Dialog):
@@ -929,8 +965,8 @@ def remove_dialog(index, parent):
 
 def open_dialog():
     dialog = Gtk.FileChooserDialog()
-    dialog.set_title("Open File")
     dialog.set_transient_for(widgets.window)
+    dialog.set_title("Open File")
     dialog.set_action(Gtk.FileChooserAction.OPEN)
     dialog.add_button("_Cancel", Gtk.ResponseType.CANCEL)
     dialog.add_button("_Open", Gtk.ResponseType.OK)
@@ -949,6 +985,51 @@ def open_dialog():
     dialog.destroy()
 
     return filename
+
+
+def save_dialog():
+    dialog = Gtk.FileChooserDialog()
+    dialog.set_transient_for(widgets.window)
+    dialog.set_title("Save File")
+    dialog.set_action(Gtk.FileChooserAction.SAVE)
+    dialog.add_button("_Cancel", Gtk.ResponseType.CANCEL)
+    dialog.add_button("_Save", Gtk.ResponseType.OK)
+    dialog.set_default_response(Gtk.ResponseType.OK)
+
+    filefilter = Gtk.FileFilter()
+    filefilter.set_name("Database")
+    filefilter.add_pattern("*.db")
+    dialog.add_filter(filefilter)
+
+    filename = None
+
+    if dialog.run() == Gtk.ResponseType.OK:
+        filename = dialog.get_filename()
+
+    dialog.destroy()
+
+    return filename
+
+
+def quit_dialog():
+    messagedialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION)
+    messagedialog.set_transient_for(widgets.window)
+    messagedialog.set_title("Quit Editor")
+    messagedialog.add_button("_Do Not Quit", Gtk.ResponseType.REJECT)
+    messagedialog.add_button("_Quit", Gtk.ResponseType.ACCEPT)
+    messagedialog.set_default_response(Gtk.ResponseType.REJECT)
+    messagedialog.set_markup("Quit the data editor?")
+
+    state = 0
+
+    response = messagedialog.run()
+
+    if response == Gtk.ResponseType.ACCEPT:
+        state = 1
+
+    messagedialog.destroy()
+
+    return state
 
 
 def error(errorid):

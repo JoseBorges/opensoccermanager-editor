@@ -9,20 +9,25 @@ import database
 import dialogs
 import nations
 import players
+import preferences
 import stadiums
 import widgets
 
 
 class Window(Gtk.Window):
-    menuEdit = None
     menuView = None
     menuitemSave = None
     menuitemSaveAs = None
     menuitemImport = None
     menuitemExport = None
+    menuitemAdd = None
+    menuitemEdit = None
+    menuitemRemove = None
     toolbar = None
 
     def __init__(self):
+        data.options.read_file()
+
         iconpath = os.path.join("resources", "logo.svg")
 
         Gtk.Window.__init__(self)
@@ -30,7 +35,7 @@ class Window(Gtk.Window):
         self.set_icon_from_file(iconpath)
         self.set_default_size(640, 480)
         self.maximize()
-        self.connect("destroy", self.close_application)
+        self.connect("delete-event", self.close_application)
 
         accelgroup = Gtk.AccelGroup()
         self.add_accel_group(accelgroup)
@@ -48,17 +53,17 @@ class Window(Gtk.Window):
         menu = Gtk.Menu()
         menuitem.set_submenu(menu)
 
-        menuitem = widgets.MenuItem("_New")
+        menuitem = widgets.MenuItem("_New...")
         key, mod = Gtk.accelerator_parse("<CONTROL>N")
         menuitem.add_accelerator("activate", accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
         menuitem.connect("activate", new_database)
         menu.append(menuitem)
-        menuitem = widgets.MenuItem("_Open")
+        menuitem = widgets.MenuItem("_Open...")
         key, mod = Gtk.accelerator_parse("<CONTROL>O")
         menuitem.add_accelerator("activate", accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
         menuitem.connect("activate", open_database)
         menu.append(menuitem)
-        self.menuitemSave = widgets.MenuItem("_Save")
+        self.menuitemSave = widgets.MenuItem("_Save...")
         key, mod = Gtk.accelerator_parse("<CONTROL>S")
         self.menuitemSave.add_accelerator("activate", accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
         self.menuitemSave.set_sensitive(False)
@@ -86,27 +91,34 @@ class Window(Gtk.Window):
         menuitem.connect("activate", self.close_application)
         menu.append(menuitem)
 
-        self.menuEdit = widgets.MenuItem("_Edit")
-        self.menuEdit.set_sensitive(False)
-        menubar.append(self.menuEdit)
+        menuitem = widgets.MenuItem("_Edit")
+        menubar.append(menuitem)
 
         menu = Gtk.Menu()
-        self.menuEdit.set_submenu(menu)
+        menuitem.set_submenu(menu)
 
-        menuitem = widgets.MenuItem("_Add Item")
+        self.menuitemAdd = widgets.MenuItem("_Add Item")
+        self.menuitemAdd.set_sensitive(False)
         key, mod = Gtk.accelerator_parse("<CONTROL>A")
-        menuitem.add_accelerator("activate", accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
-        menuitem.connect("activate", self.add_data)
-        menu.append(menuitem)
-        menuitem = widgets.MenuItem("_Edit Item")
+        self.menuitemAdd.add_accelerator("activate", accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
+        self.menuitemAdd.connect("activate", self.add_data)
+        menu.append(self.menuitemAdd)
+        self.menuitemEdit = widgets.MenuItem("_Edit Item")
+        self.menuitemEdit.set_sensitive(False)
         key, mod = Gtk.accelerator_parse("<CONTROL>E")
-        menuitem.add_accelerator("activate", accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
-        menuitem.connect("activate", self.edit_data)
-        menu.append(menuitem)
-        menuitem = widgets.MenuItem("_Remove Item")
+        self.menuitemEdit.add_accelerator("activate", accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
+        self.menuitemEdit.connect("activate", self.edit_data)
+        menu.append(self.menuitemEdit)
+        self.menuitemRemove = widgets.MenuItem("_Remove Item")
+        self.menuitemRemove.set_sensitive(False)
         key, mod = Gtk.accelerator_parse("<CONTROL>R")
-        menuitem.add_accelerator("activate", accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
-        menuitem.connect("activate", self.remove_data)
+        self.menuitemRemove.add_accelerator("activate", accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
+        self.menuitemRemove.connect("activate", self.remove_data)
+        menu.append(self.menuitemRemove)
+        separator = Gtk.SeparatorMenuItem()
+        menu.append(separator)
+        menuitem = widgets.MenuItem("_Preferences")
+        menuitem.connect("activate", self.open_preferences)
         menu.append(menuitem)
 
         self.menuView = widgets.MenuItem("_View")
@@ -180,7 +192,19 @@ class Window(Gtk.Window):
         self.toolbar.add(toolbuttonSave)
 
     def save_database(self, widget):
-        data.db.save()
+        if widget == self.menuitemSave:
+            data.db.save()
+        elif widget == self.menuitemSaveAs:
+            filename = dialogs.save_dialog()
+
+            if filename is not None:
+                data.db.connect(filename)
+                data.db.save()
+
+                self.update_title(filename)
+
+    def open_preferences(self, menuitem):
+        dialogs.preferences.run()
 
     def update_title(self, filename):
         self.set_title("Editor - %s" % (filename))
@@ -289,11 +313,22 @@ class Window(Gtk.Window):
 
         self.show_all()
 
-    def close_application(self, widget):
-        if data.db.cursor is not None:
-            data.db.disconnect()
+    def close_application(self, widget, event=None):
+        if data.options.confirm_quit:
+            state = dialogs.quit_dialog()
 
-        Gtk.main_quit()
+            if state == 1:
+                if data.db.cursor is not None:
+                    data.db.disconnect()
+
+                Gtk.main_quit()
+        else:
+            if data.db.cursor is not None:
+                data.db.disconnect()
+
+            Gtk.main_quit()
+
+        return True
 
 
 class MainMenu(Gtk.Grid):
@@ -347,12 +382,14 @@ class MainEditor(Gtk.Notebook):
         self.connect("switch-page", self.switch_page)
 
     def run(self):
-        widgets.window.menuEdit.set_sensitive(True)
         widgets.window.menuView.set_sensitive(True)
         widgets.window.menuitemSave.set_sensitive(True)
         widgets.window.menuitemSaveAs.set_sensitive(True)
         widgets.window.menuitemImport.set_sensitive(True)
         widgets.window.menuitemExport.set_sensitive(True)
+        widgets.window.menuitemAdd.set_sensitive(True)
+        widgets.window.menuitemEdit.set_sensitive(True)
+        widgets.window.menuitemRemove.set_sensitive(True)
         widgets.window.toolbar.set_sensitive(True)
 
         players.run()
@@ -423,6 +460,8 @@ def open_database(widget=None):
             maineditor.run()
 
 
+data.options = preferences.Preferences()
+
 widgets.window = Window()
 mainmenu = MainMenu()
 maineditor = MainEditor()
@@ -430,6 +469,7 @@ dialogs.players = dialogs.AddPlayerDialog()
 dialogs.clubs = dialogs.AddClubDialog()
 dialogs.nations = dialogs.AddNationDialog()
 dialogs.stadiums = dialogs.AddStadiumDialog()
+dialogs.preferences = dialogs.Preferences()
 players = players.Players()
 clubs = clubs.Clubs()
 nations = nations.Nations()
