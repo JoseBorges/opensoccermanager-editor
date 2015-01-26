@@ -63,7 +63,7 @@ class Window(Gtk.Window):
         menuitem.add_accelerator("activate", accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
         menuitem.connect("activate", open_database)
         menu.append(menuitem)
-        self.menuitemSave = widgets.MenuItem("_Save...")
+        self.menuitemSave = widgets.MenuItem("_Save")
         key, mod = Gtk.accelerator_parse("<CONTROL>S")
         self.menuitemSave.add_accelerator("activate", accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
         self.menuitemSave.set_sensitive(False)
@@ -184,15 +184,15 @@ class Window(Gtk.Window):
         self.toolbar.add(toolbuttonRemove)
         separator = Gtk.SeparatorToolItem()
         self.toolbar.add(separator)
-        toolbuttonSave = Gtk.ToolButton(label="_Save")
-        toolbuttonSave.set_use_underline(True)
-        toolbuttonSave.set_icon_name("gtk-save")
-        toolbuttonSave.set_tooltip_text("Save changes to database")
-        toolbuttonSave.connect("clicked", self.save_database)
-        self.toolbar.add(toolbuttonSave)
+        self.toolbuttonSave = Gtk.ToolButton(label="_Save")
+        self.toolbuttonSave.set_use_underline(True)
+        self.toolbuttonSave.set_icon_name("gtk-save")
+        self.toolbuttonSave.set_tooltip_text("Save changes to database")
+        self.toolbuttonSave.connect("clicked", self.save_database)
+        self.toolbar.add(self.toolbuttonSave)
 
     def save_database(self, widget):
-        if widget == self.menuitemSave:
+        if widget in (self.menuitemSave, self.toolbuttonSave):
             data.db.save()
         elif widget == self.menuitemSaveAs:
             filename = dialogs.save_dialog()

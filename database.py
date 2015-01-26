@@ -79,7 +79,12 @@ class Database:
             player.second_name = item[2]
             player.common_name = item[3]
             player.date_of_birth = item[4]
-            player.club = item[5]
+
+            if item[5] is None:
+                player.club = 0
+            else:
+                player.club = item[5]
+
             player.nationality = item[6]
             player.position = item[7]
             player.keeping = item[8]
@@ -198,6 +203,9 @@ class Database:
         keys = [item[0] for item in content]
 
         for playerid, player in data.players.items():
+            if player.club == 0:
+                player.club = None
+
             if playerid in keys:
                 self.cursor.execute("UPDATE player SET firstname=?, secondname=?, commonname=?, dateofbirth=?, club=?, nation=?, position=?, keeping=?, tackling=?, passing=?, shooting=?, heading=?, pace=?, stamina=?, ballcontrol=?, setpieces=?, training=? WHERE id=?", (player.first_name, player.second_name, player.common_name, player.date_of_birth, player.club, player.nationality, player.position, player.keeping, player.tackling, player.passing, player.shooting, player.heading, player.pace, player.stamina, player.ball_control, player.set_pieces, player.training_value, playerid))
             elif playerid not in keys:

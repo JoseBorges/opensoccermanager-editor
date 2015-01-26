@@ -205,6 +205,10 @@ class AddPlayerDialog(Gtk.Dialog):
         label.set_mnemonic_widget(self.buttonDateOfBirth)
         grid.attach(self.buttonDateOfBirth, 1, 3, 1, 1)
 
+        grid1 = Gtk.Grid()
+        grid1.set_column_spacing(5)
+        grid.attach(grid1, 1, 4, 2, 1)
+
         self.labelAge = widgets.Label()
         self.labelAge.set_tooltip_text("Age at start of game")
         grid.attach(self.labelAge, 2, 3, 1, 1)
@@ -216,10 +220,11 @@ class AddPlayerDialog(Gtk.Dialog):
         self.checkbuttonFreeAgent = Gtk.CheckButton("_Free Agent")
         self.checkbuttonFreeAgent.set_use_underline(True)
         self.checkbuttonFreeAgent.connect("toggled", free_agent_changed)
-        grid.attach(self.checkbuttonFreeAgent, 1, 4, 1, 1)
+        grid1.attach(self.checkbuttonFreeAgent, 1, 4, 1, 1)
         self.buttonClub = widgets.Button()
-        self.buttonClub.connect("clicked", self.club_changed)
-        grid.attach(self.buttonClub, 2, 4, 1, 1)
+        self.buttonClub.set_hexpand(True)
+        self.buttonClub.connect("clicked", self.club_change)
+        grid1.attach(self.buttonClub, 2, 4, 1, 1)
 
         label = widgets.Label("_Nationality")
         grid.attach(label, 0, 5, 1, 1)
@@ -306,14 +311,16 @@ class AddPlayerDialog(Gtk.Dialog):
         label.set_mnemonic_widget(self.spinbuttonTraining)
         grid.attach(self.spinbuttonTraining, 1, 8, 1, 1)
 
-    def club_changed(self, button):
-        clubselectiondialog = ClubSelectionDialog()
-
-        if self.current != None:
+    def club_change(self, button):
+        if self.current is not None:
             clubid = data.players[self.current].club
+
+            if self.selected_club != clubid:
+                clubid = self.selected_club
         else:
             clubid = None
 
+        clubselectiondialog = ClubSelectionDialog()
         clubid = clubselectiondialog.display(parent=self, clubid=clubid)
 
         if clubid is not None:
@@ -438,16 +445,18 @@ class AddPlayerDialog(Gtk.Dialog):
         self.entryCommonName.set_text(player.common_name)
         self.buttonDateOfBirth.set_label("%s" % (player.date_of_birth))
 
-        if player.club != 0:
+        if player.club != 0 and player.club is not None:
             self.selected_club = player.club
             self.buttonClub.set_label("%s" % (data.clubs[player.club].name))
         else:
+            self.selected_club = 0
             self.buttonClub.set_label("")
+            self.checkbuttonFreeAgent.set_active(True)
 
         self.comboboxNationality.set_active_id(str(player.nationality))
 
-        self.date = player.date_of_birth.split("-")
-        self.date = list(map(int, self.date))
+        date = player.date_of_birth.split("-")
+        self.date = list(map(int, date))
 
         age = data.season - self.date[0]
 
