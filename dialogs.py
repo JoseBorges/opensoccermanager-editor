@@ -209,9 +209,6 @@ class AddPlayerDialog(Gtk.Dialog):
         self.labelAge.set_tooltip_text("Age at start of game")
         grid.attach(self.labelAge, 2, 3, 1, 1)
 
-        self.calendar = Gtk.Calendar()
-        self.calendar.set_property("year", True)
-
         cellrenderertext = Gtk.CellRendererText()
 
         label = widgets.Label("_Club")
@@ -312,46 +309,38 @@ class AddPlayerDialog(Gtk.Dialog):
     def club_changed(self, button):
         clubselectiondialog = ClubSelectionDialog()
 
-        clubid = data.players[self.current].club
-        clubid = clubselectiondialog.display(parent=self, club=clubid)
+        if self.current != None:
+            clubid = data.players[self.current].club
+        else:
+            clubid = None
+
+        clubid = clubselectiondialog.display(parent=self, clubid=clubid)
 
         if clubid is not None:
             self.selected_club = clubid
             self.buttonClub.set_label("%s" % (data.clubs[clubid].name))
+        else:
+            self.selected_club = 0
+            self.buttonClub.set_label("")
+            self.checkbuttonFreeAgent.set_active(True)
 
     def date_of_birth(self, button):
-        dialog = Gtk.Dialog()
-        dialog.set_transient_for(self)
-        dialog.set_title("Date Of Birth")
-        dialog.add_button("_Cancel", Gtk.ResponseType.CANCEL)
-        dialog.add_button("_OK", Gtk.ResponseType.OK)
-        dialog.set_default_response(Gtk.ResponseType.OK)
-        dialog.vbox.add(self.calendar)
+        dob = DateOfBirth(parent=self)
+        self.date = dob.display(date=self.date)
 
-        dialog.show_all()
+        if self.date is not None:
+            year, month, day = self.date
+            date = "%i-%s-%s" % (year, month, day)
+            self.buttonDateOfBirth.set_label("%s" % (date))
 
-        if dialog.run() == Gtk.ResponseType.OK:
-            year, month, day = self.calendar.get_date()
+            year, month, day = list(map(int, self.date))
 
             age = data.season - year
 
             if (month, day) > (8, 1):
                 age -= 1
 
-            if day < 10:
-                day = "0%i" % (day)
-
-            month = month + 1
-
-            if month < 10:
-                month = "0%i" % (month)
-
-            date_of_birth = "%i-%s-%s" % (year, month, day)
-
-            self.buttonDateOfBirth.set_label("%s" % (date_of_birth))
             self.labelAge.set_label("Age: %i" % (age))
-
-        dialog.destroy()
 
     def response_handler(self, dialog, response):
         self.clear_fields()
@@ -395,16 +384,7 @@ class AddPlayerDialog(Gtk.Dialog):
 
         player.nationality = int(self.comboboxNationality.get_active_id())
 
-        year, month, day = self.calendar.get_date()
-
-        if day < 10:
-            day = "0%i" % (day)
-
-        month = month + 1
-
-        if month < 10:
-            month = "0%i" % (month)
-
+        year, month, day = self.date
         player.date_of_birth = ("%i-%s-%s" % (year, month, day))
 
         player.position = self.comboboxPosition.get_active_id()
@@ -421,9 +401,6 @@ class AddPlayerDialog(Gtk.Dialog):
 
     def display(self, playerid=None):
         self.state = False
-
-        year = int(data.season) - 18
-        self.calendar.select_month(0, year)
 
         self.liststoreClub.clear()
         self.liststoreNationality.clear()
@@ -462,21 +439,19 @@ class AddPlayerDialog(Gtk.Dialog):
         self.buttonDateOfBirth.set_label("%s" % (player.date_of_birth))
 
         if player.club != 0:
+            self.selected_club = player.club
             self.buttonClub.set_label("%s" % (data.clubs[player.club].name))
         else:
             self.buttonClub.set_label("")
 
         self.comboboxNationality.set_active_id(str(player.nationality))
 
-        date = player.date_of_birth.split("-")
-        date_of_birth = list(map(int, date))
+        self.date = player.date_of_birth.split("-")
+        self.date = list(map(int, self.date))
 
-        self.calendar.select_day(date_of_birth[2])
-        self.calendar.select_month(date_of_birth[1] - 1, date_of_birth[0])
+        age = data.season - self.date[0]
 
-        age = data.season - date_of_birth[0]
-
-        if (date_of_birth[1], date_of_birth[2]) > (8, 1):
+        if (self.date[1], self.date[2]) > (8, 1):
             age -= 1
 
         self.labelAge.set_label("Age: %i" % (age))
@@ -1138,18 +1113,16 @@ class ClubSelectionDialog(Gtk.Dialog):
 
         self.populate(data.clubs)
 
-    def display(self, parent, club):
+    def display(self, parent, clubid):
         self.set_transient_for(parent)
         self.populate(data.clubs)
 
         for item in self.treemodelsort:
-            if item[0] == club:
+            if item[0] == clubid:
                 self.treeselection.select_iter(item.iter)
 
         self.set_focus(self.entrySearch)
         self.show_all()
-
-        clubid = None
 
         if self.run() == Gtk.ResponseType.OK:
             model, treeiter = self.treeselection.get_selected()
@@ -1164,6 +1137,56 @@ class ClubSelectionDialog(Gtk.Dialog):
 
         for clubid, club in data.items():
             self.liststore.append([clubid, club.name])
+
+
+class DateOfBirth(Gtk.Dialog):
+    def __init__(self, parent):
+        Gtk.Dialog.__init__(self)
+        self.set_transient_for(parent)
+        self.set_title("Date Of Birth")
+        self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
+        self.add_button("_Select", Gtk.ResponseType.OK)
+        self.set_default_response(Gtk.ResponseType.OK)
+
+        self.calendar = Gtk.Calendar()
+        self.calendar.set_property("year", True)
+        self.vbox.add(self.calendar)
+
+    def display(self, date):
+        year, month, day = list(map(int, date))
+
+        self.calendar.select_day(day)
+        self.calendar.select_month(month - 1, year)
+
+        self.show_all()
+
+        date_of_birth = None
+
+        if self.run() == Gtk.ResponseType.OK:
+            year, month, day = self.calendar.get_date()
+
+            age = data.season - year
+
+            if (month, day) > (8, 1):
+                age -= 1
+
+            if day < 10:
+                day = "0%i" % (day)
+            else:
+                day = str(day)
+
+            month += 1
+
+            if month < 10:
+                month = "0%i" % (month)
+            else:
+                month = str(month)
+
+            date_of_birth = [year, month, day]
+
+        self.destroy()
+
+        return date_of_birth
 
 
 def remove_dialog(index, parent):
