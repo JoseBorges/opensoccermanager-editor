@@ -26,3 +26,5 @@ skill = ("Keeping",
          "Stamina",
          "Ball Control",
          "Set Pieces")
+
+positions = ("GK", "DL", "DR", "DC", "D", "ML", "MR", "MC", "M", "AS", "AF")

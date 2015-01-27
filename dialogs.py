@@ -204,16 +204,13 @@ class AddPlayerDialog(Gtk.Dialog):
         self.buttonDateOfBirth.connect("clicked", self.date_of_birth)
         label.set_mnemonic_widget(self.buttonDateOfBirth)
         grid.attach(self.buttonDateOfBirth, 1, 3, 1, 1)
-
-        grid1 = Gtk.Grid()
-        grid1.set_column_spacing(5)
-        grid.attach(grid1, 1, 4, 2, 1)
-
         self.labelAge = widgets.Label()
         self.labelAge.set_tooltip_text("Age at start of game")
         grid.attach(self.labelAge, 2, 3, 1, 1)
 
-        cellrenderertext = Gtk.CellRendererText()
+        grid1 = Gtk.Grid()
+        grid1.set_column_spacing(5)
+        grid.attach(grid1, 1, 4, 2, 1)
 
         label = widgets.Label("_Club")
         grid.attach(label, 0, 4, 1, 1)
@@ -223,8 +220,11 @@ class AddPlayerDialog(Gtk.Dialog):
         grid1.attach(self.checkbuttonFreeAgent, 1, 4, 1, 1)
         self.buttonClub = widgets.Button()
         self.buttonClub.set_hexpand(True)
+        label.set_mnemonic_widget(self.buttonClub)
         self.buttonClub.connect("clicked", self.club_change)
         grid1.attach(self.buttonClub, 2, 4, 1, 1)
+
+        cellrenderertext = Gtk.CellRendererText()
 
         label = widgets.Label("_Nationality")
         grid.attach(label, 0, 5, 1, 1)
@@ -243,7 +243,7 @@ class AddPlayerDialog(Gtk.Dialog):
         label.set_mnemonic_widget(self.comboboxPosition)
         grid.attach(self.comboboxPosition, 1, 6, 1, 1)
 
-        for position in ("GK", "DL", "DR", "DC", "D", "ML", "MR", "MC", "M", "AS", "AF"):
+        for position in data.positions:
             self.comboboxPosition.append(position, position)
 
         grid1 = Gtk.Grid()
@@ -311,6 +311,9 @@ class AddPlayerDialog(Gtk.Dialog):
         label.set_mnemonic_widget(self.spinbuttonTraining)
         grid.attach(self.spinbuttonTraining, 1, 8, 1, 1)
 
+        self.clubselectiondialog = ClubSelectionDialog()
+        self.dob = DateOfBirth(parent=self)
+
     def club_change(self, button):
         if self.current is not None:
             clubid = data.players[self.current].club
@@ -320,8 +323,7 @@ class AddPlayerDialog(Gtk.Dialog):
         else:
             clubid = None
 
-        clubselectiondialog = ClubSelectionDialog()
-        clubid = clubselectiondialog.display(parent=self, clubid=clubid)
+        clubid = self.clubselectiondialog.display(parent=self, clubid=clubid)
 
         if clubid is not None:
             self.selected_club = clubid
@@ -332,8 +334,7 @@ class AddPlayerDialog(Gtk.Dialog):
             self.checkbuttonFreeAgent.set_active(True)
 
     def date_of_birth(self, button):
-        dob = DateOfBirth(parent=self)
-        self.date = dob.display(date=self.date)
+        self.date = self.dob.display(date=self.date)
 
         if self.date is not None:
             year, month, day = self.date
@@ -1152,7 +1153,7 @@ class DateOfBirth(Gtk.Dialog):
     def __init__(self, parent):
         Gtk.Dialog.__init__(self)
         self.set_transient_for(parent)
-        self.set_title("Date Of Birth")
+        self.set_title("Date of Birth")
         self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
         self.add_button("_Select", Gtk.ResponseType.OK)
         self.set_default_response(Gtk.ResponseType.OK)
@@ -1169,7 +1170,7 @@ class DateOfBirth(Gtk.Dialog):
 
         self.show_all()
 
-        date_of_birth = None
+        date_of_birth = year, month, day
 
         if self.run() == Gtk.ResponseType.OK:
             year, month, day = self.calendar.get_date()
@@ -1193,7 +1194,7 @@ class DateOfBirth(Gtk.Dialog):
 
             date_of_birth = [year, month, day]
 
-        self.destroy()
+        self.hide()
 
         return date_of_birth
 
