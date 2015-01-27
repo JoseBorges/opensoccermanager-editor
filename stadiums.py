@@ -8,6 +8,10 @@ import dialogs
 import widgets
 
 
+class Stadium:
+    pass
+
+
 class Stadiums(Gtk.Grid):
     selected = 0
 
@@ -121,3 +125,134 @@ class Stadiums(Gtk.Grid):
 
     def run(self):
         self.show_all()
+
+
+class AddStadiumDialog(Gtk.Dialog):
+    state = False
+
+    def __init__(self):
+        Gtk.Dialog.__init__(self)
+        self.set_transient_for(widgets.window)
+        self.set_border_width(5)
+        self.connect("response", self.response_handler)
+        self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
+
+        self.buttonSave = widgets.Button()
+        self.buttonSave.connect("clicked", self.save_handler)
+        action_area = self.get_action_area()
+        action_area.add(self.buttonSave)
+
+        grid = Gtk.Grid()
+        grid.set_row_spacing(5)
+        grid.set_column_spacing(5)
+        self.vbox.add(grid)
+
+        label = widgets.Label("Name")
+        grid.attach(label, 0, 0, 1, 1)
+        self.entryName = Gtk.Entry()
+        grid.attach(self.entryName, 1, 0, 1, 1)
+
+        notebook = Gtk.Notebook()
+        notebook.set_hexpand(True)
+        grid.attach(notebook, 0, 1, 3, 1)
+
+        grid1 = Gtk.Grid()
+        grid1.set_border_width(5)
+        grid1.set_row_spacing(5)
+        grid1.set_column_spacing(5)
+        notebook.append_page(grid1, Gtk.Label("Stand"))
+
+        self.capacities = []
+
+        for count, stand in enumerate(("North", "West", "South", "East", "North West", "North East", "South West", "South East")):
+            label = widgets.Label(stand)
+            grid1.attach(label, 0, count, 1, 1)
+
+            spinbutton = Gtk.SpinButton()
+            spinbutton.set_value(0)
+
+            if count < 4:
+                spinbutton.set_range(0, 15000)
+            else:
+                spinbutton.set_range(0, 3000)
+
+            spinbutton.set_increments(1000, 1000)
+            self.capacities.append(spinbutton)
+            grid1.attach(spinbutton, 1, count, 1, 1)
+
+        grid2 = Gtk.Grid()
+        grid2.set_border_width(5)
+        grid2.set_row_spacing(5)
+        grid2.set_column_spacing(5)
+        notebook.append_page(grid2, Gtk.Label("Buildings"))
+
+        self.buildings = []
+
+        for count, building in enumerate(("Stall", "Programme Vendor", "Small Shop", "Large Shop", "Bar", "Burger Bar", "Cafe", "Restaurant")):
+            label = widgets.Label(building)
+            grid2.attach(label, 0, count, 1, 1)
+
+            spinbutton = Gtk.SpinButton()
+            spinbutton.set_value(0)
+            spinbutton.set_range(0, 8)
+            spinbutton.set_increments(1, 1)
+            self.buildings.append(spinbutton)
+            grid2.attach(spinbutton, 1, count, 1, 1)
+
+    def display(self, stadiumid=None):
+        if stadiumid is None:
+            self.set_title("Add Stadium")
+            self.buttonSave.set_label("_Add")
+
+            self.current = None
+        else:
+            self.set_title("Edit Stadium")
+            self.buttonSave.set_label("_Edit")
+
+            self.load_fields(stadiumid)
+
+            self.current = stadiumid
+
+        self.show_all()
+        self.run()
+
+    def response_handler(self, dialog, response):
+        self.clear_fields()
+
+        self.hide()
+
+    def save_handler(self, button):
+        self.save_data(stadiumid=self.current)
+        self.clear_fields()
+
+        self.state = True
+
+        self.hide()
+
+    def save_data(self, stadiumid):
+        if stadiumid is None:
+            data.idnumbers.stadiumid += 1
+
+            stadium = Stadium()
+            data.stadiums[data.idnumbers.stadiumid] = stadium
+        else:
+            stadium = data.stadiums[stadiumid]
+
+        stadium.name = self.entryName.get_text()
+
+    def load_fields(self, stadiumid):
+        stadium = data.stadiums[stadiumid]
+
+        self.entryName.set_text(stadium.name)
+
+        for count, widget in enumerate(self.capacities):
+            widget.set_value(stadium.stands[count])
+
+        for count, widget in enumerate(self.buildings):
+            widget.set_value(stadium.buildings[count])
+
+    def clear_fields(self):
+        self.entryName.set_text("")
+
+        for count, widget in enumerate(self.capacities):
+            widget.set_value(0)

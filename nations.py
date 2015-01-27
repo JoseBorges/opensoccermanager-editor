@@ -8,6 +8,10 @@ import dialogs
 import widgets
 
 
+class Nation:
+    pass
+
+
 class Nations(Gtk.Grid):
     selected = 0
 
@@ -96,3 +100,87 @@ class Nations(Gtk.Grid):
 
     def run(self):
         self.show_all()
+
+
+class AddNationDialog(Gtk.Dialog):
+    state = False
+
+    def __init__(self):
+        Gtk.Dialog.__init__(self)
+        self.set_transient_for(widgets.window)
+        self.set_border_width(5)
+        self.connect("response", self.response_handler)
+        self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
+
+        self.buttonSave = widgets.Button()
+        self.buttonSave.connect("clicked", self.save_handler)
+        action_area = self.get_action_area()
+        action_area.add(self.buttonSave)
+
+        grid = Gtk.Grid()
+        grid.set_row_spacing(5)
+        grid.set_column_spacing(5)
+        self.vbox.add(grid)
+
+        label = widgets.Label("_Name")
+        grid.attach(label, 0, 0, 1, 1)
+        self.entryName = Gtk.Entry()
+        label.set_mnemonic_widget(self.entryName)
+        grid.attach(self.entryName, 1, 0, 1, 1)
+
+        label = widgets.Label("_Denonym")
+        grid.attach(label, 0, 1, 1, 1)
+        self.entryDenonym = Gtk.Entry()
+        label.set_mnemonic_widget(self.entryDenonym)
+        grid.attach(self.entryDenonym, 1, 1, 1, 1)
+
+    def save_handler(self, button):
+        self.save_data(nationid=self.current)
+        self.clear_fields()
+
+        self.state = True
+
+        self.hide()
+
+    def save_data(self, nationid):
+        if nationid is None:
+            data.idnumbers.nationid += 1
+
+            nation = Nation()
+            data.nations[data.idnumbers.nationid] = nation
+        else:
+            nation = data.nations[nationid]
+
+        nation.name = self.entryName.get_text()
+        nation.denonym = self.entryDenonym.get_text()
+
+    def response_handler(self, dialog, response):
+        self.hide()
+
+    def display(self, nationid=None):
+        if nationid is None:
+            self.set_title("Add Nation")
+            self.buttonSave.set_label("_Add")
+
+            self.current = None
+        else:
+            self.set_title("Edit Nation")
+            self.buttonSave.set_label("_Edit")
+            self.buttonSave.set_sensitive(True)
+
+            self.load_fields(nationid)
+
+            self.current = nationid
+
+        self.show_all()
+        self.run()
+
+    def load_fields(self, nationid):
+        nation = data.nations[nationid]
+
+        self.entryName.set_text(nation.name)
+        self.entryDenonym.set_text(nation.denonym)
+
+    def clear_fields(self):
+        self.entryName.set_text("")
+        self.entryDenonym.set_text("")
