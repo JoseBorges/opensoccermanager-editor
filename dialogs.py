@@ -1230,9 +1230,15 @@ def open_dialog():
     dialog.set_default_response(Gtk.ResponseType.OK)
 
     filefilter = Gtk.FileFilter()
-    filefilter.set_name("Database")
+    filefilter.set_name("All Files")
+    filefilter.add_pattern("*")
+    dialog.add_filter(filefilter)
+
+    filefilter = Gtk.FileFilter()
+    filefilter.set_name("Database Files")
     filefilter.add_pattern("*.db")
     dialog.add_filter(filefilter)
+    dialog.set_filter(filefilter)
 
     filename = None
 
