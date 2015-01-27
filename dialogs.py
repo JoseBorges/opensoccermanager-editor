@@ -141,18 +141,16 @@ class AddPlayerDialog(Gtk.Dialog):
     state = False
 
     def __init__(self):
-        def nation_changed(combobox):
-            if self.comboboxNationality.get_active_id() is None:
-                self.buttonSave.set_sensitive(False)
-            else:
-                self.buttonSave.set_sensitive(True)
-
         def free_agent_changed(checkbutton):
             if checkbutton.get_active():
                 self.buttonClub.set_sensitive(False)
                 self.buttonClub.set_label("")
             else:
                 self.buttonClub.set_sensitive(True)
+
+        self.date = 0
+        self.selected_club = 0
+        self.selected_nation = 0
 
         Gtk.Dialog.__init__(self)
         self.set_transient_for(widgets.window)
@@ -161,7 +159,6 @@ class AddPlayerDialog(Gtk.Dialog):
         self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
 
         self.buttonSave = widgets.Button()
-        self.buttonSave.set_sensitive(False)
         self.buttonSave.connect("clicked", self.save_handler)
         action_area = self.get_action_area()
         action_area.add(self.buttonSave)
@@ -224,18 +221,12 @@ class AddPlayerDialog(Gtk.Dialog):
         self.buttonClub.connect("clicked", self.club_change)
         grid1.attach(self.buttonClub, 2, 4, 1, 1)
 
-        cellrenderertext = Gtk.CellRendererText()
-
         label = widgets.Label("_Nationality")
         grid.attach(label, 0, 5, 1, 1)
-        self.comboboxNationality = Gtk.ComboBox()
-        self.comboboxNationality.set_model(treemodelsortNationality)
-        self.comboboxNationality.set_id_column(0)
-        self.comboboxNationality.pack_start(cellrenderertext, True)
-        self.comboboxNationality.add_attribute(cellrenderertext, "text", 1)
-        self.comboboxNationality.connect("changed", nation_changed)
-        label.set_mnemonic_widget(self.comboboxNationality)
-        grid.attach(self.comboboxNationality, 1, 5, 1, 1)
+        self.buttonNation = widgets.Button()
+        label.set_mnemonic_widget(self.buttonNation)
+        self.buttonNation.connect("clicked", self.nation_change)
+        grid.attach(self.buttonNation, 1, 5, 1, 1)
 
         label = widgets.Label("_Position")
         grid.attach(label, 0, 6, 1, 1)
@@ -311,7 +302,8 @@ class AddPlayerDialog(Gtk.Dialog):
         label.set_mnemonic_widget(self.spinbuttonTraining)
         grid.attach(self.spinbuttonTraining, 1, 8, 1, 1)
 
-        self.clubselectiondialog = ClubSelectionDialog()
+        self.clubselectiondialog = ClubSelectionDialog(parent=self)
+        self.nationselectiondialog = NationSelectionDialog(parent=self)
         self.dob = DateOfBirth(parent=self)
 
     def club_change(self, button):
@@ -323,7 +315,7 @@ class AddPlayerDialog(Gtk.Dialog):
         else:
             clubid = None
 
-        clubid = self.clubselectiondialog.display(parent=self, clubid=clubid)
+        clubid = self.clubselectiondialog.display(clubid=clubid)
 
         if clubid is not None:
             self.selected_club = clubid
@@ -332,6 +324,21 @@ class AddPlayerDialog(Gtk.Dialog):
             self.selected_club = 0
             self.buttonClub.set_label("")
             self.checkbuttonFreeAgent.set_active(True)
+
+    def nation_change(self, button):
+        if self.selected_nation != 0:
+            nationid = self.selected_nation
+        else:
+            nationid = None
+
+        nationid = self.nationselectiondialog.display(nationid=nationid)
+
+        if nationid is not None:
+            self.selected_nation = nationid
+            self.buttonNation.set_label("%s" % (data.nations[nationid].name))
+        else:
+            self.selected_nation = 0
+            self.buttonNation.set_label("")
 
     def date_of_birth(self, button):
         self.date = self.dob.display(date=self.date)
@@ -390,7 +397,7 @@ class AddPlayerDialog(Gtk.Dialog):
         else:
             player.club = self.selected_club
 
-        player.nationality = int(self.comboboxNationality.get_active_id())
+        player.nationality = self.selected_nation
 
         year, month, day = self.date
         player.date_of_birth = ("%i-%s-%s" % (year, month, day))
@@ -449,12 +456,14 @@ class AddPlayerDialog(Gtk.Dialog):
         if player.club != 0 and player.club is not None:
             self.selected_club = player.club
             self.buttonClub.set_label("%s" % (data.clubs[player.club].name))
+            self.checkbuttonFreeAgent.set_active(False)
         else:
             self.selected_club = 0
             self.buttonClub.set_label("")
             self.checkbuttonFreeAgent.set_active(True)
 
-        self.comboboxNationality.set_active_id(str(player.nationality))
+        self.selected_nation = player.nationality
+        self.buttonNation.set_label("%s" % (data.nations[player.nationality].name))
 
         date = player.date_of_birth.split("-")
         self.date = list(map(int, date))
@@ -485,7 +494,7 @@ class AddPlayerDialog(Gtk.Dialog):
         self.buttonDateOfBirth.set_label("")
         self.labelAge.set_label("")
         self.buttonClub.set_label("")
-        self.comboboxNationality.set_active(-1)
+        self.buttonNation.set_label("")
 
         self.comboboxPosition.set_active(-1)
         self.spinbuttonKP.set_value(1)
@@ -1049,7 +1058,7 @@ class PlayerSelectionDialog(Gtk.Dialog):
 
 
 class ClubSelectionDialog(Gtk.Dialog):
-    def __init__(self):
+    def __init__(self, parent):
         def treeselection_changed(treeselection):
             if treeselection.count_selected_rows() == 0:
                 self.set_response_sensitive(Gtk.ResponseType.OK, False)
@@ -1065,10 +1074,12 @@ class ClubSelectionDialog(Gtk.Dialog):
         Gtk.Dialog.__init__(self)
         self.set_border_width(5)
         self.set_default_size(-1, 250)
+        self.set_transient_for(parent)
         self.set_title("Select Club")
         self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
         self.add_button("_Select", Gtk.ResponseType.OK)
         self.set_default_response(Gtk.ResponseType.OK)
+        self.set_response_sensitive(Gtk.ResponseType.OK, False)
 
         grid = Gtk.Grid()
         grid.set_hexpand(True)
@@ -1123,8 +1134,7 @@ class ClubSelectionDialog(Gtk.Dialog):
 
         self.populate(data.clubs)
 
-    def display(self, parent, clubid):
-        self.set_transient_for(parent)
+    def display(self, clubid):
         self.populate(data.clubs)
 
         for item in self.treemodelsort:
@@ -1149,6 +1159,108 @@ class ClubSelectionDialog(Gtk.Dialog):
             self.liststore.append([clubid, club.name])
 
 
+class NationSelectionDialog(Gtk.Dialog):
+    def __init__(self, parent):
+        def treeselection_changed(treeselection):
+            if treeselection.count_selected_rows() == 0:
+                self.set_response_sensitive(Gtk.ResponseType.OK, False)
+            else:
+                self.set_response_sensitive(Gtk.ResponseType.OK, True)
+
+            model, treeiter = treeselection.get_selected()
+
+            if treeiter:
+                treepath = model.get_path(treeiter)
+                treeview.scroll_to_cell(treepath)
+
+        Gtk.Dialog.__init__(self)
+        self.set_border_width(5)
+        self.set_default_size(-1, 250)
+        self.set_transient_for(parent)
+        self.set_title("Select Club")
+        self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
+        self.add_button("_Select", Gtk.ResponseType.OK)
+        self.set_default_response(Gtk.ResponseType.OK)
+        self.set_response_sensitive(Gtk.ResponseType.OK, False)
+
+        grid = Gtk.Grid()
+        grid.set_hexpand(True)
+        grid.set_row_spacing(5)
+        self.vbox.add(grid)
+
+        scrolledwindow = Gtk.ScrolledWindow()
+        grid.attach(scrolledwindow, 0, 0, 1, 1)
+
+        cellrenderertext = Gtk.CellRendererText()
+        self.liststore = Gtk.ListStore(int, str)
+        self.treemodelsort = Gtk.TreeModelSort(self.liststore)
+        self.treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
+
+        treeview = Gtk.TreeView()
+        treeview.set_hexpand(True)
+        treeview.set_vexpand(True)
+        treeview.set_model(self.treemodelsort)
+        treeview.set_headers_visible(False)
+        treeview.set_enable_search(False)
+        treeview.set_search_column(-1)
+        treeviewcolumn = Gtk.TreeViewColumn("", cellrenderertext, text=1)
+        treeview.append_column(treeviewcolumn)
+        self.treeselection = treeview.get_selection()
+        self.treeselection.connect("changed", treeselection_changed)
+        scrolledwindow.add(treeview)
+
+        self.entrySearch = Gtk.SearchEntry()
+        self.entrySearch.connect("activate", self.activate_search)
+        self.entrySearch.connect("icon-press", self.clear_search)
+        grid.attach(self.entrySearch, 0, 1, 1, 1)
+
+    def display(self, nationid):
+        self.populate(data.nations)
+
+        for item in self.treemodelsort:
+            if item[0] == nationid:
+                self.treeselection.select_iter(item.iter)
+
+        self.set_focus(self.entrySearch)
+        self.show_all()
+
+        if self.run() == Gtk.ResponseType.OK:
+            model, treeiter = self.treeselection.get_selected()
+            nationid = model[treeiter][0]
+
+        self.hide()
+
+        return nationid
+
+    def activate_search(self, entry):
+        criteria = entry.get_text()
+
+        if criteria is not "":
+            items = {}
+
+            for clubid, club in data.clubs.items():
+                for search in (club.name,):
+                    search = "".join((c for c in unicodedata.normalize("NFD", search) if unicodedata.category(c) != "Mn"))
+
+                    if re.findall(criteria, search, re.IGNORECASE):
+                        items[clubid] = club
+
+                        break
+
+            self.populate(items)
+
+    def clear_search(self, entry, icon, event):
+        entry.set_text("")
+
+        self.populate(data.clubs)
+
+    def populate(self, data):
+        self.liststore.clear()
+
+        for nationid, nation in data.items():
+            self.liststore.append([nationid, nation.name])
+
+
 class DateOfBirth(Gtk.Dialog):
     def __init__(self, parent):
         Gtk.Dialog.__init__(self)
@@ -1163,36 +1275,35 @@ class DateOfBirth(Gtk.Dialog):
         self.vbox.add(self.calendar)
 
     def display(self, date):
-        year, month, day = list(map(int, date))
+        if date != 0:
+            year, month, day = list(map(int, date))
 
-        self.calendar.select_day(day)
-        self.calendar.select_month(month - 1, year)
+            self.calendar.select_day(day)
+            self.calendar.select_month(month - 1, year)
+        else:
+            year, month, day = [data.season - 18, 1, 1]
+
+            self.calendar.select_day(day)
+            self.calendar.select_month(month - 1, year)
 
         self.show_all()
-
-        date_of_birth = year, month, day
 
         if self.run() == Gtk.ResponseType.OK:
             year, month, day = self.calendar.get_date()
 
-            age = data.season - year
-
-            if (month, day) > (8, 1):
-                age -= 1
-
-            if day < 10:
-                day = "0%i" % (day)
-            else:
-                day = str(day)
-
             month += 1
 
-            if month < 10:
-                month = "0%i" % (month)
-            else:
-                month = str(month)
+        if day < 10:
+            day = "0%i" % (day)
+        else:
+            day = str(day)
 
-            date_of_birth = [year, month, day]
+        if month < 10:
+            month = "0%i" % (month)
+        else:
+            month = str(month)
+
+        date_of_birth = [year, month, day]
 
         self.hide()
 
