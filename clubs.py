@@ -107,6 +107,8 @@ class Clubs(Gtk.Grid):
     def populate(self):
         self.liststore.clear()
 
+        count = 0
+
         for count, (clubid, club) in enumerate(data.clubs.items(), start=1):
             stadium = "%s" % (data.stadiums[club.stadium].name)
 

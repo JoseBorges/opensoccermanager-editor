@@ -88,6 +88,33 @@ class Players(Gtk.Grid):
         self.labelSelected.set_hexpand(True)
         self.attach(self.labelSelected, 1, 1, 1, 1)
 
+        # Context menu
+        contextmenu = Gtk.Menu()
+        menuitem = widgets.MenuItem("_Edit Item")
+        menuitem.connect("activate", self.row_edit_by_menu)
+        contextmenu.append(menuitem)
+        menuitem = widgets.MenuItem("_Remove Item")
+        menuitem.connect("activate", self.row_delete_by_menu)
+        contextmenu.append(menuitem)
+        treeview.connect("button-press-event", self.context_menu, contextmenu)
+
+    def context_menu(self, treeview, event, contextmenu):
+        if event.button == 3:
+            contextmenu.show_all()
+            contextmenu.popup(None, None, None, None, event.button, event.time)
+
+    def row_edit_by_menu(self, menuitem):
+        model, treepath = self.treeselection.get_selected_rows()
+
+        if treepath:
+            playerid = model[treepath][0]
+
+            playerid = [playerid]
+            dialogs.players.display(playerid)
+
+            if dialogs.players.state:
+                self.populate()
+
     def row_activated(self, treeview, path, column):
         model = treeview.get_model()
         playerid = model[path][0]
@@ -98,7 +125,17 @@ class Players(Gtk.Grid):
         if dialogs.players.state:
             self.populate()
 
-    def row_delete(self, treeview, event):
+    def row_delete_by_menu(self, menuitem):
+        if dialogs.remove_dialog(index=0, parent=widgets.window):
+            model, treepath = self.treeselection.get_selected_rows()
+
+            for item in treepath:
+                playerid = model[item][0]
+                del(data.players[playerid])
+
+            self.populate()
+
+    def row_delete(self, widget, event):
         key = Gdk.keyval_name(event.keyval)
 
         if key == "Delete":
@@ -139,6 +176,8 @@ class Players(Gtk.Grid):
 
     def populate(self):
         self.liststore.clear()
+
+        count = 0
 
         for count, (playerid, player) in enumerate(data.players.items(), start=1):
             club = display.club(player)

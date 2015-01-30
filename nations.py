@@ -91,6 +91,8 @@ class Nations(Gtk.Grid):
     def populate(self):
         self.liststore.clear()
 
+        count = 0
+
         for count, (nationid, nation) in enumerate(data.nations.items(), start=1):
             self.liststore.append([nationid,
                                    nation.name,

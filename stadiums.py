@@ -107,6 +107,8 @@ class Stadiums(Gtk.Grid):
     def populate(self):
         self.liststore.clear()
 
+        count = 0
+
         for count, (stadiumid, stadium) in enumerate(data.stadiums.items(), start=1):
             self.liststore.append([stadiumid,
                                    stadium.name,
