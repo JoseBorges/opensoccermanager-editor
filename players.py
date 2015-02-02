@@ -126,7 +126,12 @@ class Players(Gtk.Grid):
             self.populate()
 
     def row_delete_by_menu(self, menuitem):
-        if dialogs.remove_dialog(index=0, parent=widgets.window):
+        if data.options.confirm_remove:
+            state = dialogs.remove_dialog(index=0, parent=widgets.window)
+        else:
+            state = True
+
+        if state:
             model, treepath = self.treeselection.get_selected_rows()
 
             for item in treepath:
@@ -139,7 +144,12 @@ class Players(Gtk.Grid):
         key = Gdk.keyval_name(event.keyval)
 
         if key == "Delete":
-            if dialogs.remove_dialog(index=0, parent=widgets.window):
+            if data.options.confirm_remove:
+                state = dialogs.remove_dialog(index=0, parent=widgets.window)
+            else:
+                state = True
+
+            if state:
                 model, treepath = self.treeselection.get_selected_rows()
 
                 for item in treepath:

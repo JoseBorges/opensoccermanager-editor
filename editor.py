@@ -317,7 +317,7 @@ class Window(Gtk.Window):
         if data.options.confirm_quit:
             state = dialogs.quit_dialog()
 
-            if state == 1:
+            if state:
                 if data.db.cursor is not None:
                     data.db.disconnect()
 

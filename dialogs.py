@@ -49,9 +49,19 @@ class Preferences(Gtk.Dialog):
         self.checkbuttonQuit.set_use_underline(True)
         self.checkbuttonQuit.connect("toggled", self.quit_toggled)
         grid.attach(self.checkbuttonQuit, 0, 0, 1, 1)
+        self.checkbuttonRemove = Gtk.CheckButton("_Display confirmation dialog when removing items")
+        self.checkbuttonRemove.set_use_underline(True)
+        self.checkbuttonRemove.connect("toggled", self.remove_toggled)
+        grid.attach(self.checkbuttonRemove, 0, 1, 1, 1)
 
     def response_handler(self, widget, event):
         self.hide()
+
+    def remove_toggled(self, checkbutton):
+        data.options.confirm_remove = checkbutton.get_active()
+        data.options["INTERFACE"]["ConfirmRemove"] = str(data.options.confirm_remove)
+
+        data.options.write_file()
 
     def quit_toggled(self, checkbutton):
         data.options.confirm_quit = checkbutton.get_active()
@@ -61,6 +71,7 @@ class Preferences(Gtk.Dialog):
 
     def run(self):
         self.checkbuttonQuit.set_active(data.options.confirm_quit)
+        self.checkbuttonRemove.set_active(data.options.confirm_remove)
 
         self.show_all()
 
@@ -562,10 +573,10 @@ def quit_dialog():
     messagedialog.set_default_response(Gtk.ResponseType.REJECT)
     messagedialog.set_markup("Quit the data editor?")
 
-    state = 0
+    state = False
 
     if messagedialog.run() == Gtk.ResponseType.ACCEPT:
-        state = 1
+        state = True
 
     messagedialog.destroy()
 
