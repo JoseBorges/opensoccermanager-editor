@@ -33,9 +33,13 @@ class Window(Gtk.Window):
         Gtk.Window.__init__(self)
         self.set_title("Editor")
         self.set_icon_from_file(iconpath)
-        self.set_default_size(640, 480)
-        self.maximize()
         self.connect("delete-event", self.close_application)
+        self.set_default_size(data.options.window_width, data.options.window_height)
+
+        if data.options.window_maximize:
+            self.maximize()
+        else:
+            self.unmaximize()
 
         accelgroup = Gtk.AccelGroup()
         self.add_accel_group(accelgroup)
@@ -321,14 +325,27 @@ class Window(Gtk.Window):
                 if data.db.cursor is not None:
                     data.db.disconnect()
 
-                Gtk.main_quit()
+                self.quit_application()
         else:
             if data.db.cursor is not None:
                 data.db.disconnect()
 
-            Gtk.main_quit()
+            self.quit_application()
 
         return True
+
+    def quit_application(self):
+        width = str(self.get_size()[0])
+        height = str(self.get_size()[1])
+        maximized = str(self.is_maximized())
+
+        data.options["INTERFACE"]["Width"] = width
+        data.options["INTERFACE"]["Height"] = height
+        data.options["INTERFACE"]["Maximized"] = maximized
+
+        data.options.write_file()
+
+        Gtk.main_quit()
 
 
 class MainMenu(Gtk.Grid):
