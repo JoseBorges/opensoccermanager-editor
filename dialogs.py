@@ -52,6 +52,10 @@ class Preferences(Gtk.Dialog):
         self.checkbuttonRemove.set_use_underline(True)
         self.checkbuttonRemove.connect("toggled", self.remove_toggled)
         grid.attach(self.checkbuttonRemove, 0, 1, 1, 1)
+        self.checkbuttonToolbar = Gtk.CheckButton("_Show toolbar")
+        self.checkbuttonToolbar.set_use_underline(True)
+        self.checkbuttonToolbar.connect("toggled", self.toolbar_toggled)
+        grid.attach(self.checkbuttonToolbar, 0, 2, 1, 1)
 
     def response_handler(self, widget, event):
         self.hide()
@@ -68,11 +72,20 @@ class Preferences(Gtk.Dialog):
 
         data.options.write_file()
 
-    def run(self):
+    def toolbar_toggled(self, checkbutton):
+        data.options.show_toolbar = checkbutton.get_active()
+        data.options["INTERFACE"]["ShowToolbar"] = str(data.options.show_toolbar)
+        widgets.window.toolbar.set_visible(data.options.show_toolbar)
+
+        data.options.write_file()
+
+    def display(self):
         self.checkbuttonQuit.set_active(data.options.confirm_quit)
         self.checkbuttonRemove.set_active(data.options.confirm_remove)
+        self.checkbuttonToolbar.set_active(data.options.show_toolbar)
 
         self.show_all()
+        self.run()
 
 
 class NewDatabase(Gtk.Dialog):

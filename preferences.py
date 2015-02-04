@@ -5,9 +5,10 @@ import os
 
 
 class Preferences(ConfigParser):
-    confirm_quit = False
-    confirm_remove = False
-    window_maximize = False
+    show_toolbar = True
+    confirm_quit = True
+    confirm_remove = True
+    window_maximize = True
     window_width = 0
     window_height = 0
 
@@ -17,7 +18,8 @@ class Preferences(ConfigParser):
         home = os.path.expanduser("~")
         data = os.path.join(home, ".config", "opensoccermanager")
 
-        self["INTERFACE"] = {"ConfirmQuit": True,
+        self["INTERFACE"] = {"ShowToolbar": True,
+                             "ConfirmQuit": True,
                              "ConfirmRemove": True,
                              "Maximized": True,
                              "Width": 0,
@@ -28,6 +30,7 @@ class Preferences(ConfigParser):
     def read_file(self):
         self.read(self.filename)
 
+        self.show_toolbar = self["INTERFACE"].getboolean("ShowToolbar")
         self.confirm_quit = self["INTERFACE"].getboolean("ConfirmQuit")
         self.confirm_remove = self["INTERFACE"].getboolean("ConfirmRemove")
         self.window_maximize = self["INTERFACE"].getboolean("Maximized")

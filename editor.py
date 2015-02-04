@@ -203,7 +203,7 @@ class Window(Gtk.Window):
     def save_database(self, widget):
         if widget in (self.menuitemSave, self.toolbuttonSave):
             data.db.save()
-        elif widget == self.menuitemSaveAs:
+        elif widget is self.menuitemSaveAs:
             filename = dialogs.save_dialog()
 
             if filename is not None:
@@ -213,7 +213,8 @@ class Window(Gtk.Window):
                 self.update_title(filename)
 
     def open_preferences(self, menuitem):
-        dialogs.preferences.run()
+        dialogs.preferences.display()
+        dialogs.preferences.hide()
 
     def update_title(self, filename):
         self.set_title("Editor - %s" % (filename))
@@ -317,11 +318,6 @@ class Window(Gtk.Window):
     def switch_notebook_page(self, menuitem, page):
         maineditor.set_current_page(page)
 
-    def run(self):
-        self.grid.attach(mainmenu, 0, 2, 1, 1)
-
-        self.show_all()
-
     def close_application(self, widget, event=None):
         if data.options.confirm_quit:
             state = dialogs.quit_dialog()
@@ -351,6 +347,13 @@ class Window(Gtk.Window):
         data.options.write_file()
 
         Gtk.main_quit()
+
+    def run(self):
+        self.grid.attach(mainmenu, 0, 2, 1, 1)
+
+        self.show_all()
+
+        self.toolbar.set_visible(data.options.show_toolbar)
 
 
 class MainMenu(Gtk.Grid):
