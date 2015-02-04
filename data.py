@@ -3,6 +3,8 @@
 import database
 
 
+unsaved = False
+
 players = {}
 clubs = {}
 nations = {}

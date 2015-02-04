@@ -576,6 +576,30 @@ def save_dialog():
     return filename
 
 
+def unsaved_dialog():
+    messagedialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION)
+    messagedialog.set_transient_for(widgets.window)
+    messagedialog.set_title("Unsaved Data")
+    messagedialog.add_button("_Cancel", Gtk.ResponseType.CANCEL)
+    messagedialog.add_button("_Quit", Gtk.ResponseType.CLOSE)
+    messagedialog.add_button("_Save and Quit", Gtk.ResponseType.OK)
+    messagedialog.set_markup("The database is currently unsaved.")
+    messagedialog.format_secondary_text("Do you want to save it before closing?")
+
+    response = messagedialog.run()
+
+    state = 0
+
+    if response == Gtk.ResponseType.CLOSE:
+        state = 1
+    elif response == Gtk.ResponseType.OK:
+        state = 2
+
+    messagedialog.destroy()
+
+    return state
+
+
 def quit_dialog():
     messagedialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION)
     messagedialog.set_transient_for(widgets.window)

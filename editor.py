@@ -203,12 +203,14 @@ class Window(Gtk.Window):
     def save_database(self, widget):
         if widget in (self.menuitemSave, self.toolbuttonSave):
             data.db.save()
+            data.unsaved = False
         elif widget is self.menuitemSaveAs:
             filename = dialogs.save_dialog()
 
             if filename is not None:
                 data.db.connect(filename)
                 data.db.save()
+                data.unsaved = False
 
                 self.update_title(filename)
 
@@ -251,6 +253,7 @@ class Window(Gtk.Window):
 
             if dialogs.players.state:
                 players.populate()
+                data.unsaved = True
         elif page == 1:
             dialogs.clubs.display(clubid=clubs.selected)
 
@@ -278,6 +281,7 @@ class Window(Gtk.Window):
                     del(data.players[item])
 
                 players.populate()
+                data.unsaved = True
             elif page == 1:
                 keys = [player.club for playerid, player in data.players.items()]
 
@@ -319,19 +323,35 @@ class Window(Gtk.Window):
         maineditor.set_current_page(page)
 
     def close_application(self, widget, event=None):
-        if data.options.confirm_quit:
-            state = dialogs.quit_dialog()
+        if data.unsaved:
+            state = dialogs.unsaved_dialog()
 
-            if state:
+            if state == 1:
+                if data.db.cursor is not None:
+                    data.db.disconnect()
+
+                self.quit_application()
+            elif state == 2:
+                data.db.save()
+
                 if data.db.cursor is not None:
                     data.db.disconnect()
 
                 self.quit_application()
         else:
-            if data.db.cursor is not None:
-                data.db.disconnect()
+            if data.options.confirm_quit:
+                state = dialogs.quit_dialog()
 
-            self.quit_application()
+                if state:
+                    if data.db.cursor is not None:
+                        data.db.disconnect()
+
+                    self.quit_application()
+            else:
+                if data.db.cursor is not None:
+                    data.db.disconnect()
+
+                self.quit_application()
 
         return True
 
