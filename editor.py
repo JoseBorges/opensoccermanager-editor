@@ -160,7 +160,7 @@ class Window(Gtk.Window):
         menuitem.set_submenu(menu)
 
         menuitem = widgets.MenuItem("_About")
-        menuitem.connect("activate", lambda i: dialogs.about())
+        menuitem.connect("activate", self.about_dialog)
         menu.append(menuitem)
 
         self.toolbar = Gtk.Toolbar()
@@ -194,6 +194,11 @@ class Window(Gtk.Window):
         self.toolbuttonSave.set_tooltip_text("Save changes to database")
         self.toolbuttonSave.connect("clicked", self.save_database)
         self.toolbar.add(self.toolbuttonSave)
+
+    def about_dialog(self, menuitem):
+        aboutdialog = dialogs.AboutDialog()
+        aboutdialog.run()
+        aboutdialog.destroy()
 
     def save_database(self, widget):
         if widget in (self.menuitemSave, self.toolbuttonSave):

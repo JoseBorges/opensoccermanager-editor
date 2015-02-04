@@ -14,21 +14,20 @@ import preferences
 import widgets
 
 
-def about():
-    path = os.path.join("resources", "logo.svg")
-    icon = GdkPixbuf.Pixbuf.new_from_file_at_size(path, 64, 64)
+class AboutDialog(Gtk.AboutDialog):
+    def __init__(self):
+        Gtk.AboutDialog.__init__(self)
 
-    aboutdialog = Gtk.AboutDialog()
-    aboutdialog.set_transient_for(widgets.window)
-    aboutdialog.set_program_name("Editor")
-    aboutdialog.set_comments("Data editor for OpenSoccerManager")
-    aboutdialog.set_website("http://opensoccermanager.org/")
-    aboutdialog.set_website_label("Website")
-    aboutdialog.set_license_type(Gtk.License.GPL_3_0)
-    aboutdialog.set_logo(icon)
+        path = os.path.join("resources", "logo.svg")
+        icon = GdkPixbuf.Pixbuf.new_from_file_at_size(path, 64, 64)
 
-    aboutdialog.run()
-    aboutdialog.destroy()
+        self.set_transient_for(widgets.window)
+        self.set_program_name("Editor")
+        self.set_comments("Data editor for OpenSoccerManager")
+        self.set_website("http://opensoccermanager.org/")
+        self.set_website_label("Website")
+        self.set_license_type(Gtk.License.GPL_3_0)
+        self.set_logo(icon)
 
 
 class Preferences(Gtk.Dialog):
