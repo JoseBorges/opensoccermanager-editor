@@ -214,7 +214,35 @@ class Players(Gtk.Grid):
 
         self.labelCount.set_label("%i Players in Database" % (count))
 
+    def populate_search(self, values):
+        self.liststore.clear()
+
+        for playerid, player in values.items():
+            club = display.club(player)
+            nationality = data.nations[player.nationality].name
+
+            self.liststore.append([playerid,
+                                   player.first_name,
+                                   player.second_name,
+                                   player.common_name,
+                                   player.date_of_birth,
+                                   club,
+                                   nationality,
+                                   player.position,
+                                   player.keeping,
+                                   player.tackling,
+                                   player.passing,
+                                   player.shooting,
+                                   player.heading,
+                                   player.pace,
+                                   player.stamina,
+                                   player.ball_control,
+                                   player.set_pieces,
+                                   player.training_value])
+
     def run(self):
+        self.populate()
+
         self.show_all()
 
 

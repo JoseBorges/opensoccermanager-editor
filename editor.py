@@ -2,6 +2,8 @@
 
 from gi.repository import Gtk
 import os
+import re
+import unicodedata
 
 import clubs
 import data
@@ -24,6 +26,7 @@ class Window(Gtk.Window):
     menuitemEdit = None
     menuitemRemove = None
     toolbar = None
+    searchentry = None
 
     def __init__(self):
         data.options.read_file()
@@ -195,6 +198,17 @@ class Window(Gtk.Window):
         self.toolbuttonSave.connect("clicked", self.save_database)
         self.toolbar.add(self.toolbuttonSave)
 
+        grid1 = Gtk.Grid()
+        grid1.set_border_width(5)
+        self.grid.attach(grid1, 0, 2, 1, 1)
+
+        self.searchentry = Gtk.SearchEntry()
+        self.searchentry.set_placeholder_text("Search")
+        self.searchentry.set_width_chars(25)
+        self.searchentry.connect("activate", self.search_data)
+        self.searchentry.connect("icon-press", self.search_clear)
+        grid1.attach(self.searchentry, 0, 0, 1, 1)
+
     def about_dialog(self, menuitem):
         aboutdialog = dialogs.AboutDialog()
         aboutdialog.run()
@@ -307,6 +321,29 @@ class Window(Gtk.Window):
                     del(data.stadiums[stadiums.selected])
                     stadiums.populate()
 
+    def search_data(self, searchentry):
+        criteria = searchentry.get_text()
+
+        if criteria is not "":
+            values = {}
+
+            for playerid, player in data.players.items():
+                both = "%s %s" % (player.first_name, player.second_name)
+
+                for search in (player.second_name, player.common_name, player.first_name, both):
+                    search = ''.join((c for c in unicodedata.normalize('NFD', search) if unicodedata.category(c) != 'Mn'))
+
+                    if re.findall(criteria, search, re.IGNORECASE):
+                        values[playerid] = player
+
+                        break
+
+            players.populate_search(values)
+
+    def search_clear(self, searchentry, icon, entry):
+        if icon == Gtk.EntryIconPosition.SECONDARY:
+            players.populate()
+
     def move_notebook_page(self, menuitem, direction):
         if direction == -1:
             if maineditor.get_current_page() == 0:
@@ -374,6 +411,7 @@ class Window(Gtk.Window):
         self.show_all()
 
         self.toolbar.set_visible(data.options.show_toolbar)
+        self.searchentry.set_visible(False)
 
 
 class MainMenu(Gtk.Grid):
@@ -436,6 +474,7 @@ class MainEditor(Gtk.Notebook):
         widgets.window.menuitemEdit.set_sensitive(True)
         widgets.window.menuitemRemove.set_sensitive(True)
         widgets.window.toolbar.set_sensitive(True)
+        widgets.window.searchentry.set_visible(True)
 
         players.run()
         clubs.run()
@@ -449,7 +488,7 @@ class MainEditor(Gtk.Notebook):
         self.show_all()
 
     def add_tabs(self):
-        widgets.window.grid.attach(self, 0, 2, 1, 1)
+        widgets.window.grid.attach(self, 0, 3, 1, 1)
         self.append_page(players, widgets.Label("_Players"))
         self.append_page(clubs, widgets.Label("_Clubs"))
         self.append_page(nations, widgets.Label("_Nations"))
