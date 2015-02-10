@@ -206,6 +206,7 @@ class Window(Gtk.Window):
         self.searchentry.set_placeholder_text("Search")
         self.searchentry.set_width_chars(25)
         self.searchentry.connect("activate", self.search_data)
+        self.searchentry.connect("changed", self.search_update)
         self.searchentry.connect("icon-press", self.search_clear)
         grid1.attach(self.searchentry, 0, 0, 1, 1)
 
@@ -339,6 +340,10 @@ class Window(Gtk.Window):
                         break
 
             players.populate_search(values)
+
+    def search_update(self, searchentry):
+        if searchentry.get_text() is "":
+            players.populate()
 
     def search_clear(self, searchentry, icon, entry):
         if icon == Gtk.EntryIconPosition.SECONDARY:
@@ -496,9 +501,13 @@ class MainEditor(Gtk.Notebook):
 
     def switch_page(self, notebook, page, number):
         if page.selected is None:
+            widgets.window.menuitemEdit.set_sensitive(False)
+            widgets.window.menuitemRemove.set_sensitive(False)
             widgets.toolbuttonEdit.set_sensitive(False)
             widgets.toolbuttonRemove.set_sensitive(False)
         else:
+            widgets.window.menuitemEdit.set_sensitive(True)
+            widgets.window.menuitemRemove.set_sensitive(True)
             widgets.toolbuttonEdit.set_sensitive(True)
             widgets.toolbuttonRemove.set_sensitive(True)
 

@@ -168,10 +168,14 @@ class Players(Gtk.Grid):
                 value = model[item][0]
                 self.selected.append(value)
 
+            widgets.window.menuitemEdit.set_sensitive(True)
+            widgets.window.menuitemRemove.set_sensitive(True)
             widgets.toolbuttonEdit.set_sensitive(True)
             widgets.toolbuttonRemove.set_sensitive(True)
         else:
             self.selected = None
+            widgets.window.menuitemEdit.set_sensitive(False)
+            widgets.window.menuitemRemove.set_sensitive(False)
             widgets.toolbuttonEdit.set_sensitive(False)
             widgets.toolbuttonRemove.set_sensitive(False)
 
