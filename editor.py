@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from gi.repository import Gtk
+from gi.repository import Gdk
 import os
 import re
 import unicodedata
@@ -203,6 +204,11 @@ class Window(Gtk.Window):
         self.grid.attach(grid1, 0, 2, 1, 1)
 
         self.searchentry = Gtk.SearchEntry()
+        self.searchentry.add_accelerator("grab-focus",
+                                         accelgroup,
+                                         102,
+                                         Gdk.ModifierType.CONTROL_MASK,
+                                         Gtk.AccelFlags.VISIBLE)
         self.searchentry.set_placeholder_text("Search")
         self.searchentry.set_width_chars(25)
         self.searchentry.connect("activate", self.search_data)

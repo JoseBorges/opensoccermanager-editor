@@ -35,6 +35,8 @@ class Clubs(Gtk.Grid):
         treeview.set_vexpand(True)
         treeview.set_model(treemodelsort)
         treeview.set_headers_clickable(True)
+        treeview.set_enable_search(False)
+        treeview.set_search_column(-1)
         treeview.connect("key-press-event", self.row_delete)
         treeview.connect("row-activated", self.row_activated)
         self.treeselection = treeview.get_selection()
@@ -178,11 +180,13 @@ class AddClubDialog(Gtk.Dialog):
 
         cellrenderertext = Gtk.CellRendererText()
         self.liststoreStadiums = Gtk.ListStore(str, str)
+        treemodelsort = Gtk.TreeModelSort(self.liststoreStadiums)
+        treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
 
         label = widgets.Label("_Stadium")
         grid1.attach(label, 0, 4, 1, 1)
         self.comboboxStadium = Gtk.ComboBox()
-        self.comboboxStadium.set_model(self.liststoreStadiums)
+        self.comboboxStadium.set_model(treemodelsort)
         self.comboboxStadium.set_id_column(0)
         self.comboboxStadium.pack_start(cellrenderertext, True)
         self.comboboxStadium.add_attribute(cellrenderertext, "text", 1)
@@ -266,7 +270,6 @@ class AddClubDialog(Gtk.Dialog):
             self.buttonSave.set_sensitive(True)
 
             self.populate(clubid)
-
             self.load_fields(clubid)
 
             self.current = clubid
