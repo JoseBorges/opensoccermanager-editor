@@ -451,9 +451,11 @@ class AddPlayerDialog(Gtk.Dialog):
         if nationid is not None:
             self.selected_nation = nationid
             self.buttonNation.set_label("%s" % (data.nations[nationid].name))
+            self.buttonSave.set_sensitive(True)
         else:
             self.selected_nation = 0
             self.buttonNation.set_label("")
+            self.buttonSave.set_sensitive(False)
 
     def date_of_birth(self, button):
         self.date = self.dob.display(date=self.date)
@@ -546,11 +548,13 @@ class AddPlayerDialog(Gtk.Dialog):
         if playerid is None:
             self.set_title("Add Player")
             self.buttonSave.set_label("_Add")
+            self.buttonSave.set_sensitive(False)
 
             self.current = None
         else:
             self.set_title("Edit Player")
             self.buttonSave.set_label("_Edit")
+            self.buttonSave.set_sensitive(True)
             self.checkbuttonMulti.set_visible(False)
 
             self.generator = playerid.__iter__()

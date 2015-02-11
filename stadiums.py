@@ -173,17 +173,35 @@ class AddStadiumDialog(Gtk.Dialog):
             label = widgets.Label(stand)
             grid1.attach(label, 0, count, 1, 1)
 
-            spinbutton = Gtk.SpinButton()
-            spinbutton.set_value(0)
+            spinbuttonCapacity = Gtk.SpinButton()
+            spinbuttonCapacity.set_value(0)
+            spinbuttonCapacity.set_increments(1000, 1000)
+            spinbuttonCapacity.set_snap_to_ticks(True)
+            self.capacities.append(spinbuttonCapacity)
+            grid1.attach(spinbuttonCapacity, 1, count, 1, 1)
+
+            radiobuttonStanding = Gtk.RadioButton("_Standing")
+            radiobuttonStanding.set_use_underline(True)
+            grid1.attach(radiobuttonStanding, 2, count, 1, 1)
+            radiobuttonSeating = Gtk.RadioButton("_Seating")
+            radiobuttonSeating.set_use_underline(True)
+            radiobuttonSeating.join_group(radiobuttonStanding)
+            grid1.attach(radiobuttonSeating, 3, count, 1, 1)
+
+            checkbuttonRoof = Gtk.CheckButton("_Roof")
+            checkbuttonRoof.set_use_underline(True)
+            grid1.attach(checkbuttonRoof, 4, count, 1, 1)
 
             if count < 4:
-                spinbutton.set_range(0, 15000)
-            else:
-                spinbutton.set_range(0, 3000)
+                spinbuttonCapacity.set_range(0, 15000)
 
-            spinbutton.set_increments(1000, 1000)
-            self.capacities.append(spinbutton)
-            grid1.attach(spinbutton, 1, count, 1, 1)
+                label = Gtk.Label("Box")
+                grid1.attach(label, 5, count, 1, 1)
+                spinbuttonBox = Gtk.SpinButton()
+                spinbuttonBox.set_value(0)
+                grid1.attach(spinbuttonBox, 6, count, 1, 1)
+            else:
+                spinbuttonCapacity.set_range(0, 3000)
 
         grid2 = Gtk.Grid()
         grid2.set_border_width(5)
