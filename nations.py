@@ -130,12 +130,14 @@ class AddNationDialog(Gtk.Dialog):
         label = widgets.Label("_Name")
         grid.attach(label, 0, 0, 1, 1)
         self.entryName = Gtk.Entry()
+        self.entryName.connect("changed", lambda w: self.save_button_handler())
         label.set_mnemonic_widget(self.entryName)
         grid.attach(self.entryName, 1, 0, 1, 1)
 
         label = widgets.Label("_Denonym")
         grid.attach(label, 0, 1, 1, 1)
         self.entryDenonym = Gtk.Entry()
+        self.entryDenonym.connect("changed", lambda w: self.save_button_handler())
         label.set_mnemonic_widget(self.entryDenonym)
         grid.attach(self.entryDenonym, 1, 1, 1, 1)
 
@@ -159,13 +161,30 @@ class AddNationDialog(Gtk.Dialog):
         nation.name = self.entryName.get_text()
         nation.denonym = self.entryDenonym.get_text()
 
+    def save_button_handler(self):
+        sensitive = False
+
+        if self.entryName.get_text_length() > 0:
+            sensitive = True
+
+        if sensitive:
+            if self.entryDenonym.get_text_length() > 0:
+                sensitive = True
+            else:
+                sensitive = False
+
+        self.buttonSave.set_sensitive(sensitive)
+
     def response_handler(self, dialog, response):
         self.hide()
 
     def display(self, nationid=None):
+        self.clear_fields()
+
         if nationid is None:
             self.set_title("Add Nation")
             self.buttonSave.set_label("_Add")
+            self.buttonSave.set_sensitive(False)
 
             self.current = None
         else:
