@@ -256,14 +256,7 @@ class AddPlayerDialog(Gtk.Dialog):
     state = False
 
     def __init__(self):
-        def free_agent_changed(checkbutton):
-            if checkbutton.get_active():
-                self.buttonClub.set_sensitive(False)
-                self.buttonClub.set_label("")
-            else:
-                self.buttonClub.set_sensitive(True)
-
-        self.date = 0
+        self.date = None
         self.selected_club = 0
         self.selected_nation = 0
 
@@ -313,7 +306,7 @@ class AddPlayerDialog(Gtk.Dialog):
         label = widgets.Label("_Date Of Birth")
         grid.attach(label, 0, 3, 1, 1)
         self.buttonDateOfBirth = widgets.Button()
-        self.buttonDateOfBirth.connect("clicked", self.date_of_birth)
+        self.buttonDateOfBirth.connect("clicked", self.date_of_birth_change)
         label.set_mnemonic_widget(self.buttonDateOfBirth)
         grid.attach(self.buttonDateOfBirth, 1, 3, 1, 1)
         self.labelAge = widgets.Label()
@@ -328,7 +321,7 @@ class AddPlayerDialog(Gtk.Dialog):
         grid.attach(label, 0, 4, 1, 1)
         self.checkbuttonFreeAgent = Gtk.CheckButton("_Free Agent")
         self.checkbuttonFreeAgent.set_use_underline(True)
-        self.checkbuttonFreeAgent.connect("toggled", free_agent_changed)
+        self.checkbuttonFreeAgent.connect("toggled", self.free_agent_change)
         grid1.attach(self.checkbuttonFreeAgent, 1, 4, 1, 1)
         self.buttonClub = widgets.Button()
         self.buttonClub.set_hexpand(True)
@@ -346,6 +339,7 @@ class AddPlayerDialog(Gtk.Dialog):
         label = widgets.Label("_Position")
         grid.attach(label, 0, 6, 1, 1)
         self.comboboxPosition = Gtk.ComboBoxText()
+        self.comboboxPosition.connect("changed", self.position_change)
         label.set_mnemonic_widget(self.comboboxPosition)
         grid.attach(self.comboboxPosition, 1, 6, 1, 1)
 
@@ -421,6 +415,44 @@ class AddPlayerDialog(Gtk.Dialog):
         self.nationselectiondialog = dialogs.NationSelectionDialog(parent=self)
         self.dob = dialogs.DateOfBirth(parent=self)
 
+    def date_of_birth_change(self, button):
+        state = self.dob.display(date=self.date)
+
+        if state:
+            if self.dob.date_of_birth is not None:
+                year, month, day = self.dob.date_of_birth
+
+                if month < 10:
+                    month = "0%i" % (month + 1)
+                else:
+                    month = str(month + 1)
+
+                if day < 10:
+                    day = "0%i" % (day)
+                else:
+                    day = str(day)
+
+                date = "%i-%s-%s" % (year, month, day)
+                self.buttonDateOfBirth.set_label("%s" % (date))
+
+                year, month, day = self.dob.date_of_birth
+
+                age = data.season - year
+
+                if (month, day) > (8, 1):
+                    age -= 1
+
+                self.labelAge.set_label("Age: %i" % (age))
+
+        self.save_button_handler()
+
+    def free_agent_change(self, checkbutton):
+        if checkbutton.get_active():
+            self.buttonClub.set_sensitive(False)
+            self.buttonClub.set_label("")
+        else:
+            self.buttonClub.set_sensitive(True)
+
     def club_change(self, button):
         if self.current is not None:
             clubid = data.players[self.current].club
@@ -451,28 +483,34 @@ class AddPlayerDialog(Gtk.Dialog):
         if nationid is not None:
             self.selected_nation = nationid
             self.buttonNation.set_label("%s" % (data.nations[nationid].name))
-            self.buttonSave.set_sensitive(True)
         else:
             self.selected_nation = 0
             self.buttonNation.set_label("")
-            self.buttonSave.set_sensitive(False)
 
-    def date_of_birth(self, button):
-        self.date = self.dob.display(date=self.date)
+        self.save_button_handler()
 
-        if self.date is not None:
-            year, month, day = self.date
-            date = "%i-%s-%s" % (year, month, day)
-            self.buttonDateOfBirth.set_label("%s" % (date))
+    def position_change(self, combobox):
+        self.save_button_handler()
 
-            year, month, day = list(map(int, self.date))
+    def save_button_handler(self):
+        sensitive = False
 
-            age = data.season - year
+        if self.dob.date_of_birth is not None:
+            sensitive = True
 
-            if (month, day) > (8, 1):
-                age -= 1
+        if sensitive:
+            if self.selected_nation != 0:
+                sensitive = True
+            else:
+                sensitive = False
 
-            self.labelAge.set_label("Age: %i" % (age))
+        if sensitive:
+            if self.comboboxPosition.get_active_id() is not None:
+                sensitive = True
+            else:
+                sensitive = False
+
+        self.buttonSave.set_sensitive(sensitive)
 
     def response_handler(self, dialog, response):
         self.clear_fields()
@@ -516,7 +554,18 @@ class AddPlayerDialog(Gtk.Dialog):
 
         player.nationality = self.selected_nation
 
-        year, month, day = self.date
+        year, month, day = self.dob.date_of_birth
+
+        if month < 10:
+            month = "0%i" % (month + 1)
+        else:
+            month = str(month + 1)
+
+        if day < 10:
+            day = "0%i" % (day)
+        else:
+            day = str(day)
+
         player.date_of_birth = ("%i-%s-%s" % (year, month, day))
 
         player.position = self.comboboxPosition.get_active_id()
@@ -549,6 +598,7 @@ class AddPlayerDialog(Gtk.Dialog):
             self.set_title("Add Player")
             self.buttonSave.set_label("_Add")
             self.buttonSave.set_sensitive(False)
+            self.checkbuttonFreeAgent.set_active(True)
 
             self.current = None
         else:

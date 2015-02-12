@@ -447,6 +447,8 @@ class NationSelectionDialog(Gtk.Dialog):
 
 
 class DateOfBirth(Gtk.Dialog):
+    date_of_birth = None
+
     def __init__(self, parent):
         Gtk.Dialog.__init__(self)
         self.set_transient_for(parent)
@@ -460,8 +462,10 @@ class DateOfBirth(Gtk.Dialog):
         self.vbox.add(self.calendar)
 
     def display(self, date):
-        if date != 0:
-            year, month, day = list(map(int, date))
+        state = False
+
+        if date is not None:
+            year, month, day = date
 
             self.calendar.select_day(day)
             self.calendar.select_month(month - 1, year)
@@ -475,24 +479,13 @@ class DateOfBirth(Gtk.Dialog):
 
         if self.run() == Gtk.ResponseType.OK:
             year, month, day = self.calendar.get_date()
+            self.date_of_birth = [year, month, day]
 
-            month += 1
-
-        if day < 10:
-            day = "0%i" % (day)
-        else:
-            day = str(day)
-
-        if month < 10:
-            month = "0%i" % (month)
-        else:
-            month = str(month)
-
-        date_of_birth = [year, month, day]
+            state = True
 
         self.hide()
 
-        return date_of_birth
+        return state
 
 
 def remove_dialog(index, parent):
@@ -583,7 +576,7 @@ def unsaved_dialog():
     messagedialog.add_button("_Cancel", Gtk.ResponseType.CANCEL)
     messagedialog.add_button("_Quit", Gtk.ResponseType.CLOSE)
     messagedialog.add_button("_Save and Quit", Gtk.ResponseType.OK)
-    messagedialog.set_markup("The database is currently unsaved.")
+    messagedialog.set_markup("<span size='12000'><b>The database is currently unsaved.</b></span>")
     messagedialog.format_secondary_text("Do you want to save it before closing?")
 
     response = messagedialog.run()
