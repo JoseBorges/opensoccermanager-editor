@@ -13,7 +13,7 @@ class Stadium:
 
 
 class Stadiums(Gtk.Grid):
-    selected = 0
+    selected = None
 
     def __init__(self):
         Gtk.Grid.__init__(self)

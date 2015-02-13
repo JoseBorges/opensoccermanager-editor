@@ -14,7 +14,7 @@ class Club:
 
 
 class Clubs(Gtk.Grid):
-    selected = 0
+    selected = None
 
     def __init__(self):
         Gtk.Grid.__init__(self)
@@ -99,10 +99,14 @@ class Clubs(Gtk.Grid):
 
         if treeiter:
             self.selected = model[treeiter][0]
+            widgets.window.menuitemEdit.set_sensitive(True)
+            widgets.window.menuitemRemove.set_sensitive(True)
             widgets.toolbuttonEdit.set_sensitive(True)
             widgets.toolbuttonRemove.set_sensitive(True)
         else:
             self.selected = None
+            widgets.window.menuitemEdit.set_sensitive(False)
+            widgets.window.menuitemRemove.set_sensitive(False)
             widgets.toolbuttonEdit.set_sensitive(False)
             widgets.toolbuttonRemove.set_sensitive(False)
 
@@ -112,7 +116,7 @@ class Clubs(Gtk.Grid):
         count = 0
 
         for count, (clubid, club) in enumerate(data.clubs.items(), start=1):
-            stadium = "%s" % (data.stadiums[club.stadium].name)
+            stadium = data.stadiums[club.stadium].name
 
             self.liststore.append([clubid,
                                    club.name,
