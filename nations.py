@@ -45,8 +45,10 @@ class Nations(Gtk.Grid):
         cellrenderertext = Gtk.CellRendererText()
 
         treeviewcolumn = Gtk.TreeViewColumn("Name", cellrenderertext, text=1)
+        treeviewcolumn.set_sort_column_id(1)
         treeview.append_column(treeviewcolumn)
         treeviewcolumn = Gtk.TreeViewColumn("Denonym", cellrenderertext, text=2)
+        treeviewcolumn.set_sort_column_id(2)
         treeview.append_column(treeviewcolumn)
 
         self.labelCount = Gtk.Label()
