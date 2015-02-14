@@ -250,21 +250,25 @@ class Window(Gtk.Window):
 
             if dialogs.players.state:
                 players.populate()
+                data.unsaved = True
         elif page == 1:
             dialogs.clubs.display()
 
             if dialogs.clubs.state:
                 clubs.populate()
+                data.unsaved = True
         elif page == 2:
             dialogs.nations.display()
 
             if dialogs.nations.state:
                 nations.populate()
+                data.unsaved = True
         elif page == 3:
             dialogs.stadiums.display()
 
             if dialogs.stadiums.state:
                 stadiums.populate()
+                data.unsaved = True
 
     def edit_data(self, toolbutton):
         page = maineditor.get_current_page()
@@ -280,16 +284,19 @@ class Window(Gtk.Window):
 
             if dialogs.clubs.state:
                 clubs.populate()
+                data.unsaved = True
         elif page == 2:
             dialogs.nations.display(nationid=nations.selected)
 
             if dialogs.nations.state:
                 nations.populate()
+                data.unsaved = True
         elif page == 3:
             dialogs.stadiums.display(stadiumid=stadiums.selected)
 
             if dialogs.stadiums.state:
                 stadiums.populate()
+                data.unsaved = True
 
     def remove_data(self, toolbutton):
         page = maineditor.get_current_page()
