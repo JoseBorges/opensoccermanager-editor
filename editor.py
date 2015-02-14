@@ -318,6 +318,7 @@ class Window(Gtk.Window):
                 else:
                     del(data.clubs[clubs.selected])
                     clubs.populate()
+                    data.unsaved = True
             elif page == 2:
                 keys = [player.nationality for playerid, player in data.players.items()]
 
@@ -326,6 +327,7 @@ class Window(Gtk.Window):
                 else:
                     del(data.nations[nations.selected])
                     nations.populate()
+                    data.unsaved = True
             elif page == 3:
                 keys = [club.stadium for clubid, club in data.clubs.items()]
 
@@ -334,6 +336,7 @@ class Window(Gtk.Window):
                 else:
                     del(data.stadiums[stadiums.selected])
                     stadiums.populate()
+                    data.unsaved = True
 
     def search_data(self, searchentry):
         criteria = searchentry.get_text()
