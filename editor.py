@@ -243,7 +243,7 @@ class Window(Gtk.Window):
             data.db.save()
             data.unsaved = False
         elif widget is self.menuitemSaveAs:
-            filename = dialogs.save_dialog()
+            filename = dialogs.file_dialog(mode=1)
 
             if filename is not None:
                 data.db.connect(filename)
@@ -568,7 +568,7 @@ def new_database(widget=None):
 
 
 def open_database(widget=None):
-    filename = dialogs.open_dialog()
+    filename = dialogs.file_dialog(mode=0)
 
     if filename:
         if data.db.connect(filename) is not False:

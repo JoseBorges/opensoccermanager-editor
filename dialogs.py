@@ -509,43 +509,20 @@ def remove_dialog(index):
     return state
 
 
-def open_dialog():
+def file_dialog(mode=0):
+    if mode == 0:
+        title = "Open File"
+        button = "Open"
+    elif mode == 1:
+        title = "Save File"
+        button = "Save"
+
     dialog = Gtk.FileChooserDialog()
     dialog.set_transient_for(widgets.window)
-    dialog.set_title("Open File")
+    dialog.set_title(title)
     dialog.set_action(Gtk.FileChooserAction.OPEN)
     dialog.add_button("_Cancel", Gtk.ResponseType.CANCEL)
-    dialog.add_button("_Open", Gtk.ResponseType.OK)
-    dialog.set_default_response(Gtk.ResponseType.OK)
-
-    filefilter = Gtk.FileFilter()
-    filefilter.set_name("All Files")
-    filefilter.add_pattern("*")
-    dialog.add_filter(filefilter)
-
-    filefilter = Gtk.FileFilter()
-    filefilter.set_name("Database Files")
-    filefilter.add_pattern("*.db")
-    dialog.add_filter(filefilter)
-    dialog.set_filter(filefilter)
-
-    filename = None
-
-    if dialog.run() == Gtk.ResponseType.OK:
-        filename = dialog.get_filename()
-
-    dialog.destroy()
-
-    return filename
-
-
-def save_dialog():
-    dialog = Gtk.FileChooserDialog()
-    dialog.set_transient_for(widgets.window)
-    dialog.set_title("Save File")
-    dialog.set_action(Gtk.FileChooserAction.SAVE)
-    dialog.add_button("_Cancel", Gtk.ResponseType.CANCEL)
-    dialog.add_button("_Save", Gtk.ResponseType.OK)
+    dialog.add_button("_%s" % (button), Gtk.ResponseType.OK)
     dialog.set_default_response(Gtk.ResponseType.OK)
 
     filefilter = Gtk.FileFilter()
