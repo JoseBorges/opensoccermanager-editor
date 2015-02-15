@@ -128,6 +128,20 @@ class Clubs(Gtk.Grid):
 
         self.labelCount.set_label("%i Clubs in Database" % (count))
 
+    def populate_search(self, values):
+        self.liststore.clear()
+
+        for clubid, club in values.items():
+            stadium = data.stadiums[club.stadium].name
+
+            self.liststore.append([clubid,
+                                   club.name,
+                                   club.nickname,
+                                   club.manager,
+                                   club.chairman,
+                                   stadium,
+                                   club.reputation])
+
     def run(self):
         self.show_all()
 

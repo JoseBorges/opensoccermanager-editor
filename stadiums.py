@@ -130,6 +130,23 @@ class Stadiums(Gtk.Grid):
 
         self.labelCount.set_label("%i Stadiums in Database" % (count))
 
+    def populate_search(self, values):
+        self.liststore.clear()
+
+        for stadiumid, stadium in values.items():
+            self.liststore.append([stadiumid,
+                                   stadium.name,
+                                   stadium.capacity,
+                                   stadium.stands[0],
+                                   stadium.stands[1],
+                                   stadium.stands[2],
+                                   stadium.stands[3],
+                                   stadium.stands[4],
+                                   stadium.stands[5],
+                                   stadium.stands[6],
+                                   stadium.stands[7],
+                                   ])
+
     def run(self):
         self.show_all()
 

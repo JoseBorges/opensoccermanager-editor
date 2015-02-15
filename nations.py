@@ -105,6 +105,14 @@ class Nations(Gtk.Grid):
 
         self.labelCount.set_label("%i Nations in Database" % (count))
 
+    def populate_search(self, values):
+        self.liststore.clear()
+
+        for nationid, nation in values.items():
+            self.liststore.append([nationid,
+                                   nation.name,
+                                   nation.denonym])
+
     def run(self):
         self.show_all()
 

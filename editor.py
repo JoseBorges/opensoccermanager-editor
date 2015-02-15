@@ -361,26 +361,80 @@ class Window(Gtk.Window):
         if criteria is not "":
             values = {}
 
-            for playerid, player in data.players.items():
-                both = "%s %s" % (player.first_name, player.second_name)
+            page = maineditor.get_current_page()
 
-                for search in (player.second_name, player.common_name, player.first_name, both):
-                    search = ''.join((c for c in unicodedata.normalize('NFD', search) if unicodedata.category(c) != 'Mn'))
+            if page == 0:
+                for playerid, player in data.players.items():
+                    both = "%s %s" % (player.first_name, player.second_name)
 
-                    if re.findall(criteria, search, re.IGNORECASE):
-                        values[playerid] = player
+                    for search in (player.second_name, player.common_name, player.first_name, both):
+                        search = ''.join((c for c in unicodedata.normalize('NFD', search) if unicodedata.category(c) != 'Mn'))
 
-                        break
+                        if re.findall(criteria, search, re.IGNORECASE):
+                            values[playerid] = player
 
-            players.populate_search(values)
+                            break
+
+                players.populate_search(values)
+            elif page == 1:
+                for clubid, club in data.clubs.items():
+                    for search in (club.name,):
+                        search = ''.join((c for c in unicodedata.normalize('NFD', search) if unicodedata.category(c) != 'Mn'))
+
+                        if re.findall(criteria, search, re.IGNORECASE):
+                            values[clubid] = club
+
+                            break
+
+                clubs.populate_search(values)
+            elif page == 2:
+                for nationid, nation in data.nations.items():
+                    for search in (nation.name,):
+                        search = ''.join((c for c in unicodedata.normalize('NFD', search) if unicodedata.category(c) != 'Mn'))
+
+                        if re.findall(criteria, search, re.IGNORECASE):
+                            values[nationid] = nation
+
+                            break
+
+                nations.populate_search(values)
+            elif page == 3:
+                for stadiumid, stadium in data.stadiums.items():
+                    for search in (stadium.name,):
+                        search = ''.join((c for c in unicodedata.normalize('NFD', search) if unicodedata.category(c) != 'Mn'))
+
+                        if re.findall(criteria, search, re.IGNORECASE):
+                            values[stadiumid] = stadium
+
+                            break
+
+                stadiums.populate_search(values)
 
     def search_update(self, searchentry):
         if searchentry.get_text() is "":
-            players.populate()
+            page = maineditor.get_current_page()
+
+            if page == 0:
+                players.populate()
+            elif page == 1:
+                clubs.populate()
+            elif page == 2:
+                nations.populate()
+            elif page == 3:
+                stadiums.populate()
 
     def search_clear(self, searchentry, icon, entry):
         if icon == Gtk.EntryIconPosition.SECONDARY:
-            players.populate()
+            page = maineditor.get_current_page()
+
+            if page == 0:
+                players.populate()
+            elif page == 1:
+                clubs.populate()
+            elif page == 2:
+                nations.populate()
+            elif page == 3:
+                stadiums.populate()
 
     def move_notebook_page(self, menuitem, direction):
         if direction == -1:
