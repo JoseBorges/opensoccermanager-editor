@@ -3,6 +3,7 @@
 from gi.repository import Gtk
 
 import data
+import dialogs
 import display
 import widgets
 
@@ -41,19 +42,20 @@ class Validate:
 
     def run(self):
         self.cursor.execute("SELECT * FROM player")
-        players = self.cursor.fetchall()
 
         problems = {}
 
-        for player in players:
+        for player in self.cursor.fetchall():
             errors = self.check(player)
 
             if errors != []:
                 problems[player[0]] = errors
 
-        if errors != []:
+        if problems != {}:
             self.results.display(problems)
             self.results.hide()
+        else:
+            dialogs.noerrors()
 
 
 class Results(Gtk.Dialog):

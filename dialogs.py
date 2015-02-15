@@ -589,6 +589,17 @@ def quit_dialog():
     return state
 
 
+def noerrors():
+    messagedialog = Gtk.MessageDialog(type=Gtk.MessageType.INFO)
+    messagedialog.set_transient_for(widgets.window)
+    messagedialog.set_title("Validation Results")
+    messagedialog.add_button("_Close", Gtk.ResponseType.CLOSE)
+    messagedialog.set_markup("There were no errors found while validating the database.")
+
+    messagedialog.run()
+    messagedialog.destroy()
+
+
 def error(errorid):
     errors = {0: "Unable to delete club as a player is still assigned to it.",
               1: "Unable to delete nation as a player is still assigned to it.",
