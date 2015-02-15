@@ -14,6 +14,7 @@ import nations
 import players
 import preferences
 import stadiums
+import validation
 import widgets
 
 
@@ -157,6 +158,16 @@ class Window(Gtk.Window):
             menuitem.connect("activate", self.switch_notebook_page, count)
             menu.append(menuitem)
 
+        menuitem = widgets.MenuItem("_Tools")
+        menubar.append(menuitem)
+
+        menu = Gtk.Menu()
+        menuitem.set_submenu(menu)
+
+        menuitem = widgets.MenuItem("_Validate Database")
+        menuitem.connect("activate", self.validate_database)
+        menu.append(menuitem)
+
         menuitem = widgets.MenuItem("_Help")
         menubar.append(menuitem)
 
@@ -220,6 +231,10 @@ class Window(Gtk.Window):
         aboutdialog = dialogs.AboutDialog()
         aboutdialog.run()
         aboutdialog.destroy()
+
+    def validate_database(self, menuitem):
+        validator = validation.Validate()
+        validator.run()
 
     def save_database(self, widget):
         if widget in (self.menuitemSave, self.toolbuttonSave):

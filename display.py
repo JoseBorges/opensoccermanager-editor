@@ -3,11 +3,14 @@
 import data
 
 
-def name(player):
+def name(player, mode=0):
     if player.common_name != "":
         name = player.common_name
     else:
-        name = "%s, %s" % (player.second_name, player.first_name)
+        if mode == 0:
+            name = "%s, %s" % (player.second_name, player.first_name)
+        elif mode == 1:
+            name = "%s %s" % (player.first_name, player.second_name)
 
     return name
 
