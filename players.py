@@ -453,6 +453,8 @@ class AddPlayerDialog(Gtk.Dialog):
         else:
             self.buttonClub.set_sensitive(True)
 
+        self.save_button_handler()
+
     def club_change(self, button):
         if self.current is not None:
             clubid = data.players[self.current].club
@@ -471,6 +473,8 @@ class AddPlayerDialog(Gtk.Dialog):
             self.selected_club = 0
             self.buttonClub.set_label("")
             self.checkbuttonFreeAgent.set_active(True)
+
+        self.save_button_handler()
 
     def nation_change(self, button):
         if self.selected_nation != 0:
@@ -621,6 +625,7 @@ class AddPlayerDialog(Gtk.Dialog):
         self.entrySecondName.set_text(player.second_name)
         self.entryCommonName.set_text(player.common_name)
         self.buttonDateOfBirth.set_label("%s" % (player.date_of_birth))
+        self.dob.date_of_birth = list(map(int, player.date_of_birth.split("-")))
 
         if player.club != 0 and player.club is not None:
             self.selected_club = player.club

@@ -27,6 +27,7 @@ class Window(Gtk.Window):
     menuitemAdd = None
     menuitemEdit = None
     menuitemRemove = None
+    menuitemValidate = None
     toolbar = None
     searchentry = None
 
@@ -164,9 +165,10 @@ class Window(Gtk.Window):
         menu = Gtk.Menu()
         menuitem.set_submenu(menu)
 
-        menuitem = widgets.MenuItem("_Validate Database")
-        menuitem.connect("activate", self.validate_database)
-        menu.append(menuitem)
+        self.menuitemValidate = widgets.MenuItem("_Validate Database")
+        self.menuitemValidate.set_sensitive(False)
+        self.menuitemValidate.connect("activate", self.validate_database)
+        menu.append(self.menuitemValidate)
 
         menuitem = widgets.MenuItem("_Help")
         menubar.append(menuitem)
@@ -511,6 +513,7 @@ class MainEditor(Gtk.Notebook):
         widgets.window.menuitemRemove.set_sensitive(True)
         widgets.window.toolbar.set_sensitive(True)
         widgets.window.searchentry.set_visible(True)
+        widgets.window.menuitemValidate.set_sensitive(True)
 
         players.run()
         clubs.run()
