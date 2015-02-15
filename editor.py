@@ -318,7 +318,7 @@ class Window(Gtk.Window):
     def remove_data(self, toolbutton):
         page = maineditor.get_current_page()
 
-        state = dialogs.remove_dialog(index=page, parent=widgets.window)
+        state = dialogs.remove_dialog(index=page)
 
         if state:
             if page == 0:

@@ -488,11 +488,11 @@ class DateOfBirth(Gtk.Dialog):
         return state
 
 
-def remove_dialog(index, parent):
+def remove_dialog(index):
     item = ("Player", "Club", "Nation", "Stadium")[index]
 
     dialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION)
-    dialog.set_transient_for(parent)
+    dialog.set_transient_for(widgets.window)
     dialog.set_title("Remove %s" % (item))
     dialog.add_button("_Cancel", Gtk.ResponseType.CANCEL)
     dialog.add_button("_Remove", Gtk.ResponseType.OK)

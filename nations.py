@@ -68,7 +68,7 @@ class Nations(Gtk.Grid):
         key = Gdk.keyval_name(event.keyval)
 
         if key == "Delete":
-            if dialogs.remove_dialog(index=2, parent=widgets.window):
+            if dialogs.remove_dialog(index=2):
                 model, treeiter = self.treeselection.get_selected()
                 nationid = model[treeiter][0]
 

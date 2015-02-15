@@ -129,7 +129,7 @@ class Players(Gtk.Grid):
 
     def row_delete_by_menu(self, menuitem):
         if data.options.confirm_remove:
-            state = dialogs.remove_dialog(index=0, parent=widgets.window)
+            state = dialogs.remove_dialog(index=0)
         else:
             state = True
 
@@ -147,7 +147,7 @@ class Players(Gtk.Grid):
 
         if key == "Delete":
             if data.options.confirm_remove:
-                state = dialogs.remove_dialog(index=0, parent=widgets.window)
+                state = dialogs.remove_dialog(index=0)
             else:
                 state = True
 

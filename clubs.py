@@ -81,7 +81,7 @@ class Clubs(Gtk.Grid):
         key = Gdk.keyval_name(event.keyval)
 
         if key == "Delete":
-            if dialogs.remove_dialog(index=1, parent=widgets.window):
+            if dialogs.remove_dialog(index=1):
                 model, treeiter = self.treeselection.get_selected()
                 clubid = model[treeiter][0]
 
@@ -335,7 +335,7 @@ class AddClubDialog(Gtk.Dialog):
             self.populate(self.current)
 
     def remove_player(self, button):
-        if remove_dialog(index=0, parent=self):
+        if remove_dialog(index=0):
             model, treeiter = self.treeselection.get_selected()
             playerid = model[treeiter][0]
 
