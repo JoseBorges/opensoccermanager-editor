@@ -266,6 +266,8 @@ class AddClubDialog(Gtk.Dialog):
         self.playerselectiondialog = dialogs.PlayerSelectionDialog()
 
     def display(self, clubid=None):
+        self.squad_changes = {}
+
         self.show_all()
 
         self.liststoreStadiums.clear()
@@ -322,6 +324,11 @@ class AddClubDialog(Gtk.Dialog):
         club.stadium = int(self.comboboxStadium.get_active_id())
         club.reputation = self.spinbuttonReputation.get_value_as_int()
 
+        for playerid, clubid in self.squad_changes.items():
+            player = data.players[playerid]
+
+            player.club = clubid
+
     def response_handler(self, dialog, response):
         self.clear_fields()
 
@@ -349,7 +356,8 @@ class AddClubDialog(Gtk.Dialog):
         playerid = self.playerselectiondialog.display(parent=self)
 
         if playerid is not None:
-            data.players[playerid].club = self.current
+            self.squad_changes[playerid] = self.current
+
             self.populate(self.current)
 
     def remove_player(self, button):
@@ -357,24 +365,33 @@ class AddClubDialog(Gtk.Dialog):
             model, treeiter = self.treeselection.get_selected()
             playerid = model[treeiter][0]
 
-            data.players[playerid].club = 0
+            self.squad_changes[playerid] = 0
 
-        self.populate(clubid=self.current)
+            self.populate(self.current)
 
     def clear_player(self, button):
-        for item in self.liststorePlayers:
-            playerid = item[0]
-            data.players[playerid].club = 0
+        if dialogs.remove_from_squad_dialog(mode=1):
+            for item in self.liststorePlayers:
+                playerid = item[0]
 
-        self.populate(clubid=self.current)
+                self.squad_changes[playerid] = 0
+
+            self.populate(self.current)
 
     def populate(self, clubid):
         self.liststorePlayers.clear()
 
         for playerid, player in data.players.items():
-            if player.club == clubid:
-                name = display.name(player)
+            if playerid not in self.squad_changes.keys():
+                if player.club == clubid:
+                    name = display.name(player)
+                    self.liststorePlayers.append([playerid, name])
 
+        for playerid, clubid in self.squad_changes.items():
+            player = data.players[playerid]
+
+            if self.current == clubid:
+                name = display.name(player)
                 self.liststorePlayers.append([playerid, name])
 
     def selection_changed(self, treeselection):

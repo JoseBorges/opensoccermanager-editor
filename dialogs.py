@@ -509,14 +509,23 @@ def remove_dialog(index):
     return state
 
 
-def remove_from_squad_dialog():
+def remove_from_squad_dialog(mode=0):
+    if mode == 0:
+        title = "Remove From Squad"
+        message = "Remove selected player from squad?"
+        button = "Remove"
+    elif mode == 1:
+        title = "Clear Squad"
+        message = "Remove all players from the squad?"
+        button = "Clear"
+
     messagedialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION)
     messagedialog.set_transient_for(widgets.window)
-    messagedialog.set_title("Remove From Squad")
+    messagedialog.set_title(title)
     messagedialog.add_button("_Cancel", Gtk.ResponseType.CANCEL)
-    messagedialog.add_button("_Remove", Gtk.ResponseType.OK)
+    messagedialog.add_button("_%s" % (button), Gtk.ResponseType.OK)
     messagedialog.set_default_response(Gtk.ResponseType.CANCEL)
-    messagedialog.set_markup("Remove selected player from squad?")
+    messagedialog.set_markup(message)
 
     state = False
 
