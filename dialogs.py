@@ -491,20 +491,39 @@ class DateOfBirth(Gtk.Dialog):
 def remove_dialog(index):
     item = ("Player", "Club", "Nation", "Stadium")[index]
 
-    dialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION)
-    dialog.set_transient_for(widgets.window)
-    dialog.set_title("Remove %s" % (item))
-    dialog.add_button("_Cancel", Gtk.ResponseType.CANCEL)
-    dialog.add_button("_Remove", Gtk.ResponseType.OK)
-    dialog.set_default_response(Gtk.ResponseType.CANCEL)
-    dialog.set_markup("Remove %s from database?" % (item.lower()))
+    messagedialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION)
+    messagedialog.set_transient_for(widgets.window)
+    messagedialog.set_title("Remove %s" % (item))
+    messagedialog.add_button("_Cancel", Gtk.ResponseType.CANCEL)
+    messagedialog.add_button("_Remove", Gtk.ResponseType.OK)
+    messagedialog.set_default_response(Gtk.ResponseType.CANCEL)
+    messagedialog.set_markup("Remove %s from database?" % (item.lower()))
 
     state = False
 
-    if dialog.run() == Gtk.ResponseType.OK:
+    if messagedialog.run() == Gtk.ResponseType.OK:
         state = True
 
-    dialog.destroy()
+    messagedialog.destroy()
+
+    return state
+
+
+def remove_from_squad_dialog():
+    messagedialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION)
+    messagedialog.set_transient_for(widgets.window)
+    messagedialog.set_title("Remove From Squad")
+    messagedialog.add_button("_Cancel", Gtk.ResponseType.CANCEL)
+    messagedialog.add_button("_Remove", Gtk.ResponseType.OK)
+    messagedialog.set_default_response(Gtk.ResponseType.CANCEL)
+    messagedialog.set_markup("Remove selected player from squad?")
+
+    state = False
+
+    if messagedialog.run() == Gtk.ResponseType.OK:
+        state = True
+
+    messagedialog.destroy()
 
     return state
 

@@ -170,7 +170,8 @@ class AddClubDialog(Gtk.Dialog):
         grid.set_border_width(5)
         grid.set_row_spacing(5)
         grid.set_column_spacing(5)
-        self.notebook.append_page(grid, Gtk.Label("Details"))
+        label = widgets.Label("_Details")
+        self.notebook.append_page(grid, label)
 
         label = widgets.Label("_Name")
         grid.attach(label, 0, 0, 1, 1)
@@ -221,11 +222,12 @@ class AddClubDialog(Gtk.Dialog):
         grid.set_border_width(5)
         grid.set_row_spacing(5)
         grid.set_column_spacing(5)
-        self.notebook.append_page(grid, Gtk.Label("Squad"))
+        label = widgets.Label("_Squad")
+        self.notebook.append_page(grid, label)
 
         scrolledwindow = Gtk.ScrolledWindow()
         scrolledwindow.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-        grid.attach(scrolledwindow, 0, 0, 1, 1)
+        grid.attach(scrolledwindow, 0, 0, 1, 4)
 
         self.liststorePlayers = Gtk.ListStore(int, str)
         treemodelsort = Gtk.TreeModelSort(self.liststorePlayers)
@@ -242,22 +244,24 @@ class AddClubDialog(Gtk.Dialog):
         self.treeselection.connect("changed", self.selection_changed)
         scrolledwindow.add(treeview)
 
-        buttonbox = Gtk.ButtonBox()
-        buttonbox.set_spacing(5)
-        buttonbox.set_layout(Gtk.ButtonBoxStyle.START)
-        buttonbox.set_orientation(Gtk.Orientation.VERTICAL)
-        grid.attach(buttonbox, 1, 0, 1, 1)
+        grid1 = Gtk.Grid()
+        grid1.set_hexpand(False)
+        grid1.set_vexpand(False)
+        grid1.set_row_spacing(5)
+        grid1.set_row_homogeneous(True)
+        grid.attach(grid1, 1, 0, 1, 1)
 
         buttonAdd = Gtk.Button.new_from_icon_name("gtk-add", Gtk.IconSize.BUTTON)
+        buttonAdd.set_vexpand(False)
         buttonAdd.connect("clicked", self.add_player)
-        buttonbox.add(buttonAdd)
+        grid1.attach(buttonAdd, 0, 0, 1, 1)
         self.buttonRemove = Gtk.Button.new_from_icon_name("gtk-remove", Gtk.IconSize.BUTTON)
         self.buttonRemove.set_sensitive(False)
         self.buttonRemove.connect("clicked", self.remove_player)
-        buttonbox.add(self.buttonRemove)
+        grid1.attach(self.buttonRemove, 0, 1, 1, 1)
         buttonClear = Gtk.Button.new_from_icon_name("gtk-clear", Gtk.IconSize.BUTTON)
         buttonClear.connect("clicked", self.clear_player)
-        buttonbox.add(buttonClear)
+        grid1.attach(buttonClear, 0, 2, 1, 1)
 
         self.playerselectiondialog = dialogs.PlayerSelectionDialog()
 
@@ -349,7 +353,7 @@ class AddClubDialog(Gtk.Dialog):
             self.populate(self.current)
 
     def remove_player(self, button):
-        if remove_dialog(index=0):
+        if dialogs.remove_from_squad_dialog():
             model, treeiter = self.treeselection.get_selected()
             playerid = model[treeiter][0]
 
