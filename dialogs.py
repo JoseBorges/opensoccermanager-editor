@@ -338,6 +338,7 @@ class ClubSelectionDialog(Gtk.Dialog):
             if item[0] == clubid:
                 self.treeselection.select_iter(item.iter)
 
+        self.entrySearch.set_text("")
         self.set_focus(self.entrySearch)
         self.show_all()
 
@@ -651,10 +652,28 @@ def error(errorid):
 
     messagedialog = Gtk.MessageDialog(type=Gtk.MessageType.ERROR)
     messagedialog.set_transient_for(widgets.window)
-    messagedialog.set_title("Error")
+    messagedialog.set_title("Foreign Key Error")
     messagedialog.add_button("_Close", Gtk.ResponseType.CLOSE)
     messagedialog.set_markup("<span size='12000'><b>Foreign key error</b></span>")
     messagedialog.format_secondary_text(errors[errorid])
+
+    messagedialog.run()
+    messagedialog.destroy()
+
+
+def squad_error(errorid):
+    errors = {0: ("There are too many players in the squad.",
+                  "Each team is allowed a maximum of 30 players."),
+              1: ("There are too few players in the squad.",
+                  "Each team is allowed a minimum of 16 players."),
+             }
+
+    messagedialog = Gtk.MessageDialog(type=Gtk.MessageType.ERROR)
+    messagedialog.set_transient_for(widgets.window)
+    messagedialog.set_title("Squad Error")
+    messagedialog.add_button("_Close", Gtk.ResponseType.CLOSE)
+    messagedialog.set_markup("<span size='12000'><b>%s</b></span>" % (errors[errorid][0]))
+    messagedialog.format_secondary_text(errors[errorid][1])
 
     messagedialog.run()
     messagedialog.destroy()

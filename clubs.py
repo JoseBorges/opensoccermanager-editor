@@ -304,12 +304,17 @@ class AddClubDialog(Gtk.Dialog):
         self.run()
 
     def save_handler(self, button):
-        self.save_data(clubid=self.current)
-        self.clear_fields()
+        if len(self.liststorePlayers) > 30:
+            dialogs.squad_error(0)
+        elif len(self.liststorePlayers) < 16:
+            dialogs.squad_error(1)
+        else:
+            self.save_data(clubid=self.current)
+            self.clear_fields()
 
-        self.state = True
+            self.state = True
 
-        self.hide()
+            self.hide()
 
     def save_data(self, clubid):
         if clubid is None:
