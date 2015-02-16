@@ -171,11 +171,13 @@ class PlayerSelectionDialog(Gtk.Dialog):
 
         cellrenderertext = Gtk.CellRendererText()
         self.liststore = Gtk.ListStore(int, str)
+        treemodelsort = Gtk.TreeModelSort(self.liststore)
+        treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
 
         treeview = Gtk.TreeView()
         treeview.set_hexpand(True)
         treeview.set_vexpand(True)
-        treeview.set_model(self.liststore)
+        treeview.set_model(treemodelsort)
         treeview.set_headers_visible(False)
         treeview.set_enable_search(False)
         treeview.set_search_column(-1)
@@ -186,6 +188,7 @@ class PlayerSelectionDialog(Gtk.Dialog):
         scrolledwindow.add(treeview)
 
         self.entrySearch = Gtk.SearchEntry()
+        self.entrySearch.connect("changed", self.changed_search)
         self.entrySearch.connect("activate", self.activate_search)
         self.entrySearch.connect("icon-press", self.clear_search)
         grid.attach(self.entrySearch, 0, 1, 1, 1)
@@ -209,6 +212,10 @@ class PlayerSelectionDialog(Gtk.Dialog):
         self.hide()
 
         return player
+
+    def changed_search(self, entry):
+        if entry.get_text() is "":
+            self.populate(data.players)
 
     def activate_search(self, entry):
         criteria = entry.get_text()
@@ -293,9 +300,14 @@ class ClubSelectionDialog(Gtk.Dialog):
         scrolledwindow.add(treeview)
 
         self.entrySearch = Gtk.SearchEntry()
+        self.entrySearch.connect("changed", self.changed_search)
         self.entrySearch.connect("activate", self.activate_search)
         self.entrySearch.connect("icon-press", self.clear_search)
         grid.attach(self.entrySearch, 0, 1, 1, 1)
+
+    def changed_search(self, entry):
+        if entry.get_text() is "":
+            self.populate(data.clubs)
 
     def activate_search(self, entry):
         criteria = entry.get_text()

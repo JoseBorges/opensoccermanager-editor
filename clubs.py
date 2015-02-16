@@ -244,6 +244,9 @@ class AddClubDialog(Gtk.Dialog):
         self.treeselection.connect("changed", self.selection_changed)
         scrolledwindow.add(treeview)
 
+        self.labelSquadCount = widgets.Label()
+        grid.attach(self.labelSquadCount, 0, 5, 1, 1)
+
         grid1 = Gtk.Grid()
         grid1.set_hexpand(False)
         grid1.set_vexpand(False)
@@ -381,11 +384,15 @@ class AddClubDialog(Gtk.Dialog):
     def populate(self, clubid):
         self.liststorePlayers.clear()
 
+        count = 0
+
         for playerid, player in data.players.items():
             if playerid not in self.squad_changes.keys():
                 if player.club == clubid:
                     name = display.name(player)
                     self.liststorePlayers.append([playerid, name])
+
+                    count += 1
 
         for playerid, clubid in self.squad_changes.items():
             player = data.players[playerid]
@@ -393,6 +400,10 @@ class AddClubDialog(Gtk.Dialog):
             if self.current == clubid:
                 name = display.name(player)
                 self.liststorePlayers.append([playerid, name])
+
+                count += 1
+
+        self.labelSquadCount.set_label("Squad size: %i/30" % (count))
 
     def selection_changed(self, treeselection):
         if treeselection.count_selected_rows() > 0:
