@@ -524,11 +524,13 @@ def remove_dialog(index):
 def remove_from_squad_dialog(mode=0):
     if mode == 0:
         title = "Remove From Squad"
-        message = "Remove selected player from squad?"
+        primary = "Remove selected player from squad?"
+        secondary = "The player will not be assigned to any club."
         button = "Remove"
     elif mode == 1:
         title = "Clear Squad"
-        message = "Remove all players from the squad?"
+        primary = "Remove all players from the squad?"
+        secondary = "All the players will be assigned to no club."
         button = "Clear"
 
     messagedialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION)
@@ -537,7 +539,8 @@ def remove_from_squad_dialog(mode=0):
     messagedialog.add_button("_Cancel", Gtk.ResponseType.CANCEL)
     messagedialog.add_button("_%s" % (button), Gtk.ResponseType.OK)
     messagedialog.set_default_response(Gtk.ResponseType.CANCEL)
-    messagedialog.set_markup(message)
+    messagedialog.set_markup("<span size='12000'><b>%s</b></span>" % (primary))
+    messagedialog.format_secondary_text(secondary)
 
     state = False
 
