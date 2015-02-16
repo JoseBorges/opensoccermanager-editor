@@ -423,9 +423,9 @@ class AddPlayerDialog(Gtk.Dialog):
                 year, month, day = self.dob.date_of_birth
 
                 if month < 10:
-                    month = "0%i" % (month + 1)
+                    month = "0%i" % (month)
                 else:
-                    month = str(month + 1)
+                    month = str(month)
 
                 if day < 10:
                     day = "0%i" % (day)
@@ -561,9 +561,9 @@ class AddPlayerDialog(Gtk.Dialog):
         year, month, day = self.dob.date_of_birth
 
         if month < 10:
-            month = "0%i" % (month + 1)
+            month = "0%i" % (month)
         else:
-            month = str(month + 1)
+            month = str(month)
 
         if day < 10:
             day = "0%i" % (day)

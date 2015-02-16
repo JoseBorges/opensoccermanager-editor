@@ -491,7 +491,7 @@ class DateOfBirth(Gtk.Dialog):
 
         if self.run() == Gtk.ResponseType.OK:
             year, month, day = self.calendar.get_date()
-            self.date_of_birth = [year, month, day]
+            self.date_of_birth = [year, month + 1, day]
 
             state = True
 
