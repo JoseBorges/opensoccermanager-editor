@@ -5,6 +5,7 @@ from gi.repository import GdkPixbuf
 import os
 import unicodedata
 import re
+import csv
 
 import data
 import database
@@ -499,6 +500,58 @@ class DateOfBirth(Gtk.Dialog):
         self.hide()
 
         return state
+
+
+class DataExport(Gtk.Dialog):
+    def __init__(self):
+        Gtk.Dialog.__init__(self)
+        self.set_border_width(5)
+        self.set_transient_for(widgets.window)
+        self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
+        self.add_button("_Export", Gtk.ResponseType.OK)
+        self.set_default_response(Gtk.ResponseType.CANCEL)
+        self.connect("response", self.combobox_changed)
+
+        grid = Gtk.Grid()
+        grid.set_column_spacing(5)
+        self.vbox.add(grid)
+
+        label = widgets.Label("Data To Export")
+        grid.attach(label, 0, 0, 1, 1)
+
+        self.combobox = Gtk.ComboBoxText()
+        self.combobox.append("0", "All")
+        self.combobox.append("1", "Players")
+        self.combobox.append("2", "Clubs")
+        self.combobox.append("3", "Nations")
+        self.combobox.append("4", "Stadiums")
+        self.combobox.set_active(0)
+        grid.attach(self.combobox, 1, 0, 1, 1)
+
+    def display(self):
+        self.show_all()
+        self.run()
+
+    def combobox_changed(self, dialog, response):
+        def export(table):
+            with open("%s.csv" % (table), "w", newline="") as fp:
+                a = csv.writer(fp, delimiter=",")
+                data.db.cursor.execute("SELECT * FROM %s" % (table))
+                values = data.db.cursor.fetchall()
+                a.writerows(values)
+
+        if response == Gtk.ResponseType.OK:
+            items = ("player", "club", "nation", "stadium")
+
+            active = self.combobox.get_active_id()
+            active = int(active)
+
+            if active == 0:
+                for table in items:
+                    export(table)
+            if active > 0:
+                table = items[active - 1]
+                export(table)
 
 
 def remove_dialog(index):

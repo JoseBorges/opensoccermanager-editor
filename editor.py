@@ -92,6 +92,7 @@ class Window(Gtk.Window):
         menu.append(self.menuitemImport)
         self.menuitemExport = widgets.MenuItem("Export to CSV...")
         self.menuitemExport.set_sensitive(False)
+        self.menuitemExport.connect("activate", self.data_export)
         menu.append(self.menuitemExport)
         separator = Gtk.SeparatorMenuItem()
         menu.append(separator)
@@ -255,6 +256,11 @@ class Window(Gtk.Window):
     def open_preferences(self, menuitem):
         dialogs.preferences.display()
         dialogs.preferences.hide()
+
+    def data_export(self, menuitem):
+        export = dialogs.DataExport()
+        export.display()
+        export.destroy()
 
     def update_title(self, filename):
         self.set_title("Editor - %s" % (filename))
