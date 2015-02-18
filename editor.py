@@ -89,6 +89,7 @@ class Window(Gtk.Window):
         menu.append(separator)
         self.menuitemImport = widgets.MenuItem("Import from CSV...")
         self.menuitemImport.set_sensitive(False)
+        self.menuitemImport.connect("activate", self.data_import)
         menu.append(self.menuitemImport)
         self.menuitemExport = widgets.MenuItem("Export to CSV...")
         self.menuitemExport.set_sensitive(False)
@@ -256,6 +257,11 @@ class Window(Gtk.Window):
     def open_preferences(self, menuitem):
         dialogs.preferences.display()
         dialogs.preferences.hide()
+
+    def data_import(self, menuitem):
+        import_dialog = dialogs.DataImport()
+        import_dialog.display()
+        import_dialog.destroy()
 
     def data_export(self, menuitem):
         export = dialogs.DataExport()

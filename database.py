@@ -73,76 +73,22 @@ class Database:
         self.cursor.execute("SELECT * FROM player")
 
         for item in self.cursor.fetchall():
-            player = Player()
-            player.playerid = item[0]
-            player.first_name = item[1]
-            player.second_name = item[2]
-            player.common_name = item[3]
-            player.date_of_birth = item[4]
-
-            if item[5] is None:
-                player.club = 0
-            else:
-                player.club = item[5]
-
-            player.nationality = item[6]
-            player.position = item[7]
-            player.keeping = item[8]
-            player.tackling = item[9]
-            player.passing = item[10]
-            player.shooting = item[11]
-            player.heading = item[12]
-            player.pace = item[13]
-            player.stamina = item[14]
-            player.ball_control = item[15]
-            player.set_pieces = item[16]
-            player.training_value = item[17]
-            data.players[player.playerid] = player
-
-            if player.playerid > data.idnumbers.playerid:
-                data.idnumbers.playerid = player.playerid
+            data.player(item)
 
         self.cursor.execute("SELECT * FROM club")
 
         for item in self.cursor.fetchall():
-            club = Club()
-            club.clubid = item[0]
-            club.name = item[1]
-            club.nickname = item[2]
-            club.manager = item[3]
-            club.chairman = item[4]
-            club.stadium = item[5]
-            club.reputation = item[6]
-            data.clubs[club.clubid] = club
-
-            if club.clubid > data.idnumbers.clubid:
-                data.idnumbers.clubid = club.clubid
+            data.club(item)
 
         self.cursor.execute("SELECT * FROM nation")
 
         for item in self.cursor.fetchall():
-            nation = Nation()
-            nation.nationid = item[0]
-            nation.name = item[1]
-            nation.denonym = item[2]
-            data.nations[nation.nationid] = nation
-
-            if nation.nationid > data.idnumbers.nationid:
-                data.idnumbers.nationid = nation.nationid
+            data.nation(item)
 
         self.cursor.execute("SELECT * FROM stadium")
 
         for item in self.cursor.fetchall():
-            stadium = Stadium()
-            stadium.stadiumid = item[0]
-            stadium.name = item[1]
-            stadium.capacity = sum(item[2:14])
-            stadium.stands = list(item[2:14])
-            stadium.buildings = list(item[30:38])
-            data.stadiums[stadium.stadiumid] = stadium
-
-            if stadium.stadiumid > data.idnumbers.stadiumid:
-                data.idnumbers.stadiumid = stadium.stadiumid
+            data.stadium(item)
 
     def save(self):
         # Nation
@@ -172,9 +118,9 @@ class Database:
             stall, programme, smallshop, largeshop, bar, burgerbar, cafe, restaurant = stadium.buildings
 
             if stadiumid in keys:
-                self.cursor.execute("UPDATE stadium SET name=?, north=?, east=?, south=?, west=?, northeast=?, northwest=?, southeast=?, southwest=?, northbox=?, eastbox=?, southbox=?, westbox=?, northroof=?, eastroof=?, southroof=?, westroof=?, northeastroof=?, northwestroof=?, southeastroof=?, southwestroof=?, northseating=?, eastseating=?, southseating=?, westseating=?, northeastseating=?, northwestseating=?, southeastseating=?, southwestseating=?, stall=?, programme=?, smallshop=?, largeshop=?, bar=?, burgerbar=?, cafe=?, restaurant=? WHERE id=?", (stadium.name, north, east, south, west, northeast, northwest, southeast, southwest, northbox, eastbox, southbox, westbox,  True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, stall, programme, smallshop, largeshop, bar, burgerbar, cafe, restaurant, stadiumid))
+                self.cursor.execute("UPDATE stadium SET name=?, north=?, east=?, south=?, west=?, northeast=?, northwest=?, southeast=?, southwest=?, northbox=?, eastbox=?, southbox=?, westbox=?, northroof=?, eastroof=?, southroof=?, westroof=?, northeastroof=?, northwestroof=?, southeastroof=?, southwestroof=?, northseating=?, eastseating=?, southseating=?, westseating=?, northeastseating=?, northwestseating=?, southeastseating=?, southwestseating=?, stall=?, programme=?, smallshop=?, largeshop=?, bar=?, burgerbar=?, cafe=?, restaurant=? WHERE id=?", (stadium.name, north, east, south, west, northeast, northwest, southeast, southwest, northbox, eastbox, southbox, westbox, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, stall, programme, smallshop, largeshop, bar, burgerbar, cafe, restaurant, stadiumid))
             elif stadiumid not in keys:
-                self.cursor.execute("INSERT INTO stadium VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (stadiumid, stadium.name, north, east, south, west, northeast, northwest, southeast, southwest, 0, 0, 0, 0, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, stall, programme, smallshop, largeshop, bar, burgerbar, cafe, restaurant))
+                self.cursor.execute("INSERT INTO stadium VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (stadiumid, stadium.name, north, east, south, west, northeast, northwest, southeast, southwest, northbox, eastbox, southbox, westbox, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, stall, programme, smallshop, largeshop, bar, burgerbar, cafe, restaurant))
 
         for stadiumid in keys:
             if stadiumid not in data.stadiums.keys():

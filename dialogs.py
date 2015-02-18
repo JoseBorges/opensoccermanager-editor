@@ -15,6 +15,10 @@ import preferences
 import widgets
 
 
+class Nation:
+    pass
+
+
 class AboutDialog(Gtk.AboutDialog):
     def __init__(self):
         Gtk.AboutDialog.__init__(self)
@@ -502,15 +506,75 @@ class DateOfBirth(Gtk.Dialog):
         return state
 
 
+class DataImport(Gtk.Dialog):
+    def __init__(self):
+        Gtk.Dialog.__init__(self)
+        self.set_title("Import Data")
+        self.set_border_width(5)
+        self.set_transient_for(widgets.window)
+        self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
+        self.add_button("_Import", Gtk.ResponseType.OK)
+        self.set_default_response(Gtk.ResponseType.CANCEL)
+        self.connect("response", self.response_handler)
+
+        grid = Gtk.Grid()
+        grid.set_row_spacing(5)
+        grid.set_column_spacing(5)
+        self.vbox.add(grid)
+
+        label = widgets.Label("_Data To Import")
+        grid.attach(label, 0, 0, 1, 1)
+        self.combobox = Gtk.ComboBoxText()
+        self.combobox.append("0", "Players")
+        self.combobox.append("1", "Clubs")
+        self.combobox.append("2", "Nations")
+        self.combobox.append("3", "Stadiums")
+        self.combobox.set_active(0)
+        label.set_mnemonic_widget(self.combobox)
+        grid.attach(self.combobox, 1, 0, 1, 1)
+
+        label = widgets.Label("_File Location")
+        grid.attach(label, 0, 1, 1, 1)
+        self.filechooserbutton = Gtk.FileChooserButton()
+        self.filechooserbutton.set_hexpand(True)
+        label.set_mnemonic_widget(self.filechooserbutton)
+        grid.attach(self.filechooserbutton, 1, 1, 1, 1)
+
+    def display(self):
+        self.show_all()
+        self.run()
+
+    def response_handler(self, dialog, response):
+        if response == Gtk.ResponseType.OK:
+            selected = self.combobox.get_active_id()
+            path = self.filechooserbutton.get_filename()
+
+            with open("%s" % (path), "r") as fp:
+                reader = csv.reader(fp, delimiter=",")
+
+                for item in reader:
+                    if selected == "0":
+                        data.player(item)
+                    elif selected == "1":
+                        data.club(item)
+                    elif selected == "2":
+                        data.nation(item)
+                    elif selected == "3":
+                        data.stadium(item)
+
+        self.destroy()
+
+
 class DataExport(Gtk.Dialog):
     def __init__(self):
         Gtk.Dialog.__init__(self)
+        self.set_title("Export Data")
         self.set_border_width(5)
         self.set_transient_for(widgets.window)
         self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
         self.add_button("_Export", Gtk.ResponseType.OK)
         self.set_default_response(Gtk.ResponseType.CANCEL)
-        self.connect("response", self.combobox_changed)
+        self.connect("response", self.response_handler)
 
         grid = Gtk.Grid()
         grid.set_column_spacing(5)
@@ -518,7 +582,6 @@ class DataExport(Gtk.Dialog):
 
         label = widgets.Label("Data To Export")
         grid.attach(label, 0, 0, 1, 1)
-
         self.combobox = Gtk.ComboBoxText()
         self.combobox.append("0", "All")
         self.combobox.append("1", "Players")
@@ -532,13 +595,14 @@ class DataExport(Gtk.Dialog):
         self.show_all()
         self.run()
 
-    def combobox_changed(self, dialog, response):
+    def response_handler(self, dialog, response):
         def export(table):
+            data.db.cursor.execute("SELECT * FROM %s" % (table))
+            values = data.db.cursor.fetchall()
+
             with open("%s.csv" % (table), "w", newline="") as fp:
-                a = csv.writer(fp, delimiter=",")
-                data.db.cursor.execute("SELECT * FROM %s" % (table))
-                values = data.db.cursor.fetchall()
-                a.writerows(values)
+                writer = csv.writer(fp, delimiter=",")
+                writer.writerows(values)
 
         if response == Gtk.ResponseType.OK:
             items = ("player", "club", "nation", "stadium")
