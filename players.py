@@ -510,6 +510,8 @@ class AddPlayerDialog(Gtk.Dialog):
         if sensitive:
             if self.dob.date_of_birth is not None:
                 sensitive = True
+            else:
+                sensitive = False
 
         if sensitive:
             if self.selected_nation != 0:

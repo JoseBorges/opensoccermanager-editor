@@ -176,24 +176,28 @@ class AddClubDialog(Gtk.Dialog):
         label = widgets.Label("_Name")
         grid.attach(label, 0, 0, 1, 1)
         self.entryName = Gtk.Entry()
+        self.entryName.connect("changed", lambda w: self.save_button_handler())
         label.set_mnemonic_widget(self.entryName)
         grid.attach(self.entryName, 1, 0, 2, 1)
 
         label = widgets.Label("_Nickname")
         grid.attach(label, 0, 1, 1, 1)
         self.entryNickname = Gtk.Entry()
+        self.entryNickname.connect("changed", lambda w: self.save_button_handler())
         label.set_mnemonic_widget(self.entryNickname)
         grid.attach(self.entryNickname, 1, 1, 2, 1)
 
         label = widgets.Label("_Manager")
         grid.attach(label, 0, 2, 1, 1)
         self.entryManager = Gtk.Entry()
+        self.entryManager.connect("changed", lambda w: self.save_button_handler())
         label.set_mnemonic_widget(self.entryManager)
         grid.attach(self.entryManager, 1, 2, 2, 1)
 
         label = widgets.Label("_Chairman")
         grid.attach(label, 0, 3, 1, 1)
         self.entryChairman = Gtk.Entry()
+        self.entryChairman.connect("changed", lambda w: self.save_button_handler())
         label.set_mnemonic_widget(self.entryChairman)
         grid.attach(self.entryChairman, 1, 3, 2, 1)
 
@@ -209,6 +213,7 @@ class AddClubDialog(Gtk.Dialog):
         self.comboboxStadium.set_id_column(0)
         self.comboboxStadium.pack_start(cellrenderertext, True)
         self.comboboxStadium.add_attribute(cellrenderertext, "text", 1)
+        self.comboboxStadium.connect("changed", lambda w: self.save_button_handler())
         label.set_mnemonic_widget(self.comboboxStadium)
         grid.attach(self.comboboxStadium, 1, 4, 2, 1)
 
@@ -415,3 +420,35 @@ class AddClubDialog(Gtk.Dialog):
             self.buttonRemove.set_sensitive(True)
         else:
             self.buttonRemove.set_sensitive(False)
+
+    def save_button_handler(self):
+        sensitive = False
+
+        if self.entryName.get_text_length() > 0:
+            sensitive = True
+
+        if sensitive:
+            if self.entryNickname.get_text_length() > 0:
+                sensitive = True
+            else:
+                sensitive = False
+
+        if sensitive:
+            if self.entryManager.get_text_length() > 0:
+                sensitive = True
+            else:
+                sensitive = False
+
+        if sensitive:
+            if self.entryChairman.get_text_length() > 0:
+                sensitive = True
+            else:
+                sensitive = False
+
+        if sensitive:
+            if self.comboboxStadium.get_active_id() is not None:
+                sensitive = True
+            else:
+                sensitive = False
+
+        self.buttonSave.set_sensitive(sensitive)
