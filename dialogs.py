@@ -15,10 +15,6 @@ import preferences
 import widgets
 
 
-class Nation:
-    pass
-
-
 class AboutDialog(Gtk.AboutDialog):
     def __init__(self):
         Gtk.AboutDialog.__init__(self)
@@ -607,13 +603,12 @@ class DataExport(Gtk.Dialog):
         if response == Gtk.ResponseType.OK:
             items = ("player", "club", "nation", "stadium")
 
-            active = self.combobox.get_active_id()
-            active = int(active)
+            active = int(self.combobox.get_active_id())
 
             if active == 0:
                 for table in items:
                     export(table)
-            if active > 0:
+            else:
                 table = items[active - 1]
                 export(table)
 

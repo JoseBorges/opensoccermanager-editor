@@ -290,11 +290,13 @@ class AddPlayerDialog(Gtk.Dialog):
         label = widgets.Label("_First Name")
         grid.attach(label, 0, 0, 1, 1)
         self.entryFirstName = Gtk.Entry()
+        self.entryFirstName.connect("changed", self.name_change)
         label.set_mnemonic_widget(self.entryFirstName)
         grid.attach(self.entryFirstName, 1, 0, 2, 1)
         label = widgets.Label("_Second Name")
         grid.attach(label, 0, 1, 1, 1)
         self.entrySecondName = Gtk.Entry()
+        self.entrySecondName.connect("changed", self.name_change)
         label.set_mnemonic_widget(self.entrySecondName)
         grid.attach(self.entrySecondName, 1, 1, 2, 1)
         label = widgets.Label("_Common Name")
@@ -415,6 +417,9 @@ class AddPlayerDialog(Gtk.Dialog):
         self.nationselectiondialog = dialogs.NationSelectionDialog(parent=self)
         self.dob = dialogs.DateOfBirth(parent=self)
 
+    def name_change(self, entry):
+        self.save_button_handler()
+
     def date_of_birth_change(self, button):
         state = self.dob.display(date=self.date)
 
@@ -499,8 +504,12 @@ class AddPlayerDialog(Gtk.Dialog):
     def save_button_handler(self):
         sensitive = False
 
-        if self.dob.date_of_birth is not None:
+        if self.entryFirstName.get_text_length() > 0 and self.entrySecondName.get_text_length() > 0:
             sensitive = True
+
+        if sensitive:
+            if self.dob.date_of_birth is not None:
+                sensitive = True
 
         if sensitive:
             if self.selected_nation != 0:
