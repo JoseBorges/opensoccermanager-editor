@@ -174,6 +174,8 @@ class AddStadiumDialog(Gtk.Dialog):
         label = widgets.Label("Name")
         grid.attach(label, 0, 0, 1, 1)
         self.entryName = Gtk.Entry()
+        self.entryName.connect("changed", lambda w: self.save_button_handler())
+        label.set_mnemonic_widget(self.entryName)
         grid.attach(self.entryName, 1, 0, 1, 1)
 
         notebook = Gtk.Notebook()
@@ -245,6 +247,7 @@ class AddStadiumDialog(Gtk.Dialog):
         if stadiumid is None:
             self.set_title("Add Stadium")
             self.buttonSave.set_label("_Add")
+            self.buttonSave.set_sensitive(False)
 
             self.current = None
         else:
@@ -298,3 +301,11 @@ class AddStadiumDialog(Gtk.Dialog):
 
         for count, widget in enumerate(self.capacities):
             widget.set_value(0)
+
+    def save_button_handler(self):
+        sensitive = False
+
+        if self.entryName.get_text_length() > 0:
+            sensitive = True
+
+        self.buttonSave.set_sensitive(sensitive)

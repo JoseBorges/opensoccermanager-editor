@@ -529,10 +529,15 @@ class DataImport(Gtk.Dialog):
         label.set_mnemonic_widget(self.combobox)
         grid.attach(self.combobox, 1, 0, 1, 1)
 
+        filefilter = Gtk.FileFilter()
+        filefilter.set_name("CSV Files")
+        filefilter.add_pattern("*.csv")
+
         label = widgets.Label("_File Location")
         grid.attach(label, 0, 1, 1, 1)
         self.filechooserbutton = Gtk.FileChooserButton()
         self.filechooserbutton.set_hexpand(True)
+        self.filechooserbutton.add_filter(filefilter)
         label.set_mnemonic_widget(self.filechooserbutton)
         grid.attach(self.filechooserbutton, 1, 1, 1, 1)
 
