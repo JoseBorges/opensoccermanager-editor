@@ -93,25 +93,22 @@ class Nations(Gtk.Grid):
             widgets.toolbuttonEdit.set_sensitive(False)
             widgets.toolbuttonRemove.set_sensitive(False)
 
-    def populate(self):
+    def populate(self, items=None):
         self.liststore.clear()
 
-        count = 0
+        if items is None:
+            items = data.nations
+            dbcount = True
+        else:
+            dbcount = False
 
-        for count, (nationid, nation) in enumerate(data.nations.items(), start=1):
+        for count, (nationid, nation) in enumerate(items.items(), start=1):
             self.liststore.append([nationid,
                                    nation.name,
                                    nation.denonym])
 
-        self.labelCount.set_label("%i Nations in Database" % (count))
-
-    def populate_search(self, values):
-        self.liststore.clear()
-
-        for nationid, nation in values.items():
-            self.liststore.append([nationid,
-                                   nation.name,
-                                   nation.denonym])
+        if dbcount:
+            self.labelCount.set_label("%i Nations in Database" % (count))
 
     def run(self):
         self.show_all()

@@ -109,10 +109,14 @@ class Stadiums(Gtk.Grid):
             widgets.toolbuttonEdit.set_sensitive(False)
             widgets.toolbuttonRemove.set_sensitive(False)
 
-    def populate(self):
+    def populate(self, items=None):
         self.liststore.clear()
 
-        count = 0
+        if items is None:
+            items = data.stadiums
+            dbcount = True
+        else:
+            dbcount = False
 
         for count, (stadiumid, stadium) in enumerate(data.stadiums.items(), start=1):
             self.liststore.append([stadiumid,
@@ -128,24 +132,8 @@ class Stadiums(Gtk.Grid):
                                    stadium.stands[7],
                                    ])
 
-        self.labelCount.set_label("%i Stadiums in Database" % (count))
-
-    def populate_search(self, values):
-        self.liststore.clear()
-
-        for stadiumid, stadium in values.items():
-            self.liststore.append([stadiumid,
-                                   stadium.name,
-                                   stadium.capacity,
-                                   stadium.stands[0],
-                                   stadium.stands[1],
-                                   stadium.stands[2],
-                                   stadium.stands[3],
-                                   stadium.stands[4],
-                                   stadium.stands[5],
-                                   stadium.stands[6],
-                                   stadium.stands[7],
-                                   ])
+        if dbcount:
+            self.labelCount.set_label("%i Stadiums in Database" % (count))
 
     def run(self):
         self.show_all()

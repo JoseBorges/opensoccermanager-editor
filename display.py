@@ -22,3 +22,9 @@ def club(player):
         club = ""
 
     return club
+
+
+def nation(player):
+    nation = data.nations[player.nationality].name
+
+    return nation

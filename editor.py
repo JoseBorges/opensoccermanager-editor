@@ -46,6 +46,7 @@ class Window(Gtk.Window):
         self.grid.attach(mainmenu, 0, 0, 1, 1)
 
         self.menuView = mainmenu.menuView
+        self.menuTools = mainmenu.menuTools
 
         mainmenu.menuitemNew.connect("activate", new_database)
         mainmenu.menuitemOpen.connect("activate", open_database)
@@ -73,6 +74,9 @@ class Window(Gtk.Window):
         mainmenu.menuitemStadiums.connect("activate", self.switch_notebook_page, 3)
         self.menuitemValidate = mainmenu.menuitemValidate
         mainmenu.menuitemValidate.connect("activate", self.validate_database)
+        self.menuitemFilter = mainmenu.menuitemFilter
+        mainmenu.menuitemFilter.connect("activate", self.filter_data)
+        mainmenu.menuitemClear.connect("activate", self.clear_data)
         mainmenu.menuitemAbout.connect("activate", self.about_dialog)
 
         self.toolbar = Gtk.Toolbar()
@@ -132,6 +136,30 @@ class Window(Gtk.Window):
     def validate_database(self, menuitem):
         validator = validation.Validate()
         validator.run()
+
+    def filter_data(self, menuitem):
+        filter_dialog = dialogs.Filter()
+        criteria = filter_dialog.display()
+
+        if criteria:
+            filtered = {}
+
+            for playerid, player in data.players.items():
+                show = False
+
+                if criteria["Club"] == player.club:
+                    show = True
+
+                if criteria["Nation"] == player.nationality:
+                    show = True
+
+                if show:
+                    filtered[playerid] = player
+
+            players.populate(items=filtered)
+
+    def clear_data(self, menuitem):
+        players.populate()
 
     def save_database(self, widget):
         if widget in (self.menuitemSave, self.toolbuttonSave):
@@ -280,7 +308,7 @@ class Window(Gtk.Window):
 
                             break
 
-                players.populate_search(values)
+                players.populate(items=values)
             elif page == 1:
                 for clubid, club in data.clubs.items():
                     for search in (club.name,):
@@ -291,7 +319,7 @@ class Window(Gtk.Window):
 
                             break
 
-                clubs.populate_search(values)
+                clubs.populate(items=values)
             elif page == 2:
                 for nationid, nation in data.nations.items():
                     for search in (nation.name,):
@@ -302,7 +330,7 @@ class Window(Gtk.Window):
 
                             break
 
-                nations.populate_search(values)
+                nations.populate(items=values)
             elif page == 3:
                 for stadiumid, stadium in data.stadiums.items():
                     for search in (stadium.name,):
@@ -313,7 +341,7 @@ class Window(Gtk.Window):
 
                             break
 
-                stadiums.populate_search(values)
+                stadiums.populate(items=values)
 
     def search_update(self, searchentry):
         if searchentry.get_text() is "":
@@ -463,6 +491,7 @@ class MainEditor(Gtk.Notebook):
 
     def run(self):
         widgets.window.menuView.set_sensitive(True)
+        widgets.window.menuTools.set_sensitive(True)
         widgets.window.menuitemSave.set_sensitive(True)
         widgets.window.menuitemSaveAs.set_sensitive(True)
         widgets.window.menuitemImport.set_sensitive(True)
@@ -472,7 +501,6 @@ class MainEditor(Gtk.Notebook):
         widgets.window.menuitemRemove.set_sensitive(True)
         widgets.window.toolbar.set_sensitive(True)
         widgets.window.searchentry.set_visible(True)
-        widgets.window.menuitemValidate.set_sensitive(True)
 
         players.run()
         clubs.run()

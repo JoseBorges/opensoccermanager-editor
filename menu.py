@@ -111,15 +111,21 @@ class Menu(Gtk.MenuBar):
         self.menuitemStadiums.add_accelerator("activate", widgets.accelgroup, key, mod, Gtk.AccelFlags.VISIBLE)
         menu.append(self.menuitemStadiums)
 
-        menuitem = widgets.MenuItem("_Tools")
-        self.append(menuitem)
+        self.menuTools = widgets.MenuItem("_Tools")
+        self.menuTools.set_sensitive(False)
+        self.append(self.menuTools)
 
         menu = Gtk.Menu()
-        menuitem.set_submenu(menu)
+        self.menuTools.set_submenu(menu)
 
         self.menuitemValidate = widgets.MenuItem("_Validate Database")
-        self.menuitemValidate.set_sensitive(False)
         menu.append(self.menuitemValidate)
+        separator = Gtk.SeparatorMenuItem()
+        menu.append(separator)
+        self.menuitemFilter = widgets.MenuItem("_Data Filter")
+        menu.append(self.menuitemFilter)
+        self.menuitemClear = widgets.MenuItem("_Clear Filter")
+        menu.append(self.menuitemClear)
 
         menuitem = widgets.MenuItem("_Help")
         self.append(menuitem)

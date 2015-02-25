@@ -190,14 +190,18 @@ class Players(Gtk.Grid):
         else:
             self.labelSelected.set_label("(%i Items Selected)" % (count))
 
-    def populate(self):
+    def populate(self, items=None):
         self.liststore.clear()
 
-        count = 0
+        if items is None:
+            items = data.players
+            dbcount = True
+        else:
+            dbcount = False
 
-        for count, (playerid, player) in enumerate(data.players.items(), start=1):
+        for count, (playerid, player) in enumerate(items.items(), start=1):
             club = display.club(player)
-            nationality = data.nations[player.nationality].name
+            nationality = display.nation(player)
 
             self.liststore.append([playerid,
                                    player.first_name,
@@ -218,33 +222,8 @@ class Players(Gtk.Grid):
                                    player.set_pieces,
                                    player.training_value])
 
-        self.labelCount.set_label("%i Players in Database" % (count))
-
-    def populate_search(self, values):
-        self.liststore.clear()
-
-        for playerid, player in values.items():
-            club = display.club(player)
-            nationality = data.nations[player.nationality].name
-
-            self.liststore.append([playerid,
-                                   player.first_name,
-                                   player.second_name,
-                                   player.common_name,
-                                   player.date_of_birth,
-                                   club,
-                                   nationality,
-                                   player.position,
-                                   player.keeping,
-                                   player.tackling,
-                                   player.passing,
-                                   player.shooting,
-                                   player.heading,
-                                   player.pace,
-                                   player.stamina,
-                                   player.ball_control,
-                                   player.set_pieces,
-                                   player.training_value])
+        if dbcount:
+            self.labelCount.set_label("%i Players in Database" % (count))
 
     def run(self):
         self.populate()

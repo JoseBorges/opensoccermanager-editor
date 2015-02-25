@@ -110,12 +110,16 @@ class Clubs(Gtk.Grid):
             widgets.toolbuttonEdit.set_sensitive(False)
             widgets.toolbuttonRemove.set_sensitive(False)
 
-    def populate(self):
+    def populate(self, items=None):
         self.liststore.clear()
 
-        count = 0
+        if items is None:
+            items = data.clubs
+            dbcount = True
+        else:
+            dbcount = False
 
-        for count, (clubid, club) in enumerate(data.clubs.items(), start=1):
+        for count, (clubid, club) in enumerate(items.items(), start=1):
             stadium = data.stadiums[club.stadium].name
 
             self.liststore.append([clubid,
@@ -126,21 +130,8 @@ class Clubs(Gtk.Grid):
                                    stadium,
                                    club.reputation])
 
-        self.labelCount.set_label("%i Clubs in Database" % (count))
-
-    def populate_search(self, values):
-        self.liststore.clear()
-
-        for clubid, club in values.items():
-            stadium = data.stadiums[club.stadium].name
-
-            self.liststore.append([clubid,
-                                   club.name,
-                                   club.nickname,
-                                   club.manager,
-                                   club.chairman,
-                                   stadium,
-                                   club.reputation])
+        if dbcount:
+            self.labelCount.set_label("%i Clubs in Database" % (count))
 
     def run(self):
         self.show_all()
