@@ -234,9 +234,11 @@ class AddClubDialog(Gtk.Dialog):
         treeview.set_hexpand(True)
         treeview.set_model(treemodelsort)
         treeview.set_headers_visible(False)
+        treeview.connect("key-press-event", self.treeview_press_event)
         treeviewcolumn = Gtk.TreeViewColumn("", cellrenderertext, text=1)
         treeview.append_column(treeviewcolumn)
         self.treeselection = treeview.get_selection()
+        self.treeselection.set_mode(Gtk.SelectionMode.MULTIPLE)
         self.treeselection.connect("changed", self.selection_changed)
         scrolledwindow.add(treeview)
 
@@ -366,10 +368,11 @@ class AddClubDialog(Gtk.Dialog):
 
     def remove_player(self, button):
         if dialogs.remove_from_squad_dialog():
-            model, treeiter = self.treeselection.get_selected()
-            playerid = model[treeiter][0]
+            model, treepath = self.treeselection.get_selected_rows()
 
-            self.squad_changes[playerid] = 0
+            for item in treepath:
+                playerid = model[item][0]
+                self.squad_changes[playerid] = 0
 
             self.populate(self.current)
 
@@ -443,3 +446,17 @@ class AddClubDialog(Gtk.Dialog):
                 sensitive = False
 
         self.buttonSave.set_sensitive(sensitive)
+
+    def treeview_press_event(self, treeview, event):
+        key = Gdk.keyval_name(event.keyval)
+
+        if key == "Delete":
+            if dialogs.remove_from_squad_dialog():
+                model = treeview.get_model()
+                model, treepath = self.treeselection.get_selected_rows()
+
+                for item in treepath:
+                    playerid = model[item][0]
+                    self.squad_changes[playerid] = 0
+
+                self.populate(self.current)
