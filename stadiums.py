@@ -118,6 +118,8 @@ class Stadiums(Gtk.Grid):
         else:
             dbcount = False
 
+        count = 0
+
         for count, (stadiumid, stadium) in enumerate(items.items(), start=1):
             self.liststore.append([stadiumid,
                                    stadium.name,

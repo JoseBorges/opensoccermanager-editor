@@ -102,6 +102,8 @@ class Nations(Gtk.Grid):
         else:
             dbcount = False
 
+        count = 0
+
         for count, (nationid, nation) in enumerate(items.items(), start=1):
             self.liststore.append([nationid,
                                    nation.name,

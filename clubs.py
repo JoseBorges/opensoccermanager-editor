@@ -119,6 +119,8 @@ class Clubs(Gtk.Grid):
         else:
             dbcount = False
 
+        count = 0
+
         for count, (clubid, club) in enumerate(items.items(), start=1):
             stadium = data.stadiums[club.stadium].name
 
@@ -302,17 +304,12 @@ class AddClubDialog(Gtk.Dialog):
         self.run()
 
     def save_handler(self, button):
-        if len(self.liststorePlayers) > 30:
-            dialogs.squad_error(0)
-        elif len(self.liststorePlayers) < 16:
-            dialogs.squad_error(1)
-        else:
-            self.save_data(clubid=self.current)
-            self.clear_fields()
+        self.save_data(clubid=self.current)
+        self.clear_fields()
 
-            self.state = True
+        self.state = True
 
-            self.hide()
+        self.hide()
 
     def save_data(self, clubid):
         if clubid is None:

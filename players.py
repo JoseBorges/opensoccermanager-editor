@@ -197,6 +197,8 @@ class Players(Gtk.Grid):
         else:
             dbcount = False
 
+        count = 0
+
         for count, (playerid, player) in enumerate(items.items(), start=1):
             club = display.club(player)
             nationality = display.nation(player)
@@ -510,32 +512,21 @@ class AddPlayerDialog(Gtk.Dialog):
         self.hide()
 
     def save_handler(self, button):
-        squad_count = 1
+        self.save_data(self.current)
+        self.clear_fields()
 
-        for playerid, player in data.players.items():
-            if player.club == self.selected_club:
-                squad_count += 1
+        self.state = True
 
-        if squad_count > 30:
-            dialogs.squad_error(0)
-        elif squad_count < 16:
-            dialogs.squad_error(1)
-        else:
-            self.save_data(self.current)
-            self.clear_fields()
+        if self.current:
+            try:
+                self.current = self.generator.__next__()
+                self.load_fields(self.current)
+            except StopIteration:
+                self.hide()
 
-            self.state = True
-
-            if self.current:
-                try:
-                    self.current = self.generator.__next__()
-                    self.load_fields(self.current)
-                except StopIteration:
-                    self.hide()
-
-            if self.checkbuttonMulti.get_visible():
-                if not self.checkbuttonMulti.get_active():
-                    self.hide()
+        if self.checkbuttonMulti.get_visible():
+            if not self.checkbuttonMulti.get_active():
+                self.hide()
 
     def save_data(self, playerid):
         if playerid is None:
