@@ -6,6 +6,7 @@ from gi.repository import Gdk
 import data
 import dialogs
 import display
+import menu
 import widgets
 
 
@@ -89,13 +90,9 @@ class Players(Gtk.Grid):
         self.attach(self.labelSelected, 1, 1, 1, 1)
 
         # Context menu
-        contextmenu = Gtk.Menu()
-        menuitem = widgets.MenuItem("_Edit Item")
-        menuitem.connect("activate", self.row_edit_by_menu)
-        contextmenu.append(menuitem)
-        menuitem = widgets.MenuItem("_Remove Item")
-        menuitem.connect("activate", self.row_delete_by_menu)
-        contextmenu.append(menuitem)
+        contextmenu = menu.ContextMenu()
+        contextmenu.menuitemEdit.connect("activate", self.row_edit_by_menu)
+        contextmenu.menuitemRemove.connect("activate", self.row_delete)
         treeview.connect("button-press-event", self.context_menu, contextmenu)
 
     def context_menu(self, treeview, event, contextmenu):
@@ -125,23 +122,11 @@ class Players(Gtk.Grid):
         if dialogs.players.state:
             self.populate()
 
-    def row_delete_by_menu(self, menuitem):
-        if data.options.confirm_remove:
-            state = dialogs.remove_dialog(index=0)
+    def row_delete(self, widget, event=None):
+        if event:
+            key = Gdk.keyval_name(event.keyval)
         else:
-            state = True
-
-        if state:
-            model, treepath = self.treeselection.get_selected_rows()
-
-            for item in treepath:
-                playerid = model[item][0]
-                del(data.players[playerid])
-
-            self.populate()
-
-    def row_delete(self, widget, event):
-        key = Gdk.keyval_name(event.keyval)
+            key = "Delete"
 
         if key == "Delete":
             if data.options.confirm_remove:
@@ -155,6 +140,7 @@ class Players(Gtk.Grid):
                 for item in treepath:
                     playerid = model[item][0]
                     del(data.players[playerid])
+                    data.unsaved = True
 
                 self.populate()
 
@@ -332,59 +318,27 @@ class AddPlayerDialog(Gtk.Dialog):
         grid1.set_column_spacing(5)
         grid.attach(grid1, 0, 7, 6, 1)
 
-        label = widgets.Label("_Keeping")
-        grid1.attach(label, 0, 0, 1, 1)
-        self.spinbuttonKP = Gtk.SpinButton.new_with_range(1, 99, 1)
-        label.set_mnemonic_widget(self.spinbuttonKP)
-        grid1.attach(self.spinbuttonKP, 1, 0, 1, 1)
+        self.skills = []
 
-        label = widgets.Label("_Tackling")
-        grid1.attach(label, 0, 1, 1, 1)
-        self.spinbuttonTK = Gtk.SpinButton.new_with_range(1, 99, 1)
-        label.set_mnemonic_widget(self.spinbuttonTK)
-        grid1.attach(self.spinbuttonTK, 1, 1, 1, 1)
+        row = 0
+        column = 0
 
-        label = widgets.Label("_Passing")
-        grid1.attach(label, 0, 2, 1, 1)
-        self.spinbuttonPS = Gtk.SpinButton.new_with_range(1, 99, 1)
-        label.set_mnemonic_widget(self.spinbuttonPS)
-        grid1.attach(self.spinbuttonPS, 1, 2, 1, 1)
+        for item in data.skill:
+            label = widgets.Label("_%s" % (item))
+            grid1.attach(label, column, row, 1, 1)
 
-        label = widgets.Label("_Shooting")
-        grid1.attach(label, 2, 0, 1, 1)
-        self.spinbuttonSH = Gtk.SpinButton.new_with_range(1, 99, 1)
-        label.set_mnemonic_widget(self.spinbuttonSH)
-        grid1.attach(self.spinbuttonSH, 3, 0, 1, 1)
+            spinbutton = Gtk.SpinButton()
+            spinbutton.set_range(1, 99)
+            spinbutton.set_increments(1, 10)
+            label.set_mnemonic_widget(spinbutton)
+            self.skills.append(spinbutton)
+            grid1.attach(spinbutton, column + 1, row, 1, 1)
 
-        label = widgets.Label("_Heading")
-        grid1.attach(label, 2, 1, 1, 1)
-        self.spinbuttonHD = Gtk.SpinButton.new_with_range(1, 99, 1)
-        label.set_mnemonic_widget(self.spinbuttonHD)
-        grid1.attach(self.spinbuttonHD, 3, 1, 1, 1)
+            row += 1
 
-        label = widgets.Label("_Pace")
-        grid1.attach(label, 2, 2, 1, 1)
-        self.spinbuttonPC = Gtk.SpinButton.new_with_range(1, 99, 1)
-        label.set_mnemonic_widget(self.spinbuttonPC)
-        grid1.attach(self.spinbuttonPC, 3, 2, 1, 1)
-
-        label = widgets.Label("_Stamina")
-        grid1.attach(label, 4, 0, 1, 1)
-        self.spinbuttonST = Gtk.SpinButton.new_with_range(1, 99, 1)
-        label.set_mnemonic_widget(self.spinbuttonST)
-        grid1.attach(self.spinbuttonST, 5, 0, 1, 1)
-
-        label = widgets.Label("_Ball Control")
-        grid1.attach(label, 4, 1, 1, 1)
-        self.spinbuttonBC = Gtk.SpinButton.new_with_range(1, 99, 1)
-        label.set_mnemonic_widget(self.spinbuttonBC)
-        grid1.attach(self.spinbuttonBC, 5, 1, 1, 1)
-
-        label = widgets.Label("_Set Pieces")
-        grid1.attach(label, 4, 2, 1, 1)
-        self.spinbuttonSP = Gtk.SpinButton.new_with_range(1, 99, 1)
-        label.set_mnemonic_widget(self.spinbuttonSP)
-        grid1.attach(self.spinbuttonSP, 5, 2, 1, 1)
+            if row in (3, 6):
+                column = (column + 1) * 2
+                row = 0
 
         label = widgets.Label("Training _Value")
         grid.attach(label, 0, 8, 1, 1)
@@ -563,15 +517,15 @@ class AddPlayerDialog(Gtk.Dialog):
         player.date_of_birth = ("%i-%s-%s" % (year, month, day))
 
         player.position = self.comboboxPosition.get_active_id()
-        player.keeping = self.spinbuttonKP.get_value_as_int()
-        player.tackling = self.spinbuttonTK.get_value_as_int()
-        player.passing = self.spinbuttonPS.get_value_as_int()
-        player.shooting = self.spinbuttonSH.get_value_as_int()
-        player.heading = self.spinbuttonHD.get_value_as_int()
-        player.pace = self.spinbuttonPC.get_value_as_int()
-        player.stamina = self.spinbuttonST.get_value_as_int()
-        player.ball_control = self.spinbuttonBC.get_value_as_int()
-        player.set_pieces = self.spinbuttonSP.get_value_as_int()
+        player.keeping = self.skills[0].get_value_as_int()
+        player.tackling = self.skills[1].get_value_as_int()
+        player.passing = self.skills[2].get_value_as_int()
+        player.shooting = self.skills[3].get_value_as_int()
+        player.heading = self.skills[4].get_value_as_int()
+        player.pace = self.skills[5].get_value_as_int()
+        player.stamina = self.skills[6].get_value_as_int()
+        player.ball_control = self.skills[7].get_value_as_int()
+        player.set_pieces = self.skills[8].get_value_as_int()
         player.training_value = self.spinbuttonTraining.get_value_as_int()
 
     def display(self, playerid=None):
@@ -640,15 +594,15 @@ class AddPlayerDialog(Gtk.Dialog):
         self.labelAge.set_label("Age: %i" % (age))
 
         self.comboboxPosition.set_active_id(player.position)
-        self.spinbuttonKP.set_value(player.keeping)
-        self.spinbuttonTK.set_value(player.tackling)
-        self.spinbuttonPS.set_value(player.passing)
-        self.spinbuttonSH.set_value(player.shooting)
-        self.spinbuttonHD.set_value(player.heading)
-        self.spinbuttonPC.set_value(player.pace)
-        self.spinbuttonST.set_value(player.stamina)
-        self.spinbuttonBC.set_value(player.ball_control)
-        self.spinbuttonSP.set_value(player.set_pieces)
+        self.skills[0].set_value(player.keeping)
+        self.skills[1].set_value(player.tackling)
+        self.skills[2].set_value(player.passing)
+        self.skills[3].set_value(player.shooting)
+        self.skills[4].set_value(player.heading)
+        self.skills[5].set_value(player.pace)
+        self.skills[6].set_value(player.stamina)
+        self.skills[7].set_value(player.ball_control)
+        self.skills[8].set_value(player.set_pieces)
         self.spinbuttonTraining.set_value(player.training_value)
 
     def clear_fields(self):
@@ -661,13 +615,13 @@ class AddPlayerDialog(Gtk.Dialog):
         self.buttonNation.set_label("")
 
         self.comboboxPosition.set_active(-1)
-        self.spinbuttonKP.set_value(1)
-        self.spinbuttonTK.set_value(1)
-        self.spinbuttonPS.set_value(1)
-        self.spinbuttonSH.set_value(1)
-        self.spinbuttonHD.set_value(1)
-        self.spinbuttonPC.set_value(1)
-        self.spinbuttonST.set_value(1)
-        self.spinbuttonBC.set_value(1)
-        self.spinbuttonSP.set_value(1)
+        self.skills[0].set_value(1)
+        self.skills[1].set_value(1)
+        self.skills[2].set_value(1)
+        self.skills[3].set_value(1)
+        self.skills[4].set_value(1)
+        self.skills[5].set_value(1)
+        self.skills[6].set_value(1)
+        self.skills[7].set_value(1)
+        self.skills[8].set_value(1)
         self.spinbuttonTraining.set_value(1)

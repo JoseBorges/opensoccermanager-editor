@@ -84,7 +84,12 @@ class Stadiums(Gtk.Grid):
         key = Gdk.keyval_name(event.keyval)
 
         if key == "Delete":
-            if dialogs.remove_dialog(index=3):
+            if data.options.confirm_remove:
+                state = dialogs.remove_dialog(index=3)
+            else:
+                state = True
+
+            if state:
                 model, treeiter = self.treeselection.get_selected()
                 stadiumid = model[treeiter][0]
 

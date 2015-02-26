@@ -135,3 +135,13 @@ class Menu(Gtk.MenuBar):
 
         self.menuitemAbout = widgets.MenuItem("_About")
         menu.append(self.menuitemAbout)
+
+
+class ContextMenu(Gtk.Menu):
+    def __init__(self, item=""):
+        Gtk.Menu.__init__(self)
+
+        self.menuitemEdit = widgets.MenuItem("_Edit Item")
+        self.append(self.menuitemEdit)
+        self.menuitemRemove = widgets.MenuItem("_Remove Item")
+        self.append(self.menuitemRemove)

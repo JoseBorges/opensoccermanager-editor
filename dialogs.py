@@ -698,7 +698,7 @@ def remove_from_squad_dialog(mode=0):
         button = "Remove"
     elif mode == 1:
         title = "Clear Squad"
-        primary = "Remove all players from the squad?"
+        primary = "Clear all players from the squad?"
         secondary = "All the players will be assigned to no club."
         button = "Clear"
 

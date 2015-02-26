@@ -6,6 +6,7 @@ from gi.repository import Gdk
 import data
 import dialogs
 import display
+import menu
 import widgets
 
 
@@ -68,6 +69,17 @@ class Clubs(Gtk.Grid):
         self.labelCount.set_alignment(0, 0.5)
         self.attach(self.labelCount, 0, 1, 1, 1)
 
+        # Context menu
+        contextmenu = menu.ContextMenu()
+        contextmenu.menuitemEdit.connect("activate", self.row_edit_by_menu)
+        contextmenu.menuitemRemove.connect("activate", self.row_delete)
+        treeview.connect("button-press-event", self.context_menu, contextmenu)
+
+    def context_menu(self, treeview, event, contextmenu):
+        if event.button == 3:
+            contextmenu.show_all()
+            contextmenu.popup(None, None, None, None, event.button, event.time)
+
     def row_activated(self, treeview, path, column):
         model = treeview.get_model()
         clubid = model[path][0]
@@ -77,8 +89,22 @@ class Clubs(Gtk.Grid):
         if dialogs.clubs.state:
             self.populate()
 
-    def row_delete(self, treeview, event):
-        key = Gdk.keyval_name(event.keyval)
+    def row_edit_by_menu(self, menuitem):
+        model, treeiter = self.treeselection.get_selected()
+
+        if treeiter:
+            clubid = model[treeiter][0]
+
+            dialogs.clubs.display(clubid)
+
+            if dialogs.clubs.state:
+                self.populate()
+
+    def row_delete(self, treeview, event=None):
+        if event:
+            key = Gdk.keyval_name(event.keyval)
+        else:
+            key = "Delete"
 
         if key == "Delete":
             if dialogs.remove_dialog(index=1):
@@ -91,6 +117,7 @@ class Clubs(Gtk.Grid):
                     dialogs.error(0)
                 else:
                     del(data.clubs[clubid])
+                    data.unsaved = True
 
                     self.populate()
 
@@ -271,6 +298,8 @@ class AddClubDialog(Gtk.Dialog):
     def display(self, clubid=None):
         self.squad_changes = {}
 
+        self.notebook.set_current_page(0)
+
         self.show_all()
 
         self.liststoreStadiums.clear()
@@ -364,7 +393,12 @@ class AddClubDialog(Gtk.Dialog):
             self.populate(self.current)
 
     def remove_player(self, button):
-        if dialogs.remove_from_squad_dialog():
+        if data.options.confirm_remove:
+            state = dialogs.remove_from_squad_dialog()
+        else:
+            state = True
+
+        if state:
             model, treepath = self.treeselection.get_selected_rows()
 
             for item in treepath:
@@ -407,10 +441,8 @@ class AddClubDialog(Gtk.Dialog):
         self.labelSquadCount.set_label("Squad size: %i/30" % (count))
 
     def selection_changed(self, treeselection):
-        if treeselection.count_selected_rows() > 0:
-            self.buttonRemove.set_sensitive(True)
-        else:
-            self.buttonRemove.set_sensitive(False)
+        sensitive = treeselection.count_selected_rows() > 0
+        self.buttonRemove.set_sensitive(sensitive)
 
     def save_button_handler(self):
         sensitive = False
@@ -437,7 +469,7 @@ class AddClubDialog(Gtk.Dialog):
                 sensitive = False
 
         if sensitive:
-            if self.comboboxStadium.get_active_id() is not None:
+            if self.comboboxStadium.get_active_id():
                 sensitive = True
             else:
                 sensitive = False
@@ -449,7 +481,6 @@ class AddClubDialog(Gtk.Dialog):
 
         if key == "Delete":
             if dialogs.remove_from_squad_dialog():
-                model = treeview.get_model()
                 model, treepath = self.treeselection.get_selected_rows()
 
                 for item in treepath:
