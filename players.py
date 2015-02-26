@@ -47,40 +47,38 @@ class Players(Gtk.Grid):
         self.treeselection.connect("changed", self.selection_changed)
         scrolledwindow.add(treeview)
 
-        cellrenderertext = Gtk.CellRendererText()
-        treeviewcolumn = widgets.TreeViewColumn(title="First Name", column=1)
-        treeviewcolumn.set_sort_column_id(1)
+        treeviewcolumn = widgets.TreeViewColumn(title="First Name",
+                                                column=1)
         treeview.append_column(treeviewcolumn)
-        treeviewcolumn = widgets.TreeViewColumn(title="Second Name", column=2)
-        treeviewcolumn.set_sort_column_id(2)
+        treeviewcolumn = widgets.TreeViewColumn(title="Second Name",
+                                                column=2)
         treeview.append_column(treeviewcolumn)
-        treeviewcolumn = widgets.TreeViewColumn(title="Common Name", column=3)
-        treeviewcolumn.set_sort_column_id(3)
+        treeviewcolumn = widgets.TreeViewColumn(title="Common Name",
+                                                column=3)
         treeview.append_column(treeviewcolumn)
-        treeviewcolumn = widgets.TreeViewColumn(title="Date of Birth", column=4)
-        treeviewcolumn.set_sort_column_id(4)
+        treeviewcolumn = widgets.TreeViewColumn(title="Date of Birth",
+                                                column=4)
         treeview.append_column(treeviewcolumn)
-        treeviewcolumn = widgets.TreeViewColumn(title="Club", column=5)
-        treeviewcolumn.set_sort_column_id(5)
+        treeviewcolumn = widgets.TreeViewColumn(title="Club",
+                                                column=5)
         treeview.append_column(treeviewcolumn)
-        treeviewcolumn = widgets.TreeViewColumn(title="Nation", column=6)
-        treeviewcolumn.set_sort_column_id(6)
+        treeviewcolumn = widgets.TreeViewColumn(title="Nation",
+                                                column=6)
         treeview.append_column(treeviewcolumn)
-        treeviewcolumn = widgets.TreeViewColumn(title="Position", column=7)
-        treeviewcolumn.set_sort_column_id(7)
+        treeviewcolumn = widgets.TreeViewColumn(title="Position",
+                                                column=7)
         treeview.append_column(treeviewcolumn)
 
         for count, item in enumerate(data.skill, start=8):
             label = Gtk.Label(data.skill_short[count - 8])
             label.set_tooltip_text(item)
             label.show()
-            treeviewcolumn = widgets.TreeViewColumn(title="", column=count)
+            treeviewcolumn = widgets.TreeViewColumn(None, column=count)
             treeviewcolumn.set_widget(label)
-            treeviewcolumn.set_sort_column_id(count)
             treeview.append_column(treeviewcolumn)
 
-        treeviewcolumn = widgets.TreeViewColumn(title="Training", column=17)
-        treeviewcolumn.set_sort_column_id(17)
+        treeviewcolumn = widgets.TreeViewColumn(title="Training",
+                                                column=17)
         treeview.append_column(treeviewcolumn)
 
         self.labelCount = widgets.Label()

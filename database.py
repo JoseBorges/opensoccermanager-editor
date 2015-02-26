@@ -114,13 +114,16 @@ class Database:
         keys = [item[0] for item in content]
 
         for stadiumid, stadium in data.stadiums.items():
-            north, east, south, west, northeast, northwest, southeast, southwest, northbox, eastbox, southbox, westbox = stadium.stands
+            north, east, south, west, northeast, northwest, southeast, southwest = stadium.stands
+            northseating, eastseating, southseating, westseating, northeastseating, northwestseating, southeastseating, southwestseating = stadium.seating
+            northroof, eastroof, southroof, westroof, northeastroof, northwestroof, southeastroof, southwestroof = stadium.roof
+            northbox, eastbox, southbox, westbox = stadium.box
             stall, programme, smallshop, largeshop, bar, burgerbar, cafe, restaurant = stadium.buildings
 
             if stadiumid in keys:
-                self.cursor.execute("UPDATE stadium SET name=?, north=?, east=?, south=?, west=?, northeast=?, northwest=?, southeast=?, southwest=?, northbox=?, eastbox=?, southbox=?, westbox=?, northroof=?, eastroof=?, southroof=?, westroof=?, northeastroof=?, northwestroof=?, southeastroof=?, southwestroof=?, northseating=?, eastseating=?, southseating=?, westseating=?, northeastseating=?, northwestseating=?, southeastseating=?, southwestseating=?, stall=?, programme=?, smallshop=?, largeshop=?, bar=?, burgerbar=?, cafe=?, restaurant=? WHERE id=?", (stadium.name, north, east, south, west, northeast, northwest, southeast, southwest, northbox, eastbox, southbox, westbox, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, stall, programme, smallshop, largeshop, bar, burgerbar, cafe, restaurant, stadiumid))
+                self.cursor.execute("UPDATE stadium SET name=?, north=?, east=?, south=?, west=?, northeast=?, northwest=?, southeast=?, southwest=?, northbox=?, eastbox=?, southbox=?, westbox=?, northroof=?, eastroof=?, southroof=?, westroof=?, northeastroof=?, northwestroof=?, southeastroof=?, southwestroof=?, northseating=?, eastseating=?, southseating=?, westseating=?, northeastseating=?, northwestseating=?, southeastseating=?, southwestseating=?, stall=?, programme=?, smallshop=?, largeshop=?, bar=?, burgerbar=?, cafe=?, restaurant=? WHERE id=?", (stadium.name, north, east, south, west, northeast, northwest, southeast, southwest, northbox, eastbox, southbox, westbox, northseating, eastseating, southseating, westseating, northeastseating, northwestseating, southeastseating, southwestseating, northroof, eastroof, southroof, westroof, northeastroof, northwestroof, southeastroof, southwestroof, stall, programme, smallshop, largeshop, bar, burgerbar, cafe, restaurant, stadiumid))
             elif stadiumid not in keys:
-                self.cursor.execute("INSERT INTO stadium VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (stadiumid, stadium.name, north, east, south, west, northeast, northwest, southeast, southwest, northbox, eastbox, southbox, westbox, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, stall, programme, smallshop, largeshop, bar, burgerbar, cafe, restaurant))
+                self.cursor.execute("INSERT INTO stadium VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (stadiumid, stadium.name, north, east, south, west, northeast, northwest, southeast, southwest, northbox, eastbox, southbox, westbox, northseating, eastseating, southseating, westseating, northeastseating, northwestseating, southeastseating, southwestseating, northroof, eastroof, southroof, westroof, northeastroof, northwestroof, southeastroof, southwestroof, stall, programme, smallshop, largeshop, bar, burgerbar, cafe, restaurant))
 
         for stadiumid in keys:
             if stadiumid not in data.stadiums.keys():

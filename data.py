@@ -101,9 +101,10 @@ def stadium(item):
     stadium.name = item[1]
     capacity = list(map(int, item[2:14]))
     stadium.capacity = sum(capacity)
-    stadium.stands = capacity
+    stadium.stands = list(map(int, item[2:10]))
     stadium.seating = list(map(bool, item[14:22]))
     stadium.roof = list(map(bool, item[22:30]))
+    stadium.box = list(map(int, item[10:14]))
     stadium.buildings = list(map(int, item[30:38]))
     stadiums[stadium.stadiumid] = stadium
 

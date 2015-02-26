@@ -118,7 +118,7 @@ class Stadiums(Gtk.Grid):
         else:
             dbcount = False
 
-        for count, (stadiumid, stadium) in enumerate(data.stadiums.items(), start=1):
+        for count, (stadiumid, stadium) in enumerate(items.items(), start=1):
             self.liststore.append([stadiumid,
                                    stadium.name,
                                    stadium.capacity,
@@ -140,9 +140,9 @@ class Stadiums(Gtk.Grid):
 
 
 class AddStadiumDialog(Gtk.Dialog):
-    state = False
-
     def __init__(self):
+        self.state = False
+
         Gtk.Dialog.__init__(self)
         self.set_transient_for(widgets.window)
         self.set_border_width(5)
@@ -159,12 +159,16 @@ class AddStadiumDialog(Gtk.Dialog):
         grid.set_column_spacing(5)
         self.vbox.add(grid)
 
-        label = widgets.Label("Name")
-        grid.attach(label, 0, 0, 1, 1)
+        grid1 = Gtk.Grid()
+        grid1.set_column_spacing(5)
+        grid.attach(grid1, 0, 0, 3, 1)
+
+        label = widgets.Label("_Name")
+        grid1.attach(label, 0, 0, 1, 1)
         self.entryName = Gtk.Entry()
         self.entryName.connect("changed", lambda w: self.save_button_handler())
         label.set_mnemonic_widget(self.entryName)
-        grid.attach(self.entryName, 1, 0, 1, 1)
+        grid1.attach(self.entryName, 1, 0, 1, 1)
 
         notebook = Gtk.Notebook()
         notebook.set_hexpand(True)
@@ -174,18 +178,23 @@ class AddStadiumDialog(Gtk.Dialog):
         grid1.set_border_width(5)
         grid1.set_row_spacing(5)
         grid1.set_column_spacing(5)
-        notebook.append_page(grid1, Gtk.Label("Stand"))
+        label = widgets.Label("_Stands")
+        notebook.append_page(grid1, label)
 
         self.capacities = []
+        self.seating = []
+        self.roofs = []
+        self.boxes = []
 
-        for count, stand in enumerate(("North", "West", "South", "East", "North West", "North East", "South West", "South East")):
-            label = widgets.Label(stand)
+        for count, stand in enumerate(("North", "East", "South", "West", "North East", "North West", "South East", "South West")):
+            label = widgets.Label("_%s" % (stand))
             grid1.attach(label, 0, count, 1, 1)
 
             spinbuttonCapacity = Gtk.SpinButton()
             spinbuttonCapacity.set_value(0)
             spinbuttonCapacity.set_increments(1000, 1000)
             spinbuttonCapacity.set_snap_to_ticks(True)
+            label.set_mnemonic_widget(spinbuttonCapacity)
             self.capacities.append(spinbuttonCapacity)
             grid1.attach(spinbuttonCapacity, 1, count, 1, 1)
 
@@ -195,19 +204,27 @@ class AddStadiumDialog(Gtk.Dialog):
             radiobuttonSeating = Gtk.RadioButton("_Seating")
             radiobuttonSeating.set_use_underline(True)
             radiobuttonSeating.join_group(radiobuttonStanding)
+            self.seating.append([radiobuttonStanding, radiobuttonSeating])
             grid1.attach(radiobuttonSeating, 3, count, 1, 1)
 
             checkbuttonRoof = Gtk.CheckButton("_Roof")
             checkbuttonRoof.set_use_underline(True)
+            self.roofs.append(checkbuttonRoof)
             grid1.attach(checkbuttonRoof, 4, count, 1, 1)
 
             if count < 4:
                 spinbuttonCapacity.set_range(0, 15000)
 
-                label = Gtk.Label("Box")
+                label = widgets.Label("_Box")
                 grid1.attach(label, 5, count, 1, 1)
+
                 spinbuttonBox = Gtk.SpinButton()
                 spinbuttonBox.set_value(0)
+                spinbuttonBox.set_range(0, 500)
+                spinbuttonBox.set_increments(250, 250)
+                spinbuttonBox.set_snap_to_ticks(True)
+                label.set_mnemonic_widget(spinbuttonBox)
+                self.boxes.append(spinbuttonBox)
                 grid1.attach(spinbuttonBox, 6, count, 1, 1)
             else:
                 spinbuttonCapacity.set_range(0, 3000)
@@ -216,18 +233,20 @@ class AddStadiumDialog(Gtk.Dialog):
         grid2.set_border_width(5)
         grid2.set_row_spacing(5)
         grid2.set_column_spacing(5)
-        notebook.append_page(grid2, Gtk.Label("Buildings"))
+        label = widgets.Label("_Buildings")
+        notebook.append_page(grid2, label)
 
         self.buildings = []
 
         for count, building in enumerate(("Stall", "Programme Vendor", "Small Shop", "Large Shop", "Bar", "Burger Bar", "Cafe", "Restaurant")):
-            label = widgets.Label(building)
+            label = widgets.Label("_%s" % (building))
             grid2.attach(label, 0, count, 1, 1)
 
             spinbutton = Gtk.SpinButton()
             spinbutton.set_value(0)
             spinbutton.set_range(0, 8)
             spinbutton.set_increments(1, 1)
+            label.set_mnemonic_widget(spinbutton)
             self.buildings.append(spinbutton)
             grid2.attach(spinbutton, 1, count, 1, 1)
 
@@ -273,6 +292,29 @@ class AddStadiumDialog(Gtk.Dialog):
 
         stadium.name = self.entryName.get_text()
 
+        capacity = 0
+
+        for spinbutton in self.capacities:
+            capacity += spinbutton.get_value_as_int()
+
+        for spinbutton in self.boxes:
+            capacity += spinbutton.get_value_as_int()
+
+        stadium.capacity = capacity
+        stadium.stands = [widget.get_value_as_int() for widget in self.capacities]
+
+        stadium.seating = []
+
+        for widget in self.seating:
+            if widget[0].get_active():
+                stadium.seating.append(False)
+            else:
+                stadium.seating.append(True)
+
+        stadium.roof = [widget.get_active() for widget in self.roofs]
+        stadium.box = [widget.get_value_as_int() for widget in self.boxes]
+        stadium.buildings = [widget.get_value_as_int() for widget in self.buildings]
+
     def load_fields(self, stadiumid):
         stadium = data.stadiums[stadiumid]
 
@@ -280,6 +322,18 @@ class AddStadiumDialog(Gtk.Dialog):
 
         for count, widget in enumerate(self.capacities):
             widget.set_value(stadium.stands[count])
+
+        for count, widget in enumerate(self.boxes):
+            widget.set_value(stadium.box[count])
+
+        for count, widget in enumerate(self.seating):
+            if stadium.seating[count]:
+                widget[1].set_active(True)
+            else:
+                widget[0].set_active(True)
+
+        for count, widget in enumerate(self.roofs):
+            widget.set_active(stadium.roof[count])
 
         for count, widget in enumerate(self.buildings):
             widget.set_value(stadium.buildings[count])
@@ -290,10 +344,22 @@ class AddStadiumDialog(Gtk.Dialog):
         for count, widget in enumerate(self.capacities):
             widget.set_value(0)
 
-    def save_button_handler(self):
-        sensitive = False
+        for count, widget in enumerate(self.boxes):
+            widget.set_value(0)
 
+        for count, widget in enumerate(self.seating):
+            widget[0].set_active(True)
+
+        for count, widget in enumerate(self.roofs):
+            widget.set_active(False)
+
+        for count, widget in enumerate(self.buildings):
+            widget.set_value(0)
+
+    def save_button_handler(self):
         if self.entryName.get_text_length() > 0:
             sensitive = True
+        else:
+            sensitive = False
 
         self.buttonSave.set_sensitive(sensitive)

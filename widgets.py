@@ -53,6 +53,10 @@ class TreeViewColumn(Gtk.TreeViewColumn):
         cellrenderertext = Gtk.CellRendererText()
 
         self.set_expand(True)
-        self.set_title(title)
+
+        if title:
+            self.set_title(title)
+
         self.pack_start(cellrenderertext, True)
         self.add_attribute(cellrenderertext, "text", column)
+        self.set_sort_column_id(column)
