@@ -49,7 +49,7 @@ class Window(Gtk.Window):
         self.menuTools = mainmenu.menuTools
 
         mainmenu.menuitemNew.connect("activate", new_database)
-        mainmenu.menuitemOpen.connect("activate", open_database)
+        mainmenu.menuitemOpen.connect("activate", new_database, 1)
         self.menuitemSave = mainmenu.menuitemSave
         mainmenu.menuitemSave.connect("activate", self.save_database)
         self.menuitemSaveAs = mainmenu.menuitemSaveAs
@@ -264,7 +264,7 @@ class Window(Gtk.Window):
                 players.populate()
                 data.unsaved = True
             elif page == 1:
-                keys = [player.club for playerid, player in data.players.items()]
+                keys = [player.club for player in data.players.values()]
 
                 if clubs.selected in keys:
                     dialogs.error(0)
@@ -273,7 +273,7 @@ class Window(Gtk.Window):
                     clubs.populate()
                     data.unsaved = True
             elif page == 2:
-                keys = [player.nationality for playerid, player in data.players.items()]
+                keys = [player.nationality for player in data.players.values()]
 
                 if nations.selected in keys:
                     dialogs.error(1)
@@ -282,7 +282,7 @@ class Window(Gtk.Window):
                     nations.populate()
                     data.unsaved = True
             elif page == 3:
-                keys = [club.stadium for clubid, club in data.clubs.items()]
+                keys = [club.stadium for club in data.clubs.values()]
 
                 if stadiums.selected in keys:
                     dialogs.error(2)
@@ -475,7 +475,7 @@ class MainMenu(Gtk.Grid):
         buttonOpen.set_image(image)
         buttonOpen.set_image_position(Gtk.PositionType.TOP)
         buttonOpen.set_tooltip_text("Open existing database file")
-        buttonOpen.connect("clicked", open_database)
+        buttonOpen.connect("clicked", new_database, 1)
         self.attach(buttonOpen, 2, 1, 1, 1)
 
     def run(self):
@@ -536,43 +536,26 @@ class MainEditor(Gtk.Notebook):
             widgets.toolbuttonRemove.set_sensitive(True)
 
 
-def new_database(widget=None):
-    filename = new_database.display()
+def new_database(widget=None, mode=0):
+    if mode == 0:
+        new_database = dialogs.NewDatabase()
+        filename = new_database.display()
+    elif mode == 1:
+        filename = dialogs.file_dialog(mode=0)
 
     if filename:
-        data.db.connect(filename=filename)
+        if data.db.connect(filename):
+            widgets.window.update_title(filename)
 
-        widgets.window.update_title(filename)
+            if widgets.window.grid.get_child_at(0, 2) is mainmenu:
+                widgets.window.grid.remove(mainmenu)
 
-        if widgets.window.grid.get_child_at(0, 2) is mainmenu:
-            widgets.window.grid.remove(mainmenu)
-
-        data.db.load()
-
-        players.populate()
-        clubs.populate()
-        nations.populate()
-        stadiums.populate()
-
-        maineditor.run()
-
-
-def open_database(widget=None):
-    filename = dialogs.file_dialog(mode=0)
-
-    if filename:
-        if data.db.connect(filename) is not False:
             data.db.load()
 
             players.populate()
             clubs.populate()
             nations.populate()
             stadiums.populate()
-
-            widgets.window.update_title(filename)
-
-            if widgets.window.grid.get_child_at(0, 2) is mainmenu:
-                widgets.window.grid.remove(mainmenu)
 
             maineditor.run()
 
@@ -592,7 +575,6 @@ clubs = clubs.Clubs()
 nations = nations.Nations()
 stadiums = stadiums.Stadiums()
 data.db = database.Database()
-new_database = dialogs.NewDatabase()
 widgets.window.run()
 
 

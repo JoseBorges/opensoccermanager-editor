@@ -34,6 +34,8 @@ class Database:
     def connect(self, filename="osm1415.db"):
         if os.path.isfile(filename):
             self.initialise(filename)
+
+            return True
         elif not os.path.isfile(filename):
             self.initialise(filename)
 
@@ -46,6 +48,8 @@ class Database:
             self.cursor.execute("CREATE TABLE player (id INTEGER PRIMARY KEY AUTOINCREMENT, firstname TEXT, secondname TEXT, commonname TEXT, dateofbirth TEXT, club INTEGER, nation INTEGER, position TEXT, keeping INTEGER, tackling INTEGER, passing INTEGER, shooting INTEGER, heading INTEGER, pace INTEGER, stamina INTEGER, ballcontrol INTEGER, setpieces INTEGER, training INTEGER, FOREIGN KEY(club) REFERENCES club(id), FOREIGN KEY(nation) REFERENCES nation(id))")
 
             self.connection.commit()
+
+            return True
         else:
             return False
 

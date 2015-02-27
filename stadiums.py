@@ -93,7 +93,7 @@ class Stadiums(Gtk.Grid):
                 model, treeiter = self.treeselection.get_selected()
                 stadiumid = model[treeiter][0]
 
-                keys = [club.stadium for clubid, club in data.clubs.items()]
+                keys = [club.stadium for club in data.clubs.values()]
 
                 if stadiumid in keys:
                     dialogs.error(2)
@@ -348,19 +348,19 @@ class AddStadiumDialog(Gtk.Dialog):
     def clear_fields(self):
         self.entryName.set_text("")
 
-        for count, widget in enumerate(self.capacities):
+        for widget in self.capacities:
             widget.set_value(0)
 
-        for count, widget in enumerate(self.boxes):
+        for widget in self.boxes:
             widget.set_value(0)
 
-        for count, widget in enumerate(self.seating):
+        for widget in self.seating:
             widget[0].set_active(True)
 
-        for count, widget in enumerate(self.roofs):
+        for widget in self.roofs:
             widget.set_active(False)
 
-        for count, widget in enumerate(self.buildings):
+        for widget in self.buildings:
             widget.set_value(0)
 
     def save_button_handler(self):

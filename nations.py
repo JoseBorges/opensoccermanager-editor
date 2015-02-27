@@ -77,7 +77,7 @@ class Nations(Gtk.Grid):
                 model, treeiter = self.treeselection.get_selected()
                 nationid = model[treeiter][0]
 
-                keys = [player.nationality for playerid, player in data.players.items()]
+                keys = [player.nationality for player in data.players.values()]
 
                 if nationid in keys:
                     dialogs.error(1)

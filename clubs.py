@@ -46,22 +46,34 @@ class Clubs(Gtk.Grid):
 
         cellrenderertext = Gtk.CellRendererText()
 
-        treeviewcolumn = Gtk.TreeViewColumn("Name", cellrenderertext, text=1)
+        treeviewcolumn = Gtk.TreeViewColumn("Name",
+                                            cellrenderertext,
+                                            text=1)
         treeviewcolumn.set_sort_column_id(1)
         treeview.append_column(treeviewcolumn)
-        treeviewcolumn = Gtk.TreeViewColumn("Nickname", cellrenderertext, text=2)
+        treeviewcolumn = Gtk.TreeViewColumn("Nickname",
+                                            cellrenderertext,
+                                            text=2)
         treeviewcolumn.set_sort_column_id(2)
         treeview.append_column(treeviewcolumn)
-        treeviewcolumn = Gtk.TreeViewColumn("Manager", cellrenderertext, text=3)
+        treeviewcolumn = Gtk.TreeViewColumn("Manager",
+                                            cellrenderertext,
+                                            text=3)
         treeviewcolumn.set_sort_column_id(3)
         treeview.append_column(treeviewcolumn)
-        treeviewcolumn = Gtk.TreeViewColumn("Chairman", cellrenderertext, text=4)
+        treeviewcolumn = Gtk.TreeViewColumn("Chairman",
+                                            cellrenderertext,
+                                            text=4)
         treeviewcolumn.set_sort_column_id(4)
         treeview.append_column(treeviewcolumn)
-        treeviewcolumn = Gtk.TreeViewColumn("Stadium", cellrenderertext, text=5)
+        treeviewcolumn = Gtk.TreeViewColumn("Stadium",
+                                            cellrenderertext,
+                                            text=5)
         treeviewcolumn.set_sort_column_id(5)
         treeview.append_column(treeviewcolumn)
-        treeviewcolumn = Gtk.TreeViewColumn("Reputation", cellrenderertext, text=6)
+        treeviewcolumn = Gtk.TreeViewColumn("Reputation",
+                                            cellrenderertext,
+                                            text=6)
         treeviewcolumn.set_sort_column_id(6)
         treeview.append_column(treeviewcolumn)
 
@@ -111,7 +123,7 @@ class Clubs(Gtk.Grid):
                 model, treeiter = self.treeselection.get_selected()
                 clubid = model[treeiter][0]
 
-                keys = [player.club for playerid, player in data.players.items()]
+                keys = [player.club for player in data.players.values()]
 
                 if clubid in keys:
                     dialogs.error(0)
