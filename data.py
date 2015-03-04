@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import database
+import display
 
 
 unsaved = False
@@ -46,7 +47,9 @@ def player(item):
     player.common_name = item[3]
     player.date_of_birth = item[4]
 
-    if item[5] is None:
+    player.age = display.age(player.date_of_birth)
+
+    if not item[5]:
         player.club = 0
     else:
         player.club = int(item[5])
@@ -63,6 +66,8 @@ def player(item):
     player.ball_control = (item[15])
     player.set_pieces = (item[16])
     player.training_value = (item[17])
+    player.value = 0
+    player.wage = 0
     players[player.playerid] = player
 
     if player.playerid > idnumbers.playerid:

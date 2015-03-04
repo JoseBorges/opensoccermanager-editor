@@ -546,9 +546,7 @@ def new_database(widget=None, mode=0):
     if filename:
         if data.db.connect(filename):
             widgets.window.update_title(filename)
-
-            if widgets.window.grid.get_child_at(0, 2) is mainmenu:
-                widgets.window.grid.remove(mainmenu)
+            widgets.window.grid.remove(mainmenu)
 
             data.db.load()
 
@@ -571,6 +569,7 @@ dialogs.nations = nations.AddNationDialog()
 dialogs.stadiums = stadiums.AddStadiumDialog()
 dialogs.preferences = dialogs.Preferences()
 players = players.Players()
+widgets.players = players
 clubs = clubs.Clubs()
 nations = nations.Nations()
 stadiums = stadiums.Stadiums()

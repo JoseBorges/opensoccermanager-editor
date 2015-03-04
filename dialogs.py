@@ -38,26 +38,52 @@ class Preferences(Gtk.Dialog):
         self.set_transient_for(widgets.window)
         self.set_title("Preferences")
         self.set_border_width(5)
+        self.set_resizable(False)
         self.add_button("_Close", Gtk.ResponseType.CLOSE)
         self.connect("response", self.response_handler)
 
         grid = Gtk.Grid()
         grid.set_row_spacing(5)
-        grid.set_column_spacing(5)
         self.vbox.add(grid)
 
-        self.checkbuttonQuit = Gtk.CheckButton("_Display confirmation dialog when quitting")
+        commonframe = widgets.CommonFrame("Interface")
+        grid.attach(commonframe, 0, 0, 1, 1)
+
+        grid1 = Gtk.Grid()
+        grid1.set_row_spacing(5)
+        grid1.set_column_spacing(5)
+        commonframe.insert(grid1)
+
+        self.checkbuttonQuit = Gtk.CheckButton("Display confirmation dialog when _quitting")
         self.checkbuttonQuit.set_use_underline(True)
         self.checkbuttonQuit.connect("toggled", self.quit_toggled)
-        grid.attach(self.checkbuttonQuit, 0, 0, 1, 1)
-        self.checkbuttonRemove = Gtk.CheckButton("_Display confirmation dialog when removing items")
+        grid1.attach(self.checkbuttonQuit, 0, 0, 1, 1)
+        self.checkbuttonRemove = Gtk.CheckButton("Display confirmation dialog when _removing items")
         self.checkbuttonRemove.set_use_underline(True)
         self.checkbuttonRemove.connect("toggled", self.remove_toggled)
-        grid.attach(self.checkbuttonRemove, 0, 1, 1, 1)
+        grid1.attach(self.checkbuttonRemove, 0, 1, 1, 1)
         self.checkbuttonToolbar = Gtk.CheckButton("_Show toolbar")
         self.checkbuttonToolbar.set_use_underline(True)
         self.checkbuttonToolbar.connect("toggled", self.toolbar_toggled)
-        grid.attach(self.checkbuttonToolbar, 0, 2, 1, 1)
+        grid1.attach(self.checkbuttonToolbar, 0, 2, 1, 1)
+
+        commonframe = widgets.CommonFrame("Players")
+        grid.attach(commonframe, 0, 1, 1, 1)
+
+        grid2 = Gtk.Grid()
+        grid2.set_row_spacing(5)
+        grid2.set_column_spacing(5)
+        commonframe.insert(grid2)
+
+        self.checkbuttonAge = Gtk.CheckButton("Display _age instead of date of birth")
+        self.checkbuttonAge.set_use_underline(True)
+        self.checkbuttonAge.connect("toggled", self.age_toggled)
+        grid2.attach(self.checkbuttonAge, 0, 0, 1, 1)
+
+        self.checkbuttonValueWage = Gtk.CheckButton("Show approximate _player value and wage")
+        self.checkbuttonValueWage.set_use_underline(True)
+        self.checkbuttonValueWage.connect("toggled", self.value_wage_toggled)
+        grid2.attach(self.checkbuttonValueWage, 0, 1, 1, 1)
 
     def response_handler(self, widget, event):
         self.hide()
@@ -81,10 +107,28 @@ class Preferences(Gtk.Dialog):
 
         data.options.write_file()
 
+    def age_toggled(self, checkbutton):
+        data.options.show_age = checkbutton.get_active()
+        data.options["INTERFACE"]["ShowAge"] = str(data.options.show_age)
+
+        data.options.write_file()
+
+        widgets.players.toggle_age_column()
+
+    def value_wage_toggled(self, checkbutton):
+        data.options.show_value_wage = checkbutton.get_active()
+        data.options["INTERFACE"]["ShowValueWage"] = str(data.options.show_value_wage)
+
+        data.options.write_file()
+
+        widgets.players.toggle_value_wage_column()
+
     def display(self):
         self.checkbuttonQuit.set_active(data.options.confirm_quit)
         self.checkbuttonRemove.set_active(data.options.confirm_remove)
         self.checkbuttonToolbar.set_active(data.options.show_toolbar)
+        self.checkbuttonAge.set_active(data.options.show_age)
+        self.checkbuttonValueWage.set_active(data.options.show_value_wage)
 
         self.show_all()
         self.run()
@@ -462,8 +506,6 @@ class NationSelectionDialog(Gtk.Dialog):
 
 
 class DateOfBirth(Gtk.Dialog):
-    date_of_birth = None
-
     def __init__(self, parent):
         Gtk.Dialog.__init__(self)
         self.set_transient_for(parent)
@@ -476,10 +518,12 @@ class DateOfBirth(Gtk.Dialog):
         self.calendar.set_property("year", True)
         self.vbox.add(self.calendar)
 
+        self.date_of_birth = None
+
     def display(self, date):
         state = False
 
-        if date is not None:
+        if date:
             year, month, day = date
 
             self.calendar.select_day(day)

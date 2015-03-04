@@ -3,6 +3,7 @@
 from gi.repository import Gtk
 from gi.repository import Gdk
 
+import calculator
 import data
 import dialogs
 import display
@@ -24,12 +25,13 @@ class Players(Gtk.Grid):
         self.set_border_width(5)
 
         scrolledwindow = Gtk.ScrolledWindow()
-        scrolledwindow.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        scrolledwindow.set_policy(Gtk.PolicyType.AUTOMATIC,
+                                  Gtk.PolicyType.AUTOMATIC)
         self.attach(scrolledwindow, 0, 0, 2, 1)
 
-        self.liststore = Gtk.ListStore(int, str, str, str, str, str,
+        self.liststore = Gtk.ListStore(int, str, str, str, str, int, str,
                                        str, str, int, int, int, int,
-                                       int, int, int, int, int, int)
+                                       int, int, int, int, int, int, int, str, int, str)
 
         treemodelsort = Gtk.TreeModelSort(self.liststore)
         treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
@@ -57,21 +59,24 @@ class Players(Gtk.Grid):
         treeviewcolumn = widgets.TreeViewColumn(title="Common Name",
                                                 column=3)
         treeview.append_column(treeviewcolumn)
-        treeviewcolumn = widgets.TreeViewColumn(title="Date of Birth",
+        self.treeviewcolumnDateOfBirth = widgets.TreeViewColumn(title="Date of Birth",
                                                 column=4)
-        treeview.append_column(treeviewcolumn)
-        treeviewcolumn = widgets.TreeViewColumn(title="Club",
+        treeview.append_column(self.treeviewcolumnDateOfBirth)
+        self.treeviewcolumnAge = widgets.TreeViewColumn(title="Age",
                                                 column=5)
-        treeview.append_column(treeviewcolumn)
-        treeviewcolumn = widgets.TreeViewColumn(title="Nation",
+        treeview.append_column(self.treeviewcolumnAge)
+        treeviewcolumn = widgets.TreeViewColumn(title="Club",
                                                 column=6)
         treeview.append_column(treeviewcolumn)
-        treeviewcolumn = widgets.TreeViewColumn(title="Position",
+        treeviewcolumn = widgets.TreeViewColumn(title="Nation",
                                                 column=7)
         treeview.append_column(treeviewcolumn)
+        treeviewcolumn = widgets.TreeViewColumn(title="Position",
+                                                column=8)
+        treeview.append_column(treeviewcolumn)
 
-        for count, item in enumerate(data.skill, start=8):
-            label = Gtk.Label(data.skill_short[count - 8])
+        for count, item in enumerate(data.skill, start=9):
+            label = Gtk.Label(data.skill_short[count - 9])
             label.set_tooltip_text(item)
             label.show()
             treeviewcolumn = widgets.TreeViewColumn(None, column=count)
@@ -79,8 +84,16 @@ class Players(Gtk.Grid):
             treeview.append_column(treeviewcolumn)
 
         treeviewcolumn = widgets.TreeViewColumn(title="Training",
-                                                column=17)
+                                                column=18)
         treeview.append_column(treeviewcolumn)
+
+        cellrenderertext = Gtk.CellRendererText()
+        self.treeviewcolumnValue = Gtk.TreeViewColumn("Est. Value", cellrenderertext, text=20)
+        self.treeviewcolumnValue.set_sort_column_id(19)
+        treeview.append_column(self.treeviewcolumnValue)
+        self.treeviewcolumnWage = Gtk.TreeViewColumn("Est. Wage", cellrenderertext, text=22)
+        self.treeviewcolumnWage.set_sort_column_id(21)
+        treeview.append_column(self.treeviewcolumnWage)
 
         self.labelCount = widgets.Label()
         self.attach(self.labelCount, 0, 1, 1, 1)
@@ -148,11 +161,7 @@ class Players(Gtk.Grid):
         model, treepath = self.treeselection.get_selected_rows()
 
         if treepath:
-            self.selected = []
-
-            for item in treepath:
-                value = model[item][0]
-                self.selected.append(value)
+            self.selected = [model[item][0] for item in treepath]
 
             widgets.window.menuitemEdit.set_sensitive(True)
             widgets.window.menuitemRemove.set_sensitive(True)
@@ -160,6 +169,7 @@ class Players(Gtk.Grid):
             widgets.toolbuttonRemove.set_sensitive(True)
         else:
             self.selected = None
+
             widgets.window.menuitemEdit.set_sensitive(False)
             widgets.window.menuitemRemove.set_sensitive(False)
             widgets.toolbuttonEdit.set_sensitive(False)
@@ -173,6 +183,22 @@ class Players(Gtk.Grid):
             self.labelSelected.set_label("(1 Item Selected)")
         else:
             self.labelSelected.set_label("(%i Items Selected)" % (count))
+
+    def toggle_age_column(self):
+        if data.options.show_age:
+            self.treeviewcolumnAge.set_visible(True)
+            self.treeviewcolumnDateOfBirth.set_visible(False)
+        else:
+            self.treeviewcolumnAge.set_visible(False)
+            self.treeviewcolumnDateOfBirth.set_visible(True)
+
+    def toggle_value_wage_column(self):
+        if data.options.show_value_wage:
+            self.treeviewcolumnValue.set_visible(True)
+            self.treeviewcolumnWage.set_visible(True)
+        else:
+            self.treeviewcolumnValue.set_visible(False)
+            self.treeviewcolumnWage.set_visible(False)
 
     def populate(self, items=None):
         self.liststore.clear()
@@ -189,11 +215,17 @@ class Players(Gtk.Grid):
             club = display.club(player)
             nationality = display.nation(player)
 
+            value = calculator.value(playerid)
+            display_value = display.value(value)
+            wage = calculator.wage(playerid)
+            display_wage = display.wage(wage)
+
             self.liststore.append([playerid,
                                    player.first_name,
                                    player.second_name,
                                    player.common_name,
                                    player.date_of_birth,
+                                   player.age,
                                    club,
                                    nationality,
                                    player.position,
@@ -206,7 +238,11 @@ class Players(Gtk.Grid):
                                    player.stamina,
                                    player.ball_control,
                                    player.set_pieces,
-                                   player.training_value])
+                                   player.training_value,
+                                   value,
+                                   display_value,
+                                   wage,
+                                   display_wage])
 
         if dbcount:
             self.labelCount.set_label("%i Players in Database" % (count))
@@ -215,6 +251,9 @@ class Players(Gtk.Grid):
         self.populate()
 
         self.show_all()
+
+        self.toggle_age_column()
+        self.toggle_value_wage_column()
 
 
 class AddPlayerDialog(Gtk.Dialog):
@@ -292,15 +331,15 @@ class AddPlayerDialog(Gtk.Dialog):
         grid1.attach(self.checkbuttonFreeAgent, 1, 4, 1, 1)
         self.buttonClub = widgets.Button()
         self.buttonClub.set_hexpand(True)
-        label.set_mnemonic_widget(self.buttonClub)
         self.buttonClub.connect("clicked", self.club_change)
+        label.set_mnemonic_widget(self.buttonClub)
         grid1.attach(self.buttonClub, 2, 4, 1, 1)
 
         label = widgets.Label("_Nationality")
         grid.attach(label, 0, 5, 1, 1)
         self.buttonNation = widgets.Button()
-        label.set_mnemonic_widget(self.buttonNation)
         self.buttonNation.connect("clicked", self.nation_change)
+        label.set_mnemonic_widget(self.buttonNation)
         grid.attach(self.buttonNation, 1, 5, 1, 1)
 
         label = widgets.Label("_Position")
@@ -357,7 +396,7 @@ class AddPlayerDialog(Gtk.Dialog):
         state = self.dob.display(date=self.date)
 
         if state:
-            if self.dob.date_of_birth is not None:
+            if self.dob.date_of_birth:
                 year, month, day = self.dob.date_of_birth
 
                 if month < 10:
@@ -374,13 +413,14 @@ class AddPlayerDialog(Gtk.Dialog):
                 self.buttonDateOfBirth.set_label("%s" % (date))
 
                 year, month, day = self.dob.date_of_birth
-
                 age = data.season - year
 
                 if (month, day) > (8, 1):
                     age -= 1
 
                 self.labelAge.set_label("Age: %i" % (age))
+
+        self.date = None
 
         self.save_button_handler()
 
@@ -569,9 +609,9 @@ class AddPlayerDialog(Gtk.Dialog):
         self.entrySecondName.set_text(player.second_name)
         self.entryCommonName.set_text(player.common_name)
         self.buttonDateOfBirth.set_label("%s" % (player.date_of_birth))
-        self.dob.date_of_birth = list(map(int, player.date_of_birth.split("-")))
+        self.date = list(map(int, player.date_of_birth.split("-")))
 
-        if player.club != 0 and player.club is not None:
+        if player.club != 0:
             self.selected_club = player.club
             self.buttonClub.set_label("%s" % (data.clubs[player.club].name))
             self.checkbuttonFreeAgent.set_active(False)
@@ -581,16 +621,10 @@ class AddPlayerDialog(Gtk.Dialog):
             self.checkbuttonFreeAgent.set_active(True)
 
         self.selected_nation = player.nationality
-        self.buttonNation.set_label("%s" % (data.nations[player.nationality].name))
+        nation = display.nation(player)
+        self.buttonNation.set_label("%s" % (nation))
 
-        date = player.date_of_birth.split("-")
-        self.date = list(map(int, date))
-
-        age = data.season - self.date[0]
-
-        if (self.date[1], self.date[2]) > (8, 1):
-            age -= 1
-
+        age = display.age(player.date_of_birth)
         self.labelAge.set_label("Age: %i" % (age))
 
         self.comboboxPosition.set_active_id(player.position)
@@ -615,13 +649,8 @@ class AddPlayerDialog(Gtk.Dialog):
         self.buttonNation.set_label("")
 
         self.comboboxPosition.set_active(-1)
-        self.skills[0].set_value(1)
-        self.skills[1].set_value(1)
-        self.skills[2].set_value(1)
-        self.skills[3].set_value(1)
-        self.skills[4].set_value(1)
-        self.skills[5].set_value(1)
-        self.skills[6].set_value(1)
-        self.skills[7].set_value(1)
-        self.skills[8].set_value(1)
+
+        for count in range(0, 9):
+            self.skills[count].set_value(1)
+
         self.spinbuttonTraining.set_value(1)
