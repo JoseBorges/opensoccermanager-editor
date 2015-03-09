@@ -11,14 +11,10 @@ import menu
 import widgets
 
 
-class Player:
-    pass
-
-
 class Players(Gtk.Grid):
-    selected = None
-
     def __init__(self):
+        self.selected = None
+
         Gtk.Grid.__init__(self)
         self.set_row_spacing(5)
         self.set_column_spacing(5)
@@ -113,6 +109,16 @@ class Players(Gtk.Grid):
             contextmenu.show_all()
             contextmenu.popup(None, None, None, None, event.button, event.time)
 
+    def row_activated(self, treeview, path, column):
+        model = treeview.get_model()
+        playerid = model[path][0]
+
+        playerid = [playerid]
+        dialogs.players.display(playerid)
+
+        if dialogs.players.state:
+            self.populate()
+
     def row_edit_by_menu(self, menuitem):
         model, treepath = self.treeselection.get_selected_rows()
 
@@ -124,16 +130,6 @@ class Players(Gtk.Grid):
 
             if dialogs.players.state:
                 self.populate()
-
-    def row_activated(self, treeview, path, column):
-        model = treeview.get_model()
-        playerid = model[path][0]
-
-        playerid = [playerid]
-        dialogs.players.display(playerid)
-
-        if dialogs.players.state:
-            self.populate()
 
     def row_delete(self, widget, event=None):
         if event:
@@ -257,16 +253,16 @@ class Players(Gtk.Grid):
 
 
 class AddPlayerDialog(Gtk.Dialog):
-    state = False
-
     def __init__(self):
         self.date = None
+        self.state = False
         self.selected_club = 0
         self.selected_nation = 0
 
         Gtk.Dialog.__init__(self)
         self.set_transient_for(widgets.window)
         self.set_border_width(5)
+        self.set_resizable(False)
         self.connect("response", self.response_handler)
         self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
 
@@ -434,7 +430,7 @@ class AddPlayerDialog(Gtk.Dialog):
         self.save_button_handler()
 
     def club_change(self, button):
-        if self.current is not None:
+        if self.current:
             clubid = data.players[self.current].club
 
             if self.selected_club != clubid:
@@ -444,7 +440,7 @@ class AddPlayerDialog(Gtk.Dialog):
 
         clubid = self.clubselectiondialog.display(clubid=clubid)
 
-        if clubid is not None:
+        if clubid:
             self.selected_club = clubid
             self.buttonClub.set_label("%s" % (data.clubs[clubid].name))
         else:
@@ -462,7 +458,7 @@ class AddPlayerDialog(Gtk.Dialog):
 
         nationid = self.nationselectiondialog.display(nationid=nationid)
 
-        if nationid is not None:
+        if nationid:
             self.selected_nation = nationid
             self.buttonNation.set_label("%s" % (data.nations[nationid].name))
         else:
@@ -514,7 +510,7 @@ class AddPlayerDialog(Gtk.Dialog):
         if self.current:
             try:
                 self.current = self.generator.__next__()
-                self.load_fields(self.current)
+                self.load_fields(playerid=self.current)
             except StopIteration:
                 self.hide()
 
@@ -523,10 +519,10 @@ class AddPlayerDialog(Gtk.Dialog):
                 self.hide()
 
     def save_data(self, playerid):
-        if playerid is None:
+        if not playerid:
             data.idnumbers.playerid += 1
 
-            player = Player()
+            player = data.Player()
             data.players[data.idnumbers.playerid] = player
         else:
             player = data.players[playerid]
@@ -638,6 +634,8 @@ class AddPlayerDialog(Gtk.Dialog):
         self.skills[7].set_value(player.ball_control)
         self.skills[8].set_value(player.set_pieces)
         self.spinbuttonTraining.set_value(player.training_value)
+
+        self.buttonSave.set_sensitive(True)
 
     def clear_fields(self):
         self.entryFirstName.set_text("")

@@ -10,21 +10,17 @@ import menu
 import widgets
 
 
-class Club:
-    pass
-
-
 class Clubs(Gtk.Grid):
-    selected = None
-
     def __init__(self):
+        self.selected = None
         Gtk.Grid.__init__(self)
         self.set_row_spacing(5)
         self.set_column_spacing(5)
         self.set_border_width(5)
 
         scrolledwindow = Gtk.ScrolledWindow()
-        scrolledwindow.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scrolledwindow.set_policy(Gtk.PolicyType.NEVER,
+                                  Gtk.PolicyType.AUTOMATIC)
         self.attach(scrolledwindow, 0, 0, 2, 1)
 
         self.liststore = Gtk.ListStore(int, str, str, str, str, str, int)
@@ -41,6 +37,7 @@ class Clubs(Gtk.Grid):
         treeview.connect("key-press-event", self.row_delete)
         treeview.connect("row-activated", self.row_activated)
         self.treeselection = treeview.get_selection()
+        self.treeselection.set_mode(Gtk.SelectionMode.MULTIPLE)
         self.treeselection.connect("changed", self.selection_changed)
         scrolledwindow.add(treeview)
 
@@ -81,6 +78,10 @@ class Clubs(Gtk.Grid):
         self.labelCount.set_alignment(0, 0.5)
         self.attach(self.labelCount, 0, 1, 1, 1)
 
+        self.labelSelected = widgets.Label()
+        self.labelSelected.set_hexpand(True)
+        self.attach(self.labelSelected, 1, 1, 1, 1)
+
         # Context menu
         contextmenu = menu.ContextMenu()
         contextmenu.menuitemEdit.connect("activate", self.row_edit_by_menu)
@@ -96,17 +97,19 @@ class Clubs(Gtk.Grid):
         model = treeview.get_model()
         clubid = model[path][0]
 
+        clubid = [clubid]
         dialogs.clubs.display(clubid)
 
         if dialogs.clubs.state:
             self.populate()
 
     def row_edit_by_menu(self, menuitem):
-        model, treeiter = self.treeselection.get_selected()
+        model, treepath = self.treeselection.get_selected_rows()
 
-        if treeiter:
-            clubid = model[treeiter][0]
+        if treepath:
+            clubid = model[treepath][0]
 
+            clubid = [clubid]
             dialogs.clubs.display(clubid)
 
             if dialogs.clubs.state:
@@ -120,34 +123,47 @@ class Clubs(Gtk.Grid):
 
         if key == "Delete":
             if dialogs.remove_dialog(index=1):
-                model, treeiter = self.treeselection.get_selected()
-                clubid = model[treeiter][0]
+                model, treepath = self.treeselection.get_selected_rows()
+                clubid = [model[treepath][0] for treepath in treepath]
 
                 keys = [player.club for player in data.players.values()]
 
-                if clubid in keys:
+                if [item for item in clubid if item in keys]:
                     dialogs.error(0)
                 else:
-                    del(data.clubs[clubid])
+                    for item in clubid:
+                        del(data.clubs[item])
+
                     data.unsaved = True
 
                     self.populate()
 
     def selection_changed(self, treeselection):
-        model, treeiter = treeselection.get_selected()
+        model, treepath = treeselection.get_selected_rows()
 
-        if treeiter:
-            self.selected = model[treeiter][0]
+        if treepath:
+            self.selected = [model[item][0] for item in treepath]
+
             widgets.window.menuitemEdit.set_sensitive(True)
             widgets.window.menuitemRemove.set_sensitive(True)
             widgets.toolbuttonEdit.set_sensitive(True)
             widgets.toolbuttonRemove.set_sensitive(True)
         else:
             self.selected = None
+
             widgets.window.menuitemEdit.set_sensitive(False)
             widgets.window.menuitemRemove.set_sensitive(False)
             widgets.toolbuttonEdit.set_sensitive(False)
             widgets.toolbuttonRemove.set_sensitive(False)
+
+        count = self.treeselection.count_selected_rows()
+
+        if count == 0:
+            self.labelSelected.set_label("")
+        elif count == 1:
+            self.labelSelected.set_label("(1 Item Selected)")
+        else:
+            self.labelSelected.set_label("(%i Items Selected)" % (count))
 
     def populate(self, items=None):
         self.liststore.clear()
@@ -179,9 +195,9 @@ class Clubs(Gtk.Grid):
 
 
 class AddClubDialog(Gtk.Dialog):
-    state = False
-
     def __init__(self):
+        self.state = False
+
         Gtk.Dialog.__init__(self)
         self.set_transient_for(widgets.window)
         self.set_border_width(5)
@@ -194,6 +210,9 @@ class AddClubDialog(Gtk.Dialog):
         self.buttonSave.connect("clicked", self.save_handler)
         action_area = self.get_action_area()
         action_area.add(self.buttonSave)
+
+        self.checkbuttonMulti = Gtk.CheckButton("Add Multiple Items")
+        action_area.add(self.checkbuttonMulti)
 
         self.notebook = Gtk.Notebook()
         self.vbox.add(self.notebook)
@@ -263,7 +282,8 @@ class AddClubDialog(Gtk.Dialog):
         self.notebook.append_page(grid, label)
 
         scrolledwindow = Gtk.ScrolledWindow()
-        scrolledwindow.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scrolledwindow.set_policy(Gtk.PolicyType.NEVER,
+                                  Gtk.PolicyType.AUTOMATIC)
         grid.attach(scrolledwindow, 0, 0, 1, 4)
 
         self.liststorePlayers = Gtk.ListStore(int, str)
@@ -276,7 +296,9 @@ class AddClubDialog(Gtk.Dialog):
         treeview.set_model(treemodelsort)
         treeview.set_headers_visible(False)
         treeview.connect("key-press-event", self.treeview_press_event)
-        treeviewcolumn = Gtk.TreeViewColumn("", cellrenderertext, text=1)
+        treeviewcolumn = Gtk.TreeViewColumn(None,
+                                            cellrenderertext,
+                                            text=1)
         treeview.append_column(treeviewcolumn)
         self.treeselection = treeview.get_selection()
         self.treeselection.set_mode(Gtk.SelectionMode.MULTIPLE)
@@ -308,6 +330,7 @@ class AddClubDialog(Gtk.Dialog):
         self.playerselectiondialog = dialogs.PlayerSelectionDialog()
 
     def display(self, clubid=None):
+        self.state = False
         self.squad_changes = {}
 
         self.notebook.set_current_page(0)
@@ -334,13 +357,15 @@ class AddClubDialog(Gtk.Dialog):
             self.buttonSave.set_sensitive(True)
             self.notebook.set_show_tabs(True)
             self.notebook.set_show_border(True)
-            squad = self.notebook.get_nth_page(1)
-            squad.show_all()
 
-            self.populate(clubid)
-            self.load_fields(clubid)
+            self.checkbuttonMulti.set_visible(False)
 
-            self.current = clubid
+            self.generator = clubid.__iter__()
+            self.current = self.generator.__next__()
+
+            self.load_fields(clubid=self.current)
+
+        self.populate(self.current)
 
         self.run()
 
@@ -350,13 +375,22 @@ class AddClubDialog(Gtk.Dialog):
 
         self.state = True
 
-        self.hide()
+        if self.current:
+            try:
+                self.current = self.generator.__next__()
+                self.load_fields(clubid=self.current)
+            except StopIteration:
+                self.hide()
+
+        if self.checkbuttonMulti.get_visible():
+            if not self.checkbuttonMulti.get_active():
+                self.hide()
 
     def save_data(self, clubid):
-        if clubid is None:
+        if not clubid:
             data.idnumbers.clubid += 1
 
-            club = Club()
+            club = data.Club()
             data.clubs[data.idnumbers.clubid] = club
         else:
             club = data.clubs[clubid]
@@ -399,7 +433,7 @@ class AddClubDialog(Gtk.Dialog):
     def add_player(self, button):
         playerid = self.playerselectiondialog.display(parent=self)
 
-        if playerid is not None:
+        if playerid:
             self.squad_changes[playerid] = self.current
 
             self.populate(self.current)
@@ -463,22 +497,13 @@ class AddClubDialog(Gtk.Dialog):
             sensitive = True
 
         if sensitive:
-            if self.entryNickname.get_text_length() > 0:
-                sensitive = True
-            else:
-                sensitive = False
+            sensitive = self.entryNickname.get_text_length() > 0
 
         if sensitive:
-            if self.entryManager.get_text_length() > 0:
-                sensitive = True
-            else:
-                sensitive = False
+            sensitive = self.entryManager.get_text_length() > 0
 
         if sensitive:
-            if self.entryChairman.get_text_length() > 0:
-                sensitive = True
-            else:
-                sensitive = False
+            sensitive = self.entryChairman.get_text_length() > 0
 
         if sensitive:
             if self.comboboxStadium.get_active_id():

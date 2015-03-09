@@ -5,27 +5,26 @@ from gi.repository import Gdk
 
 import data
 import dialogs
+import menu
 import widgets
 
 
-class Stadium:
-    pass
-
-
 class Stadiums(Gtk.Grid):
-    selected = None
-
     def __init__(self):
+        self.selected = None
+
         Gtk.Grid.__init__(self)
         self.set_row_spacing(5)
         self.set_column_spacing(5)
         self.set_border_width(5)
 
         scrolledwindow = Gtk.ScrolledWindow()
-        scrolledwindow.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-        self.attach(scrolledwindow, 0, 0, 1, 1)
+        scrolledwindow.set_policy(Gtk.PolicyType.NEVER,
+                                  Gtk.PolicyType.AUTOMATIC)
+        self.attach(scrolledwindow, 0, 0, 2, 1)
 
-        self.liststore = Gtk.ListStore(int, str, int, int, int, int, int, int, int, int, int)
+        self.liststore = Gtk.ListStore(int, str, int, int, int, int,
+                                       int, int, int, int, int)
         treemodelsort = Gtk.TreeModelSort(self.liststore)
         treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
 
@@ -39,49 +38,101 @@ class Stadiums(Gtk.Grid):
         treeview.connect("key-press-event", self.row_delete)
         treeview.connect("row-activated", self.row_activated)
         self.treeselection = treeview.get_selection()
+        self.treeselection.set_mode(Gtk.SelectionMode.MULTIPLE)
         self.treeselection.connect("changed", self.selection_changed)
         scrolledwindow.add(treeview)
 
         cellrenderertext = Gtk.CellRendererText()
 
-        treeviewcolumn = Gtk.TreeViewColumn("Name", cellrenderertext, text=1)
+        treeviewcolumn = Gtk.TreeViewColumn("Name",
+                                            cellrenderertext,
+                                            text=1)
         treeviewcolumn.set_sort_column_id(1)
         treeview.append_column(treeviewcolumn)
-        treeviewcolumn = Gtk.TreeViewColumn("Capacity", cellrenderertext, text=2)
+        treeviewcolumn = Gtk.TreeViewColumn("Capacity",
+                                            cellrenderertext,
+                                            text=2)
         treeviewcolumn.set_sort_column_id(2)
         treeview.append_column(treeviewcolumn)
-        treeviewcolumn = Gtk.TreeViewColumn("North", cellrenderertext, text=3)
+        treeviewcolumn = Gtk.TreeViewColumn("North",
+                                            cellrenderertext,
+                                            text=3)
         treeview.append_column(treeviewcolumn)
-        treeviewcolumn = Gtk.TreeViewColumn("West", cellrenderertext, text=4)
+        treeviewcolumn = Gtk.TreeViewColumn("West",
+                                            cellrenderertext,
+                                            text=4)
         treeview.append_column(treeviewcolumn)
-        treeviewcolumn = Gtk.TreeViewColumn("South", cellrenderertext, text=5)
+        treeviewcolumn = Gtk.TreeViewColumn("South",
+                                            cellrenderertext,
+                                            text=5)
         treeview.append_column(treeviewcolumn)
-        treeviewcolumn = Gtk.TreeViewColumn("East", cellrenderertext, text=6)
+        treeviewcolumn = Gtk.TreeViewColumn("East",
+                                            cellrenderertext,
+                                            text=6)
         treeview.append_column(treeviewcolumn)
-        treeviewcolumn = Gtk.TreeViewColumn("North West", cellrenderertext, text=7)
+        treeviewcolumn = Gtk.TreeViewColumn("North West",
+                                            cellrenderertext,
+                                            text=7)
         treeview.append_column(treeviewcolumn)
-        treeviewcolumn = Gtk.TreeViewColumn("North East", cellrenderertext, text=8)
+        treeviewcolumn = Gtk.TreeViewColumn("North East",
+                                            cellrenderertext,
+                                            text=8)
         treeview.append_column(treeviewcolumn)
-        treeviewcolumn = Gtk.TreeViewColumn("South West", cellrenderertext, text=9)
+        treeviewcolumn = Gtk.TreeViewColumn("South West",
+                                            cellrenderertext,
+                                            text=9)
         treeview.append_column(treeviewcolumn)
-        treeviewcolumn = Gtk.TreeViewColumn("South East", cellrenderertext, text=10)
+        treeviewcolumn = Gtk.TreeViewColumn("South East",
+                                            cellrenderertext,
+                                            text=10)
         treeview.append_column(treeviewcolumn)
 
         self.labelCount = Gtk.Label()
         self.labelCount.set_alignment(0, 0.5)
         self.attach(self.labelCount, 0, 1, 1, 1)
 
+        self.labelSelected = widgets.Label()
+        self.labelSelected.set_hexpand(True)
+        self.attach(self.labelSelected, 1, 1, 1, 1)
+
+        # Context menu
+        contextmenu = menu.ContextMenu()
+        contextmenu.menuitemEdit.connect("activate", self.row_edit_by_menu)
+        contextmenu.menuitemRemove.connect("activate", self.row_delete)
+        treeview.connect("button-press-event", self.context_menu, contextmenu)
+
+    def context_menu(self, treeview, event, contextmenu):
+        if event.button == 3:
+            contextmenu.show_all()
+            contextmenu.popup(None, None, None, None, event.button, event.time)
+
     def row_activated(self, treeview, path, column):
         model = treeview.get_model()
         stadiumid = model[path][0]
 
+        stadiumid = [stadiumid]
         dialogs.stadiums.display(stadiumid)
 
         if dialogs.stadiums.state:
             self.populate()
 
-    def row_delete(self, treeview, event):
-        key = Gdk.keyval_name(event.keyval)
+    def row_edit_by_menu(self, menuitem):
+        model, treepath = self.treeselection.get_selected_rows()
+
+        if treepath:
+            stadiumid = model[treepath][0]
+
+            stadiumid = [stadiumid]
+            dialogs.stadiums.display(stadiumid)
+
+            if dialogs.stadiums.state:
+                self.populate()
+
+    def row_delete(self, treeview, event=None):
+        if event:
+            key = Gdk.keyval_name(event.keyval)
+        else:
+            key = "Delete"
 
         if key == "Delete":
             if data.options.confirm_remove:
@@ -90,29 +141,43 @@ class Stadiums(Gtk.Grid):
                 state = True
 
             if state:
-                model, treeiter = self.treeselection.get_selected()
-                stadiumid = model[treeiter][0]
+                model, treepath = self.treeselection.get_selected_rows()
+                stadiumid = [model[treepath][0] for treepath in treepath]
 
                 keys = [club.stadium for club in data.clubs.values()]
 
-                if stadiumid in keys:
+                if [item for item in stadiumid if item in keys]:
                     dialogs.error(2)
                 else:
-                    del(data.stadiums[stadiums.selected])
+                    for item in stadium:
+                        del(data.stadiums[item])
+
+                    data.unsaved = True
 
                     self.populate()
 
     def selection_changed(self, treeselection):
-        model, treeiter = treeselection.get_selected()
+        model, treepath = treeselection.get_selected_rows()
 
-        if treeiter:
-            self.selected = model[treeiter][0]
+        if treepath:
+            self.selected = [model[item][0] for item in treepath]
+
             widgets.toolbuttonEdit.set_sensitive(True)
             widgets.toolbuttonRemove.set_sensitive(True)
         else:
             self.selected = None
+
             widgets.toolbuttonEdit.set_sensitive(False)
             widgets.toolbuttonRemove.set_sensitive(False)
+
+        count = self.treeselection.count_selected_rows()
+
+        if count == 0:
+            self.labelSelected.set_label("")
+        elif count == 1:
+            self.labelSelected.set_label("(1 Item Selected)")
+        else:
+            self.labelSelected.set_label("(%i Items Selected)" % (count))
 
     def populate(self, items=None):
         self.liststore.clear()
@@ -153,6 +218,7 @@ class AddStadiumDialog(Gtk.Dialog):
         Gtk.Dialog.__init__(self)
         self.set_transient_for(widgets.window)
         self.set_border_width(5)
+        self.set_resizable(False)
         self.connect("response", self.response_handler)
         self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
 
@@ -160,6 +226,9 @@ class AddStadiumDialog(Gtk.Dialog):
         self.buttonSave.connect("clicked", self.save_handler)
         action_area = self.get_action_area()
         action_area.add(self.buttonSave)
+
+        self.checkbuttonMulti = Gtk.CheckButton("Add Multiple Items")
+        action_area.add(self.checkbuttonMulti)
 
         grid = Gtk.Grid()
         grid.set_row_spacing(5)
@@ -258,7 +327,9 @@ class AddStadiumDialog(Gtk.Dialog):
             grid2.attach(spinbutton, 1, count, 1, 1)
 
     def display(self, stadiumid=None):
-        if stadiumid is None:
+        self.show_all()
+
+        if not stadiumid:
             self.set_title("Add Stadium")
             self.buttonSave.set_label("_Add")
             self.buttonSave.set_sensitive(False)
@@ -268,11 +339,13 @@ class AddStadiumDialog(Gtk.Dialog):
             self.set_title("Edit Stadium")
             self.buttonSave.set_label("_Edit")
 
-            self.load_fields(stadiumid)
+            self.checkbuttonMulti.set_visible(False)
 
-            self.current = stadiumid
+            self.generator = stadiumid.__iter__()
+            self.current = self.generator.__next__()
 
-        self.show_all()
+            self.load_fields(stadiumid=self.current)
+
         self.run()
 
     def response_handler(self, dialog, response):
@@ -286,13 +359,22 @@ class AddStadiumDialog(Gtk.Dialog):
 
         self.state = True
 
-        self.hide()
+        if self.current:
+            try:
+                self.current = self.generator.__next__()
+                self.load_fields(stadiumid=self.current)
+            except StopIteration:
+                self.hide()
+
+        if self.checkbuttonMulti.get_visible():
+            if not self.checkbuttonMulti.get_active():
+                self.hide()
 
     def save_data(self, stadiumid):
-        if stadiumid is None:
+        if not stadiumid:
             data.idnumbers.stadiumid += 1
 
-            stadium = Stadium()
+            stadium = data.Stadium()
             data.stadiums[data.idnumbers.stadiumid] = stadium
         else:
             stadium = data.stadiums[stadiumid]

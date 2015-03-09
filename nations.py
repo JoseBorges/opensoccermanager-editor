@@ -5,25 +5,23 @@ from gi.repository import Gdk
 
 import data
 import dialogs
+import menu
 import widgets
 
 
-class Nation:
-    pass
-
-
 class Nations(Gtk.Grid):
-    selected = None
-
     def __init__(self):
+        self.selected = None
+
         Gtk.Grid.__init__(self)
         self.set_row_spacing(5)
         self.set_column_spacing(5)
         self.set_border_width(5)
 
         scrolledwindow = Gtk.ScrolledWindow()
-        scrolledwindow.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-        self.attach(scrolledwindow, 0, 0, 1, 1)
+        scrolledwindow.set_policy(Gtk.PolicyType.NEVER,
+                                  Gtk.PolicyType.AUTOMATIC)
+        self.attach(scrolledwindow, 0, 0, 2, 1)
 
         self.liststore = Gtk.ListStore(int, str, str)
         treemodelsort = Gtk.TreeModelSort(self.liststore)
@@ -39,6 +37,7 @@ class Nations(Gtk.Grid):
         treeview.connect("key-press-event", self.row_delete)
         treeview.connect("row-activated", self.row_activated)
         self.treeselection = treeview.get_selection()
+        self.treeselection.set_mode(Gtk.SelectionMode.MULTIPLE)
         self.treeselection.connect("changed", self.selection_changed)
         scrolledwindow.add(treeview)
 
@@ -55,17 +54,48 @@ class Nations(Gtk.Grid):
         self.labelCount.set_alignment(0, 0.5)
         self.attach(self.labelCount, 0, 1, 1, 1)
 
+        self.labelSelected = widgets.Label()
+        self.labelSelected.set_hexpand(True)
+        self.attach(self.labelSelected, 1, 1, 1, 1)
+
+        # Context menu
+        contextmenu = menu.ContextMenu()
+        contextmenu.menuitemEdit.connect("activate", self.row_edit_by_menu)
+        contextmenu.menuitemRemove.connect("activate", self.row_delete)
+        treeview.connect("button-press-event", self.context_menu, contextmenu)
+
+    def context_menu(self, treeview, event, contextmenu):
+        if event.button == 3:
+            contextmenu.show_all()
+            contextmenu.popup(None, None, None, None, event.button, event.time)
+
     def row_activated(self, treeview, path, column):
         model = treeview.get_model()
         nationid = model[path][0]
 
+        nationid = [nationid]
         dialogs.nations.display(nationid)
 
         if dialogs.nations.state:
             self.populate()
 
-    def row_delete(self, treeview, event):
-        key = Gdk.keyval_name(event.keyval)
+    def row_edit_by_menu(self, menuitem):
+        model, treepath = self.treeselection.get_selected_rows()
+
+        if treepath:
+            nationid = model[treepath][0]
+
+            nationid = [nationid]
+            dialogs.nations.display(nationid)
+
+            if dialogs.nations.state:
+                self.populate()
+
+    def row_delete(self, treeview, event=None):
+        if event:
+            key = Gdk.keyval_name(event.keyval)
+        else:
+            key = "Delete"
 
         if key == "Delete":
             if data.options.confirm_remove:
@@ -74,34 +104,48 @@ class Nations(Gtk.Grid):
                 state = True
 
             if state:
-                model, treeiter = self.treeselection.get_selected()
-                nationid = model[treeiter][0]
+                model, treepath = self.treeselection.get_selected_rows()
+                nationid = [model[treepath][0] for treepath in treepath]
 
                 keys = [player.nationality for player in data.players.values()]
 
-                if nationid in keys:
+                if [item for item in nationid if item in keys]:
                     dialogs.error(1)
                 else:
-                    del(data.nations[nationid])
+                    for item in nationid:
+                        del(data.nations[item])
+
+                    data.unsaved = True
 
                     self.populate()
 
     def selection_changed(self, treeselection):
-        model, treeiter = treeselection.get_selected()
+        model, treepath = treeselection.get_selected_rows()
 
-        if treeiter:
-            self.selected = model[treeiter][0]
+        if treepath:
+            self.selected = [model[treepath][0] for treepath in treepath]
+
             widgets.toolbuttonEdit.set_sensitive(True)
             widgets.toolbuttonRemove.set_sensitive(True)
         else:
             self.selected = None
+
             widgets.toolbuttonEdit.set_sensitive(False)
             widgets.toolbuttonRemove.set_sensitive(False)
+
+        count = self.treeselection.count_selected_rows()
+
+        if count == 0:
+            self.labelSelected.set_label("")
+        elif count == 1:
+            self.labelSelected.set_label("(1 Item Selected)")
+        else:
+            self.labelSelected.set_label("(%i Items Selected)" % (count))
 
     def populate(self, items=None):
         self.liststore.clear()
 
-        if items is None:
+        if not items:
             items = data.nations
             dbcount = True
         else:
@@ -122,12 +166,13 @@ class Nations(Gtk.Grid):
 
 
 class AddNationDialog(Gtk.Dialog):
-    state = False
-
     def __init__(self):
+        self.state = False
+
         Gtk.Dialog.__init__(self)
         self.set_transient_for(widgets.window)
         self.set_border_width(5)
+        self.set_resizable(False)
         self.connect("response", self.response_handler)
         self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
 
@@ -135,6 +180,9 @@ class AddNationDialog(Gtk.Dialog):
         self.buttonSave.connect("clicked", self.save_handler)
         action_area = self.get_action_area()
         action_area.add(self.buttonSave)
+
+        self.checkbuttonMulti = Gtk.CheckButton("Add Multiple Items")
+        action_area.add(self.checkbuttonMulti)
 
         grid = Gtk.Grid()
         grid.set_row_spacing(5)
@@ -155,19 +203,53 @@ class AddNationDialog(Gtk.Dialog):
         label.set_mnemonic_widget(self.entryDenonym)
         grid.attach(self.entryDenonym, 1, 1, 1, 1)
 
+    def display(self, nationid=None):
+        self.show_all()
+
+        self.clear_fields()
+
+        if nationid is None:
+            self.set_title("Add Nation")
+            self.buttonSave.set_label("_Add")
+            self.buttonSave.set_sensitive(False)
+
+            self.current = None
+        else:
+            self.set_title("Edit Nation")
+            self.buttonSave.set_label("_Edit")
+            self.buttonSave.set_sensitive(True)
+
+            self.checkbuttonMulti.set_visible(False)
+
+            self.generator = nationid.__iter__()
+            self.current = self.generator.__next__()
+
+            self.load_fields(nationid=self.current)
+
+        self.run()
+
     def save_handler(self, button):
         self.save_data(nationid=self.current)
         self.clear_fields()
 
         self.state = True
 
-        self.hide()
+        if self.current:
+            try:
+                self.current = self.generator.__next__()
+                self.load_fields(nationid=self.current)
+            except StopIteration:
+                self.hide()
+
+        if self.checkbuttonMulti.get_visible():
+            if not self.checkbuttonMulti.get_active():
+                self.hide()
 
     def save_data(self, nationid):
         if nationid is None:
             data.idnumbers.nationid += 1
 
-            nation = Nation()
+            nation = data.Nation()
             data.nations[data.idnumbers.nationid] = nation
         else:
             nation = data.nations[nationid]
@@ -191,27 +273,6 @@ class AddNationDialog(Gtk.Dialog):
 
     def response_handler(self, dialog, response):
         self.hide()
-
-    def display(self, nationid=None):
-        self.clear_fields()
-
-        if nationid is None:
-            self.set_title("Add Nation")
-            self.buttonSave.set_label("_Add")
-            self.buttonSave.set_sensitive(False)
-
-            self.current = None
-        else:
-            self.set_title("Edit Nation")
-            self.buttonSave.set_label("_Edit")
-            self.buttonSave.set_sensitive(True)
-
-            self.load_fields(nationid)
-
-            self.current = nationid
-
-        self.show_all()
-        self.run()
 
     def load_fields(self, nationid):
         nation = data.nations[nationid]

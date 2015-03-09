@@ -266,28 +266,34 @@ class Window(Gtk.Window):
             elif page == 1:
                 keys = [player.club for player in data.players.values()]
 
-                if clubs.selected in keys:
+                if [item for item in clubs.selected if item in keys]:
                     dialogs.error(0)
                 else:
-                    del(data.clubs[clubs.selected])
+                    for item in clubs.selected:
+                        del(data.clubs[item])
+
                     clubs.populate()
                     data.unsaved = True
             elif page == 2:
                 keys = [player.nationality for player in data.players.values()]
 
-                if nations.selected in keys:
+                if [item for item in nations.selected if item in keys]:
                     dialogs.error(1)
                 else:
-                    del(data.nations[nations.selected])
+                    for item in nations.selected:
+                        del(data.nations[item])
+
                     nations.populate()
                     data.unsaved = True
             elif page == 3:
                 keys = [club.stadium for club in data.clubs.values()]
 
-                if stadiums.selected in keys:
+                if [item for item in stadiums.selected if item in keys]:
                     dialogs.error(2)
                 else:
-                    del(data.stadiums[stadiums.selected])
+                    for item in stadiums.selected:
+                        del(data.stadiums[stadiums.selected])
+
                     stadiums.populate()
                     data.unsaved = True
 
