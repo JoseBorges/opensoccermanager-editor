@@ -6,32 +6,13 @@ import os
 import data
 
 
-class Player:
-    pass
-
-
-class Club:
-    pass
-
-
-class Nation:
-    pass
-
-
-class Stadium:
-    pass
-
-
 class Database:
-    connection = None
-    cursor = None
-
     def initialise(self, filename):
         self.connection = sqlite3.connect(filename)
         self.cursor = self.connection.cursor()
         self.cursor.execute("PRAGMA foreign_keys = on")
 
-    def connect(self, filename="osm1415.db"):
+    def connect(self, filename=""):
         if os.path.isfile(filename):
             self.initialise(filename)
 
@@ -56,30 +37,25 @@ class Database:
     def disconnect(self):
         self.connection.close()
 
-    def initialise_ids(self):
-        data.idnumbers.playerid = 0
-        data.idnumbers.clubid = 0
-        data.idnumbers.nationid = 0
-        data.idnumbers.stadiumid = 0
-
     def load(self):
-        self.initialise_ids()
-
+        data.years = []
         data.players = {}
         data.clubs = {}
         data.nations = {}
         data.stadiums = {}
 
-        self.cursor.execute("SELECT * FROM about")
+        self.cursor.execute("SELECT * FROM year")
+        values = self.cursor.fetchall()
 
-        data.season, data.version = self.cursor.fetchone()
+        for item in values:
+            data.years.append(item[0])
 
-        self.cursor.execute("SELECT * FROM player")
+        self.cursor.execute("SELECT * FROM player JOIN playerattr ON player.id = playerattr.player")
 
         for item in self.cursor.fetchall():
             data.player(item)
 
-        self.cursor.execute("SELECT * FROM club")
+        self.cursor.execute("SELECT club.id, club.name, club.nickname, clubattr.manager, clubattr.chairman, clubattr.stadium, clubattr.reputation FROM club JOIN clubattr ON club.id = clubattr.club")
 
         for item in self.cursor.fetchall():
             data.club(item)

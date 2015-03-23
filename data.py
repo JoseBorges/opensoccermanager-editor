@@ -4,8 +4,11 @@ import database
 import display
 
 
+db = database.Database()
+
 unsaved = False
 
+years = []
 players = {}
 clubs = {}
 nations = {}
@@ -28,81 +31,72 @@ class Stadium:
     pass
 
 
-class IDNumbers:
-    playerid = 0
-    clubid = 0
-    nationid = 0
-    stadiumid = 0
-
-
-idnumbers = IDNumbers()
-database = database.Database()
+class Attributes:
+    pass
 
 
 def player(item):
     player = Player()
-    player.playerid = int(item[0])
+    player.playerid = item[0]
     player.first_name = item[1]
     player.second_name = item[2]
     player.common_name = item[3]
     player.date_of_birth = item[4]
+    player.nationality = item[5]
+    player.attributes = {}
 
-    player.age = display.age(player.date_of_birth)
+    db.cursor.execute("SELECT * FROM playerattr WHERE player = ?", (player.playerid,))
 
-    if not item[5]:
-        player.club = 0
-    else:
-        player.club = int(item[5])
+    for data in db.cursor.fetchall():
+        attributes = Attributes()
+        attributes.attributeid = data[0]
+        attributes.year = data[2]
 
-    player.nationality = int(item[6])
-    player.position = (item[7])
-    player.keeping = (item[8])
-    player.tackling = (item[9])
-    player.passing = (item[10])
-    player.shooting = (item[11])
-    player.heading = (item[12])
-    player.pace = (item[13])
-    player.stamina = (item[14])
-    player.ball_control = (item[15])
-    player.set_pieces = (item[16])
-    player.training_value = (item[17])
-    player.value = 0
-    player.wage = 0
+        if not data[3]:
+            attributes.club = 0
+        else:
+            attributes.club = data[3]
+
+        attributes.position = data[4]
+        attributes.keeping = data[5]
+        attributes.tackling = data[6]
+        attributes.passing = data[7]
+        attributes.shooting = data[8]
+        attributes.heading = data[9]
+        attributes.pace = data[10]
+        attributes.stamina = data[11]
+        attributes.ball_control = data[12]
+        attributes.set_pieces = data[13]
+        attributes.training_value = data[14]
+
+        player.attributes[attributes.attributeid] = attributes
+
     players[player.playerid] = player
-
-    if player.playerid > idnumbers.playerid:
-        idnumbers.playerid = player.playerid
 
 
 def club(item):
     club = Club()
-    club.clubid = int(item[0])
+    club.clubid = item[0]
     club.name = item[1]
     club.nickname = item[2]
     club.manager = item[3]
     club.chairman = item[4]
-    club.stadium = int(item[5])
-    club.reputation = int(item[6])
+    club.stadium = item[5]
+    club.reputation = item[6]
     clubs[club.clubid] = club
-
-    if club.clubid > idnumbers.clubid:
-        idnumbers.clubid = club.clubid
 
 
 def nation(item):
     nation = Nation()
-    nation.nationid = int(item[0])
+    nation.nationid = item[0]
     nation.name = item[1]
     nation.denonym = item[2]
     nations[nation.nationid] = nation
 
-    if nation.nationid > idnumbers.nationid:
-        idnumbers.nationid = nation.nationid
-
 
 def stadium(item):
     stadium = Stadium()
-    stadium.stadiumid = int(item[0])
+    stadium.stadiumid = item[0]
     stadium.name = item[1]
     capacity = list(map(int, item[2:14]))
     stadium.capacity = sum(capacity)
@@ -112,9 +106,6 @@ def stadium(item):
     stadium.box = list(map(int, item[10:14]))
     stadium.buildings = list(map(int, item[30:38]))
     stadiums[stadium.stadiumid] = stadium
-
-    if stadium.stadiumid > idnumbers.stadiumid:
-        idnumbers.stadiumid = stadium.stadiumid
 
 
 positions = ("GK", "DL", "DR", "DC", "D", "ML", "MR", "MC", "M", "AS", "AF")

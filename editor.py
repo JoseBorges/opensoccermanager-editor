@@ -147,10 +147,7 @@ class Window(Gtk.Window):
             for playerid, player in data.players.items():
                 show = False
 
-                if criteria["Club"] == player.club:
-                    show = True
-
-                if criteria["Nation"] == player.nationality:
+                if criteria[0](player.age, criteria[1]):
                     show = True
 
                 if show:
@@ -398,14 +395,14 @@ class Window(Gtk.Window):
             state = dialogs.unsaved_dialog()
 
             if state == 1:
-                if data.db.cursor is not None:
+                if data.db.cursor:
                     data.db.disconnect()
 
                 self.quit_application()
             elif state == 2:
                 data.db.save()
 
-                if data.db.cursor is not None:
+                if data.db.cursor:
                     data.db.disconnect()
 
                 self.quit_application()
@@ -414,12 +411,12 @@ class Window(Gtk.Window):
                 state = dialogs.quit_dialog()
 
                 if state:
-                    if data.db.cursor is not None:
+                    if data.db.cursor:
                         data.db.disconnect()
 
                     self.quit_application()
             else:
-                if data.db.cursor is not None:
+                if data.db.cursor:
                     data.db.disconnect()
 
                 self.quit_application()
@@ -557,9 +554,9 @@ def new_database(widget=None, mode=0):
             data.db.load()
 
             players.populate()
-            clubs.populate()
+            #clubs.populate()
             nations.populate()
-            stadiums.populate()
+            #stadiums.populate()
 
             maineditor.run()
 
@@ -569,13 +566,8 @@ data.options = preferences.Preferences()
 widgets.window = Window()
 mainmenu = MainMenu()
 maineditor = MainEditor()
-dialogs.players = players.AddPlayerDialog()
-dialogs.clubs = clubs.AddClubDialog()
-dialogs.nations = nations.AddNationDialog()
-dialogs.stadiums = stadiums.AddStadiumDialog()
 dialogs.preferences = dialogs.Preferences()
 players = players.Players()
-widgets.players = players
 clubs = clubs.Clubs()
 nations = nations.Nations()
 stadiums = stadiums.Stadiums()

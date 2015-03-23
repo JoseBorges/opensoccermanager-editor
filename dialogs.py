@@ -67,24 +67,6 @@ class Preferences(Gtk.Dialog):
         self.checkbuttonToolbar.connect("toggled", self.toolbar_toggled)
         grid1.attach(self.checkbuttonToolbar, 0, 2, 1, 1)
 
-        commonframe = widgets.CommonFrame("Players")
-        grid.attach(commonframe, 0, 1, 1, 1)
-
-        grid2 = Gtk.Grid()
-        grid2.set_row_spacing(5)
-        grid2.set_column_spacing(5)
-        commonframe.insert(grid2)
-
-        self.checkbuttonAge = Gtk.CheckButton("Display _age instead of date of birth")
-        self.checkbuttonAge.set_use_underline(True)
-        self.checkbuttonAge.connect("toggled", self.age_toggled)
-        grid2.attach(self.checkbuttonAge, 0, 0, 1, 1)
-
-        self.checkbuttonValueWage = Gtk.CheckButton("Show approximate _player value and wage")
-        self.checkbuttonValueWage.set_use_underline(True)
-        self.checkbuttonValueWage.connect("toggled", self.value_wage_toggled)
-        grid2.attach(self.checkbuttonValueWage, 0, 1, 1, 1)
-
     def response_handler(self, widget, event):
         self.hide()
 
@@ -107,28 +89,10 @@ class Preferences(Gtk.Dialog):
 
         data.options.write_file()
 
-    def age_toggled(self, checkbutton):
-        data.options.show_age = checkbutton.get_active()
-        data.options["INTERFACE"]["ShowAge"] = str(data.options.show_age)
-
-        data.options.write_file()
-
-        widgets.players.toggle_age_column()
-
-    def value_wage_toggled(self, checkbutton):
-        data.options.show_value_wage = checkbutton.get_active()
-        data.options["INTERFACE"]["ShowValueWage"] = str(data.options.show_value_wage)
-
-        data.options.write_file()
-
-        widgets.players.toggle_value_wage_column()
-
     def display(self):
         self.checkbuttonQuit.set_active(data.options.confirm_quit)
         self.checkbuttonRemove.set_active(data.options.confirm_remove)
         self.checkbuttonToolbar.set_active(data.options.show_toolbar)
-        self.checkbuttonAge.set_active(data.options.show_age)
-        self.checkbuttonValueWage.set_active(data.options.show_value_wage)
 
         self.show_all()
         self.run()
@@ -296,23 +260,10 @@ class PlayerSelectionDialog(Gtk.Dialog):
 
 
 class ClubSelectionDialog(Gtk.Dialog):
-    def __init__(self, parent):
-        def treeselection_changed(treeselection):
-            if treeselection.count_selected_rows() == 0:
-                self.set_response_sensitive(Gtk.ResponseType.OK, False)
-            else:
-                self.set_response_sensitive(Gtk.ResponseType.OK, True)
-
-            model, treeiter = treeselection.get_selected()
-
-            if treeiter:
-                treepath = model.get_path(treeiter)
-                treeview.scroll_to_cell(treepath)
-
+    def __init__(self):
         Gtk.Dialog.__init__(self)
         self.set_border_width(5)
         self.set_default_size(-1, 250)
-        self.set_transient_for(parent)
         self.set_title("Select Club")
         self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
         self.add_button("_Select", Gtk.ResponseType.OK)
@@ -342,7 +293,7 @@ class ClubSelectionDialog(Gtk.Dialog):
         treeviewcolumn = Gtk.TreeViewColumn("", cellrenderertext, text=1)
         treeview.append_column(treeviewcolumn)
         self.treeselection = treeview.get_selection()
-        self.treeselection.connect("changed", treeselection_changed)
+        self.treeselection.connect("changed", self.treeselection_changed)
         scrolledwindow.add(treeview)
 
         self.entrySearch = Gtk.SearchEntry()
@@ -377,6 +328,19 @@ class ClubSelectionDialog(Gtk.Dialog):
 
         self.populate(data.clubs)
 
+    def treeselection_changed(self, treeselection):
+        if treeselection.count_selected_rows() == 0:
+            self.set_response_sensitive(Gtk.ResponseType.OK, False)
+        else:
+            self.set_response_sensitive(Gtk.ResponseType.OK, True)
+
+        model, treeiter = treeselection.get_selected()
+
+        if treeiter:
+            treepath = model.get_path(treeiter)
+            treeview = treeselection.get_tree_view()
+            treeview.scroll_to_cell(treepath)
+
     def display(self, clubid):
         self.populate(data.clubs)
 
@@ -405,18 +369,6 @@ class ClubSelectionDialog(Gtk.Dialog):
 
 class NationSelectionDialog(Gtk.Dialog):
     def __init__(self, parent):
-        def treeselection_changed(treeselection):
-            if treeselection.count_selected_rows() == 0:
-                self.set_response_sensitive(Gtk.ResponseType.OK, False)
-            else:
-                self.set_response_sensitive(Gtk.ResponseType.OK, True)
-
-            model, treeiter = treeselection.get_selected()
-
-            if treeiter:
-                treepath = model.get_path(treeiter)
-                treeview.scroll_to_cell(treepath)
-
         Gtk.Dialog.__init__(self)
         self.set_border_width(5)
         self.set_default_size(-1, 250)
@@ -450,13 +402,24 @@ class NationSelectionDialog(Gtk.Dialog):
         treeviewcolumn = Gtk.TreeViewColumn("", cellrenderertext, text=1)
         treeview.append_column(treeviewcolumn)
         self.treeselection = treeview.get_selection()
-        self.treeselection.connect("changed", treeselection_changed)
+        self.treeselection.connect("changed", self.treeselection_changed)
         scrolledwindow.add(treeview)
 
         self.entrySearch = Gtk.SearchEntry()
         self.entrySearch.connect("activate", self.activate_search)
         self.entrySearch.connect("icon-press", self.clear_search)
         grid.attach(self.entrySearch, 0, 1, 1, 1)
+
+    def treeselection_changed(self, treeselection):
+        state = not treeselection.count_selected_rows() == 0
+        self.set_response_sensitive(Gtk.ResponseType.OK, state)
+
+        model, treeiter = treeselection.get_selected()
+        treeview = treeselection.get_tree_view()
+
+        if treeiter:
+            treepath = model.get_path(treeiter)
+            treeview.scroll_to_cell(treepath)
 
     def display(self, nationid):
         self.populate(data.nations)
@@ -524,21 +487,31 @@ class DateOfBirth(Gtk.Dialog):
         state = False
 
         if date:
-            year, month, day = date
-
-            self.calendar.select_day(day)
-            self.calendar.select_month(month - 1, year)
+            year, month, day = list(map(int, date.split("-")))
         else:
             year, month, day = [data.season - 18, 1, 1]
 
-            self.calendar.select_day(day)
-            self.calendar.select_month(month - 1, year)
+        self.calendar.select_day(day)
+        self.calendar.select_month(month - 1, year)
 
         self.show_all()
 
         if self.run() == Gtk.ResponseType.OK:
             year, month, day = self.calendar.get_date()
-            self.date_of_birth = [year, month + 1, day]
+
+            month += 1
+
+            if month < 10:
+                month = "0%i" % (month)
+            else:
+                month = str(month)
+
+            if day < 10:
+                day = "0%i" % (day)
+            else:
+                day = str(day)
+
+            self.date_of_birth = "%i-%s-%s" % (year, month, day)
 
             state = True
 
