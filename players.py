@@ -170,10 +170,6 @@ class Players(Gtk.Grid):
         self.labelCount = widgets.Label()
         self.attach(self.labelCount, 0, 1, 1, 1)
 
-        self.labelSelected = widgets.Label()
-        self.labelSelected.set_hexpand(True)
-        self.attach(self.labelSelected, 1, 1, 1, 1)
-
     def attribute_treeview_changed(self, treeselection):
         model, treeiter = treeselection.get_selected()
 
@@ -281,31 +277,18 @@ class Players(Gtk.Grid):
         self.populate_attributes()
 
     def selection_changed(self, treeselection):
-        model, treepath = self.treeselection.get_selected_rows()
+        model, treeiter = self.treeselection.get_selected()
 
-        if treepath:
-            self.selected = [model[item][0] for item in treepath]
+        if treeiter:
+            self.selected = model[treeiter][0]
 
-            widgets.window.menuitemEdit.set_sensitive(True)
             widgets.window.menuitemRemove.set_sensitive(True)
-            widgets.toolbuttonEdit.set_sensitive(True)
             widgets.toolbuttonRemove.set_sensitive(True)
         else:
             self.selected = None
 
-            widgets.window.menuitemEdit.set_sensitive(False)
             widgets.window.menuitemRemove.set_sensitive(False)
-            widgets.toolbuttonEdit.set_sensitive(False)
             widgets.toolbuttonRemove.set_sensitive(False)
-
-        count = self.treeselection.count_selected_rows()
-
-        if count == 0:
-            self.labelSelected.set_label("")
-        elif count == 1:
-            self.labelSelected.set_label("(1 Item Selected)")
-        else:
-            self.labelSelected.set_label("(%i Items Selected)" % (count))
 
     def populate(self, items=None):
         self.liststore.clear()
@@ -321,9 +304,7 @@ class Players(Gtk.Grid):
         for count, (playerid, player) in enumerate(items.items(), start=1):
             name = display.name(player)
 
-            self.liststore.append([playerid,
-                                   name,
-                                   ])
+            self.liststore.append([playerid, name])
 
         if dbcount:
             self.labelCount.set_label("%i Players in Database" % (count))
@@ -396,8 +377,13 @@ class AttributeDialog(Gtk.Dialog):
         grid.attach(label, 0, 1, 1, 1)
         self.buttonClub = Gtk.Button("")
         self.buttonClub.set_hexpand(True)
+        self.buttonClub.connect("clicked", self.club_clicked)
         label.set_mnemonic_widget(self.buttonClub)
         grid.attach(self.buttonClub, 1, 1, 3, 1)
+        self.checkbuttonFreeAgent = Gtk.CheckButton("_Free Agent")
+        self.checkbuttonFreeAgent.set_use_underline(True)
+        self.checkbuttonFreeAgent.connect("toggled", self.free_agent_toggled)
+        grid.attach(self.checkbuttonFreeAgent, 4, 1, 1, 1)
 
         label = widgets.Label("Position")
         grid.attach(label, 0, 2, 1, 1)
@@ -428,9 +414,33 @@ class AttributeDialog(Gtk.Dialog):
         label.set_mnemonic_widget(self.spinbuttonTraining)
         grid.attach(self.spinbuttonTraining, 1, 12, 1, 1)
 
+    def club_clicked(self, button):
+        club_dialog = dialogs.ClubSelectionDialog(parent=self)
+        clubid = club_dialog.display(clubid=self.clubid)
+
+        if clubid:
+            player = data.players[self.playerid]
+            attribute = player.attributes[self.attributeid]
+
+            club = data.clubs[clubid].name
+            button.set_label("%s" % (club))
+
+            attribute.club = clubid
+
+        club_dialog.destroy()
+
+    def free_agent_toggled(self, checkbutton):
+        if checkbutton.get_active():
+            self.buttonClub.set_label("")
+            self.buttonClub.set_sensitive(False)
+        else:
+            self.buttonClub.set_sensitive(True)
+
     def load_fields(self):
         player = data.players[self.playerid]
         attribute = player.attributes[self.attributeid]
+
+        self.clubid = attribute.club
 
         year = str(attribute.year)
         self.comboboxYear.set_active_id(year)

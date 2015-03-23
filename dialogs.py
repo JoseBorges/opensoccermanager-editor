@@ -260,10 +260,11 @@ class PlayerSelectionDialog(Gtk.Dialog):
 
 
 class ClubSelectionDialog(Gtk.Dialog):
-    def __init__(self):
+    def __init__(self, parent):
         Gtk.Dialog.__init__(self)
         self.set_border_width(5)
         self.set_default_size(-1, 250)
+        self.set_transient_for(parent)
         self.set_title("Select Club")
         self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
         self.add_button("_Select", Gtk.ResponseType.OK)
@@ -276,6 +277,8 @@ class ClubSelectionDialog(Gtk.Dialog):
         self.vbox.add(grid)
 
         scrolledwindow = Gtk.ScrolledWindow()
+        scrolledwindow.set_policy(Gtk.PolicyType.NEVER,
+                                  Gtk.PolicyType.AUTOMATIC)
         grid.attach(scrolledwindow, 0, 0, 1, 1)
 
         cellrenderertext = Gtk.CellRendererText()
@@ -324,15 +327,13 @@ class ClubSelectionDialog(Gtk.Dialog):
             self.populate(items)
 
     def clear_search(self, entry, icon, event):
-        entry.set_text("")
+        #entry.set_text("")
 
         self.populate(data.clubs)
 
     def treeselection_changed(self, treeselection):
-        if treeselection.count_selected_rows() == 0:
-            self.set_response_sensitive(Gtk.ResponseType.OK, False)
-        else:
-            self.set_response_sensitive(Gtk.ResponseType.OK, True)
+        state = not treeselection.count_selected_rows() == 0
+        self.set_response_sensitive(Gtk.ResponseType.OK, state)
 
         model, treeiter = treeselection.get_selected()
 

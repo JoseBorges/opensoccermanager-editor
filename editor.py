@@ -62,8 +62,6 @@ class Window(Gtk.Window):
         mainmenu.menuitemQuit.connect("activate", self.close_application)
         self.menuitemAdd = mainmenu.menuitemAdd
         mainmenu.menuitemAdd.connect("activate", self.add_data)
-        self.menuitemEdit = mainmenu.menuitemEdit
-        mainmenu.menuitemEdit.connect("activate", self.edit_data)
         self.menuitemRemove = mainmenu.menuitemRemove
         mainmenu.menuitemRemove.connect("activate", self.remove_data)
         mainmenu.menuitemPreferences.connect("activate", self.open_preferences)
@@ -89,13 +87,6 @@ class Window(Gtk.Window):
         toolbuttonAdd.set_tooltip_text("Add item to database")
         toolbuttonAdd.connect("clicked", self.add_data)
         self.toolbar.add(toolbuttonAdd)
-        toolbuttonEdit = Gtk.ToolButton(label="_Edit")
-        widgets.toolbuttonEdit = toolbuttonEdit
-        toolbuttonEdit.set_use_underline(True)
-        toolbuttonEdit.set_icon_name("gtk-edit")
-        toolbuttonEdit.set_tooltip_text("Edit selected item")
-        toolbuttonEdit.connect("clicked", self.edit_data)
-        self.toolbar.add(toolbuttonEdit)
         toolbuttonRemove = Gtk.ToolButton(label="_Remove")
         widgets.toolbuttonRemove = toolbuttonRemove
         toolbuttonRemove.set_use_underline(True)
@@ -200,34 +191,6 @@ class Window(Gtk.Window):
                 data.unsaved = True
         elif page == 3:
             dialogs.stadiums.display()
-
-            if dialogs.stadiums.state:
-                stadiums.populate()
-                data.unsaved = True
-
-    def edit_data(self, toolbutton):
-        page = maineditor.get_current_page()
-
-        if page == 0:
-            dialogs.players.display(playerid=players.selected)
-
-            if dialogs.players.state:
-                players.populate()
-                data.unsaved = True
-        elif page == 1:
-            dialogs.clubs.display(clubid=clubs.selected)
-
-            if dialogs.clubs.state:
-                clubs.populate()
-                data.unsaved = True
-        elif page == 2:
-            dialogs.nations.display(nationid=nations.selected)
-
-            if dialogs.nations.state:
-                nations.populate()
-                data.unsaved = True
-        elif page == 3:
-            dialogs.stadiums.display(stadiumid=stadiums.selected)
 
             if dialogs.stadiums.state:
                 stadiums.populate()
@@ -408,7 +371,6 @@ class MainEditor(Gtk.Notebook):
         widgets.window.menuitemImport.set_sensitive(True)
         widgets.window.menuitemExport.set_sensitive(True)
         widgets.window.menuitemAdd.set_sensitive(True)
-        widgets.window.menuitemEdit.set_sensitive(True)
         widgets.window.menuitemRemove.set_sensitive(True)
         widgets.window.toolbar.set_sensitive(True)
 
@@ -431,15 +393,11 @@ class MainEditor(Gtk.Notebook):
         self.append_page(stadiums, widgets.Label("_Stadiums"))
 
     def switch_page(self, notebook, page, number):
-        if page.selected is None:
-            widgets.window.menuitemEdit.set_sensitive(False)
+        if page.selected:
             widgets.window.menuitemRemove.set_sensitive(False)
-            widgets.toolbuttonEdit.set_sensitive(False)
             widgets.toolbuttonRemove.set_sensitive(False)
         else:
-            widgets.window.menuitemEdit.set_sensitive(True)
             widgets.window.menuitemRemove.set_sensitive(True)
-            widgets.toolbuttonEdit.set_sensitive(True)
             widgets.toolbuttonRemove.set_sensitive(True)
 
 
