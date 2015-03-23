@@ -53,9 +53,10 @@ class Validate:
 
         if problems != {}:
             self.results.display(problems)
-            self.results.hide()
         else:
             dialogs.noerrors()
+
+        self.results.destroy()
 
 
 class Results(Gtk.Dialog):
@@ -96,3 +97,4 @@ class Results(Gtk.Dialog):
 
         self.show_all()
         self.run()
+        self.hide()

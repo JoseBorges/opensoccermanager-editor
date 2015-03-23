@@ -29,7 +29,8 @@ class Window(Gtk.Window):
         self.set_title("Editor")
         self.set_icon_from_file(iconpath)
         self.connect("delete-event", self.close_application)
-        self.set_default_size(data.options.window_width, data.options.window_height)
+        self.set_default_size(data.options.window_width,
+                              data.options.window_height)
 
         if data.options.window_maximize:
             self.maximize()
@@ -119,6 +120,7 @@ class Window(Gtk.Window):
     def validate_database(self, menuitem):
         validator = validation.Validate()
         validator.run()
+        validator.destroy()
 
     def filter_data(self, menuitem):
         filter_dialog = dialogs.Filter()
@@ -138,6 +140,8 @@ class Window(Gtk.Window):
 
             players.populate(items=filtered)
 
+        filter_dialog.destroy()
+
     def clear_data(self, menuitem):
         players.populate()
 
@@ -148,7 +152,7 @@ class Window(Gtk.Window):
         elif widget is self.menuitemSaveAs:
             filename = dialogs.file_dialog(mode=1)
 
-            if filename is not None:
+            if filename:
                 data.db.connect(filename)
                 data.db.save()
                 data.unsaved = False
@@ -156,8 +160,9 @@ class Window(Gtk.Window):
                 self.update_title(filename)
 
     def open_preferences(self, menuitem):
-        dialogs.preferences.display()
-        dialogs.preferences.hide()
+        preferences_dialog = dialogs.Preferences()
+        preferences_dialog.display()
+        preferences_dialog.hide()
 
     def data_import(self, menuitem):
         import_dialog = dialogs.DataImport()
@@ -165,9 +170,9 @@ class Window(Gtk.Window):
         import_dialog.destroy()
 
     def data_export(self, menuitem):
-        export = dialogs.DataExport()
-        export.display()
-        export.destroy()
+        export_dialog = dialogs.DataExport()
+        export_dialog.display()
+        export_dialog.destroy()
 
     def update_title(self, filename):
         self.set_title("Editor - %s" % (filename))
@@ -318,9 +323,6 @@ class Window(Gtk.Window):
 
                     self.quit_application()
             else:
-                if data.db.cursor:
-                    data.db.disconnect()
-
                 self.quit_application()
 
         return True
@@ -468,7 +470,6 @@ data.options = preferences.Preferences()
 widgets.window = Window()
 mainmenu = MainMenu()
 maineditor = MainEditor()
-dialogs.preferences = dialogs.Preferences()
 players = players.Players()
 clubs = clubs.Clubs()
 nations = nations.Nations()

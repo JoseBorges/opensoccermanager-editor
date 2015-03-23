@@ -683,7 +683,7 @@ class Filter(Gtk.Dialog):
         if response == Gtk.ResponseType.OK:
             self.criteria = self.players.get_criteria()
 
-        self.destroy()
+        self.hide()
 
 
 def remove_dialog(index):
