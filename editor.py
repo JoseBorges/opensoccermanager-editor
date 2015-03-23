@@ -111,23 +111,6 @@ class Window(Gtk.Window):
         self.toolbuttonSave.connect("clicked", self.save_database)
         self.toolbar.add(self.toolbuttonSave)
 
-        grid1 = Gtk.Grid()
-        grid1.set_border_width(5)
-        self.grid.attach(grid1, 0, 2, 1, 1)
-
-        self.searchentry = Gtk.SearchEntry()
-        self.searchentry.add_accelerator("grab-focus",
-                                         widgets.accelgroup,
-                                         102,
-                                         Gdk.ModifierType.CONTROL_MASK,
-                                         Gtk.AccelFlags.VISIBLE)
-        self.searchentry.set_placeholder_text("Search")
-        self.searchentry.set_width_chars(25)
-        self.searchentry.connect("activate", self.search_data)
-        self.searchentry.connect("changed", self.search_update)
-        self.searchentry.connect("icon-press", self.search_clear)
-        grid1.attach(self.searchentry, 0, 0, 1, 1)
-
     def about_dialog(self, menuitem):
         aboutdialog = dialogs.AboutDialog()
         aboutdialog.run()
@@ -294,87 +277,6 @@ class Window(Gtk.Window):
                     stadiums.populate()
                     data.unsaved = True
 
-    def search_data(self, searchentry):
-        criteria = searchentry.get_text()
-
-        if criteria is not "":
-            values = {}
-
-            page = maineditor.get_current_page()
-
-            if page == 0:
-                for playerid, player in data.players.items():
-                    both = "%s %s" % (player.first_name, player.second_name)
-
-                    for search in (player.second_name, player.common_name, player.first_name, both):
-                        search = ''.join((c for c in unicodedata.normalize('NFD', search) if unicodedata.category(c) != 'Mn'))
-
-                        if re.findall(criteria, search, re.IGNORECASE):
-                            values[playerid] = player
-
-                            break
-
-                players.populate(items=values)
-            elif page == 1:
-                for clubid, club in data.clubs.items():
-                    for search in (club.name,):
-                        search = ''.join((c for c in unicodedata.normalize('NFD', search) if unicodedata.category(c) != 'Mn'))
-
-                        if re.findall(criteria, search, re.IGNORECASE):
-                            values[clubid] = club
-
-                            break
-
-                clubs.populate(items=values)
-            elif page == 2:
-                for nationid, nation in data.nations.items():
-                    for search in (nation.name,):
-                        search = ''.join((c for c in unicodedata.normalize('NFD', search) if unicodedata.category(c) != 'Mn'))
-
-                        if re.findall(criteria, search, re.IGNORECASE):
-                            values[nationid] = nation
-
-                            break
-
-                nations.populate(items=values)
-            elif page == 3:
-                for stadiumid, stadium in data.stadiums.items():
-                    for search in (stadium.name,):
-                        search = ''.join((c for c in unicodedata.normalize('NFD', search) if unicodedata.category(c) != 'Mn'))
-
-                        if re.findall(criteria, search, re.IGNORECASE):
-                            values[stadiumid] = stadium
-
-                            break
-
-                stadiums.populate(items=values)
-
-    def search_update(self, searchentry):
-        if searchentry.get_text() is "":
-            page = maineditor.get_current_page()
-
-            if page == 0:
-                players.populate()
-            elif page == 1:
-                clubs.populate()
-            elif page == 2:
-                nations.populate()
-            elif page == 3:
-                stadiums.populate()
-
-    def search_clear(self, searchentry, icon, entry):
-        if icon == Gtk.EntryIconPosition.SECONDARY:
-            page = maineditor.get_current_page()
-
-            if page == 0:
-                players.populate()
-            elif page == 1:
-                clubs.populate()
-            elif page == 2:
-                nations.populate()
-            elif page == 3:
-                stadiums.populate()
-
     def move_notebook_page(self, menuitem, direction):
         if direction == -1:
             if maineditor.get_current_page() == 0:
@@ -444,7 +346,6 @@ class Window(Gtk.Window):
         self.show_all()
 
         self.toolbar.set_visible(data.options.show_toolbar)
-        self.searchentry.set_visible(False)
 
 
 class MainMenu(Gtk.Grid):
@@ -508,7 +409,6 @@ class MainEditor(Gtk.Notebook):
         widgets.window.menuitemEdit.set_sensitive(True)
         widgets.window.menuitemRemove.set_sensitive(True)
         widgets.window.toolbar.set_sensitive(True)
-        widgets.window.searchentry.set_visible(True)
 
         players.run()
         clubs.run()
