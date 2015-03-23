@@ -426,11 +426,13 @@ class Window(Gtk.Window):
     def quit_application(self):
         width = str(self.get_size()[0])
         height = str(self.get_size()[1])
-        maximized = str(self.is_maximized())
 
-        data.options["INTERFACE"]["Width"] = width
-        data.options["INTERFACE"]["Height"] = height
-        data.options["INTERFACE"]["Maximized"] = maximized
+        if self.is_maximized():
+            data.options["INTERFACE"]["Maximized"] = "True"
+        else:
+            data.options["INTERFACE"]["Width"] = width
+            data.options["INTERFACE"]["Height"] = height
+            data.options["INTERFACE"]["Maximized"] = "False"
 
         data.options.write_file()
 
