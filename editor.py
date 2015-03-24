@@ -64,6 +64,7 @@ class Window(Gtk.Window):
         mainmenu.menuitemAdd.connect("activate", self.add_data)
         self.menuitemRemove = mainmenu.menuitemRemove
         mainmenu.menuitemRemove.connect("activate", self.remove_data)
+        mainmenu.menuitemYears.connect("activate", self.year_manager)
         mainmenu.menuitemPreferences.connect("activate", self.open_preferences)
         mainmenu.menuitemPrevious.connect("activate", self.move_notebook_page, -1)
         mainmenu.menuitemNext.connect("activate", self.move_notebook_page, 1)
@@ -154,6 +155,11 @@ class Window(Gtk.Window):
         preferences_dialog = dialogs.Preferences()
         preferences_dialog.display()
         preferences_dialog.hide()
+
+    def year_manager(self, menuitem):
+        year_dialog = dialogs.YearManager()
+        year_dialog.display()
+        year_dialog.destroy()
 
     def data_import(self, menuitem):
         import_dialog = dialogs.DataImport()

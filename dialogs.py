@@ -271,16 +271,16 @@ class ClubSelectionDialog(Gtk.Dialog):
         scrolledwindow.add(treeview)
 
         self.entrySearch = Gtk.SearchEntry()
-        self.entrySearch.connect("changed", self.changed_search)
-        self.entrySearch.connect("activate", self.activate_search)
-        self.entrySearch.connect("icon-press", self.clear_search)
+        self.entrySearch.connect("changed", self.search_changed)
+        self.entrySearch.connect("activate", self.search_activated)
+        self.entrySearch.connect("icon-press", self.search_cleared)
         grid.attach(self.entrySearch, 0, 1, 1, 1)
 
-    def changed_search(self, entry):
+    def search_changed(self, entry):
         if entry.get_text() is "":
             self.populate(data.clubs)
 
-    def activate_search(self, entry):
+    def search_activated(self, entry):
         criteria = entry.get_text()
 
         if criteria is not "":
@@ -297,7 +297,7 @@ class ClubSelectionDialog(Gtk.Dialog):
 
             self.populate(items)
 
-    def clear_search(self, entry, icon, event):
+    def search_cleared(self, entry, icon, event):
         self.populate(data.clubs)
 
     def treeselection_changed(self, treeselection):
@@ -312,7 +312,9 @@ class ClubSelectionDialog(Gtk.Dialog):
             treeview.scroll_to_cell(treepath)
 
     def display(self, clubid, year):
-        self.populate(data.clubs, year)
+        self.year = year
+
+        self.populate(data.clubs)
 
         for item in self.treemodelsort:
             if item[0] == clubid:
@@ -330,12 +332,12 @@ class ClubSelectionDialog(Gtk.Dialog):
 
         return clubid
 
-    def populate(self, data, year):
+    def populate(self, data):
         self.liststore.clear()
 
         for clubid, club in data.items():
             for attributeid, attribute in club.attributes.items():
-                if attribute.year == year:
+                if attribute.year == self.year:
                     self.liststore.append([clubid, club.name])
 
 
@@ -656,6 +658,92 @@ class Filter(Gtk.Dialog):
             self.criteria = self.players.get_criteria()
 
         self.hide()
+
+
+class YearManager(Gtk.Dialog):
+    def __init__(self):
+        Gtk.Dialog.__init__(self)
+        self.set_transient_for(widgets.window)
+        self.set_title("Year Manager")
+        self.set_default_size(-1, 200)
+        self.add_button("_Close", Gtk.ResponseType.CLOSE)
+        self.vbox.set_spacing(5)
+
+        scrolledwindow = Gtk.ScrolledWindow()
+        scrolledwindow.set_vexpand(True)
+        scrolledwindow.set_policy(Gtk.PolicyType.NEVER,
+                                  Gtk.PolicyType.AUTOMATIC)
+        self.vbox.add(scrolledwindow)
+
+        self.liststoreYears = Gtk.ListStore(int)
+        treemodelsort = Gtk.TreeModelSort(self.liststoreYears)
+        treemodelsort.set_sort_column_id(0, Gtk.SortType.ASCENDING)
+        cellrenderertext = Gtk.CellRendererText()
+        cellrenderertext.set_property("editable", True)
+        cellrenderertext.connect("edited", self.cellrenderer_edited)
+
+        self.treeview = Gtk.TreeView()
+        self.treeview.set_model(self.liststoreYears)
+        self.treeview.set_headers_visible(False)
+        self.treeselection = self.treeview.get_selection()
+        self.treeselection.connect("changed", self.treeselection_changed)
+        scrolledwindow.add(self.treeview)
+
+        self.treeviewcolumn = Gtk.TreeViewColumn(None,
+                                            cellrenderertext,
+                                            text=0)
+        self.treeview.append_column(self.treeviewcolumn)
+
+        buttonbox = Gtk.ButtonBox()
+        buttonbox.set_spacing(5)
+        buttonAdd = widgets.Button("_Add")
+        buttonAdd.connect("clicked", self.add_item)
+        buttonbox.add(buttonAdd)
+        self.buttonRemove = widgets.Button("_Remove")
+        self.buttonRemove.connect("clicked", self.remove_item)
+        buttonbox.add(self.buttonRemove)
+        self.vbox.add(buttonbox)
+
+    def treeselection_changed(self, treeselection):
+        model, treeiter = treeselection.get_selected()
+
+        if treeiter:
+            self.buttonRemove.set_sensitive(True)
+        else:
+            self.buttonRemove.set_sensitive(False)
+
+    def cellrenderer_edited(self, cellrenderertext, treepath, text):
+        if int(text) not in data.years:
+            data.years.append(int(text))
+
+        self.populate()
+
+    def add_item(self, button):
+        treeiter = self.liststoreYears.append([None])
+        treepath = self.liststoreYears.get_path(treeiter)
+        self.treeview.set_cursor(treepath,
+                                 column=self.treeviewcolumn,
+                                 start_editing=True)
+
+    def remove_item(self, button):
+        model, treeiter = self.treeselection.get_selected()
+
+        year = model[treeiter][0]
+        data.years.remove(year)
+
+        self.populate()
+
+    def populate(self):
+        self.liststoreYears.clear()
+
+        for year in data.years:
+            self.liststoreYears.append([year])
+
+    def display(self):
+        self.populate()
+
+        self.show_all()
+        self.run()
 
 
 def remove_dialog(index):

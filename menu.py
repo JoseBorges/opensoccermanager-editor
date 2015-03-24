@@ -67,6 +67,11 @@ class Menu(Gtk.MenuBar):
         menu.append(self.menuitemRemove)
         separator = Gtk.SeparatorMenuItem()
         menu.append(separator)
+        self.menuitemYears = widgets.MenuItem("_Year Manager")
+        self.menuitemYears.set_sensitive(False)
+        menu.append(self.menuitemYears)
+        separator = Gtk.SeparatorMenuItem()
+        menu.append(separator)
         self.menuitemPreferences = widgets.MenuItem("_Preferences")
         menu.append(self.menuitemPreferences)
 
