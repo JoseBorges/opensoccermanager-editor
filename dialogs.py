@@ -98,60 +98,29 @@ class Preferences(Gtk.Dialog):
         self.run()
 
 
-class NewDatabase(Gtk.Dialog):
+class NewDatabase(Gtk.FileChooserDialog):
     def __init__(self):
-        Gtk.Dialog.__init__(self)
+        Gtk.FileChooserDialog.__init__(self)
         self.set_title("New Database")
         self.set_transient_for(widgets.window)
-        self.set_border_width(5)
         self.add_button("C_ancel", Gtk.ResponseType.CANCEL)
         self.add_button("_Create", Gtk.ResponseType.OK)
         self.set_default_response(Gtk.ResponseType.OK)
-
-        grid = Gtk.Grid()
-        grid.set_row_spacing(5)
-        grid.set_column_spacing(5)
-        self.vbox.add(grid)
-
-        label = widgets.Label("_Season")
-        grid.attach(label, 0, 0, 1, 1)
-        self.spinbuttonSeason = Gtk.SpinButton.new_with_range(1950, 2049, 1)
-        label.set_mnemonic_widget(self.spinbuttonSeason)
-        grid.attach(self.spinbuttonSeason, 1, 0, 1, 1)
-
-        label = widgets.Label("_Location")
-        grid.attach(label, 0, 1, 1, 1)
-        self.filechooserLocation = Gtk.FileChooserButton()
-        self.filechooserLocation.set_hexpand(True)
-        self.filechooserLocation.set_action(Gtk.FileChooserAction.SELECT_FOLDER)
-        label.set_mnemonic_widget(self.filechooserLocation)
-        grid.attach(self.filechooserLocation, 1, 1, 2, 1)
+        self.set_action(Gtk.FileChooserAction.SAVE)
+        self.set_current_name("New Database")
+        self.set_do_overwrite_confirmation(True)
 
     def display(self):
         self.show_all()
 
-        filepath = None
+        filename = None
 
         if self.run() == Gtk.ResponseType.OK:
-            season = self.spinbuttonSeason.get_value_as_int()
-            year = str(season)[2:4]
-            year1 = str(season + 1)[2:4]
-            data.season = season
-            filename = "osm%s%s.db" % (year, year1)
-
-            if self.filechooserLocation.get_current_folder() is not None:
-                folder = self.filechooserLocation.get_current_folder()
-                filepath = os.path.join(folder, filename)
-            else:
-                if self.filechooserLocation.get_filename() is not None:
-                    folder = self.filechooserLocation.get_filename()
-                    filepath = os.path.join(folder, filename)
-                else:
-                    filepath = filename
+            filename = self.get_filename()
 
         self.hide()
 
-        return filepath
+        return filename
 
 
 class PlayerSelectionDialog(Gtk.Dialog):

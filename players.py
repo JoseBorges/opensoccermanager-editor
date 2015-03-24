@@ -35,26 +35,27 @@ class Players(Gtk.Grid):
         searchentry = Gtk.SearchEntry()
         searchentry.connect("activate", self.search_activated)
         searchentry.connect("icon-press", self.search_cleared)
+        searchentry.connect("changed", self.search_updated)
         grid1.attach(searchentry, 0, 1, 1, 1)
 
         self.liststore = Gtk.ListStore(int, str)
         treemodelsort = Gtk.TreeModelSort(self.liststore)
         treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
 
-        treeview = Gtk.TreeView()
-        treeview.set_vexpand(True)
-        treeview.set_model(treemodelsort)
-        treeview.set_headers_visible(False)
-        treeview.set_enable_search(False)
-        treeview.set_search_column(-1)
-        treeview.set_activate_on_single_click(True)
-        treeview.connect("row-activated", self.row_activated)
-        self.treeselection = treeview.get_selection()
+        self.treeviewPlayers = Gtk.TreeView()
+        self.treeviewPlayers.set_vexpand(True)
+        self.treeviewPlayers.set_model(treemodelsort)
+        self.treeviewPlayers.set_headers_visible(False)
+        self.treeviewPlayers.set_enable_search(False)
+        self.treeviewPlayers.set_search_column(-1)
+        self.treeviewPlayers.set_activate_on_single_click(True)
+        self.treeviewPlayers.connect("row-activated", self.player_activated)
+        self.treeselection = self.treeviewPlayers.get_selection()
         self.treeselection.connect("changed", self.selection_changed)
-        scrolledwindow.add(treeview)
+        scrolledwindow.add(self.treeviewPlayers)
 
         treeviewcolumn = widgets.TreeViewColumn(None, column=1)
-        treeview.append_column(treeviewcolumn)
+        self.treeviewPlayers.append_column(treeviewcolumn)
 
         gridAttr = Gtk.Grid()
         gridAttr.set_row_spacing(5)
@@ -203,6 +204,10 @@ class Players(Gtk.Grid):
         if icon == Gtk.EntryIconPosition.SECONDARY:
             self.populate(items=data.players)
 
+    def search_updated(self, searchentry):
+        if searchentry.get_text() == "":
+            self.populate(items=data.players)
+
     def date_of_birth_clicked(self, button):
         dialogDOB = dialogs.DateOfBirth(parent=widgets.window)
 
@@ -248,7 +253,7 @@ class Players(Gtk.Grid):
 
         self.populate_attributes()
 
-    def row_activated(self, treeview, treepath, treeviewcolumn):
+    def player_activated(self, treeview, treepath, treeviewcolumn):
         model = treeview.get_model()
         self.playerid = model[treepath][0]
 
