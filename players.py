@@ -222,7 +222,7 @@ class Players(Gtk.Grid):
         dialogNation = dialogs.NationSelectionDialog(parent=widgets.window)
         nationid = dialogNation.display(self.nationid)
 
-        nationality = data.nations[nationid].name
+        nationality = display.nation(nationid)
         self.buttonNationality.set_label(nationality)
 
         player = data.players[self.playerid]
@@ -323,7 +323,7 @@ class Players(Gtk.Grid):
         player = data.players[self.playerid]
 
         for attributeid, attribute in player.attributes.items():
-            club = data.clubs[attribute.club].name
+            club = display.club(attribute.club)
 
             self.liststoreAttributes.append([attributeid,
                                              attribute.year,
@@ -420,8 +420,13 @@ class AttributeDialog(Gtk.Dialog):
         grid.attach(self.spinbuttonTraining, 1, 12, 1, 1)
 
     def club_clicked(self, button):
+        model = self.comboboxYear.get_model()
+        treeiter = self.comboboxYear.get_active()
+
+        year = int(model[treeiter][0])
+
         club_dialog = dialogs.ClubSelectionDialog(parent=self)
-        clubid = club_dialog.display(clubid=self.clubid)
+        clubid = club_dialog.display(clubid=self.clubid, year=year)
 
         if clubid:
             player = data.players[self.playerid]
@@ -450,8 +455,14 @@ class AttributeDialog(Gtk.Dialog):
         year = str(attribute.year)
         self.comboboxYear.set_active_id(year)
 
-        club = data.clubs[attribute.club].name
-        self.buttonClub.set_label("%s" % (club))
+        club = display.club(attribute.club)
+
+        if attribute.club == 0:
+            self.checkbuttonFreeAgent.set_active(True)
+            self.buttonClub.set_label("")
+            self.buttonClub.set_sensitive(False)
+        else:
+            self.buttonClub.set_label("%s" % (club))
 
         self.comboboxPosition.set_active_id(attribute.position)
 
@@ -474,6 +485,9 @@ class AttributeDialog(Gtk.Dialog):
         model = self.comboboxYear.get_model()
         treeiter = self.comboboxYear.get_active()
         attribute.year = int(model[treeiter][0])
+
+        if self.checkbuttonFreeAgent.get_active():
+            attribute.club = 0
 
         attribute.position = self.comboboxPosition.get_active_text()
 

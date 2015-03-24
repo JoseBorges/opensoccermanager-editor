@@ -43,9 +43,10 @@ def player(item):
     player.common_name = item[3]
     player.date_of_birth = item[4]
     player.nationality = item[5]
+
     player.attributes = {}
 
-    db.cursor.execute("SELECT * FROM playerattr WHERE player = ?", (player.playerid,))
+    db.cursor.execute("SELECT * FROM playerattr WHERE player=?", (player.playerid,))
 
     for data in db.cursor.fetchall():
         attributes = Attributes()
@@ -79,10 +80,22 @@ def club(item):
     club.clubid = item[0]
     club.name = item[1]
     club.nickname = item[2]
-    club.manager = item[3]
-    club.chairman = item[4]
-    club.stadium = item[5]
-    club.reputation = item[6]
+
+    club.attributes = {}
+
+    db.cursor.execute("SELECT * FROM clubattr WHERE club=?", (club.clubid,))
+
+    for data in db.cursor.fetchall():
+        attributes = Attributes()
+        attributes.attributeid = data[0]
+        attributes.year = data[2]
+        attributes.manager = data[3]
+        attributes.chairman = data[4]
+        attributes.stadium = data[5]
+        attributes.reputation = data[6]
+
+        club.attributes[attributes.attributeid] = attributes
+
     clubs[club.clubid] = club
 
 

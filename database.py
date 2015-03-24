@@ -56,12 +56,12 @@ class Database:
         for item in values:
             data.years.append(item[0])
 
-        self.cursor.execute("SELECT * FROM player JOIN playerattr ON player.id = playerattr.player")
+        self.cursor.execute("SELECT * FROM player")
 
         for item in self.cursor.fetchall():
             data.player(item)
 
-        self.cursor.execute("SELECT club.id, club.name, club.nickname, clubattr.manager, clubattr.chairman, clubattr.stadium, clubattr.reputation FROM club JOIN clubattr ON club.id = clubattr.club")
+        self.cursor.execute("SELECT * FROM club")
 
         for item in self.cursor.fetchall():
             data.club(item)

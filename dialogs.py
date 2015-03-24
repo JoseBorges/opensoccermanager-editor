@@ -262,7 +262,9 @@ class ClubSelectionDialog(Gtk.Dialog):
         treeview.set_headers_visible(False)
         treeview.set_enable_search(False)
         treeview.set_search_column(-1)
-        treeviewcolumn = Gtk.TreeViewColumn("", cellrenderertext, text=1)
+        treeviewcolumn = Gtk.TreeViewColumn(None,
+                                            cellrenderertext,
+                                            text=1)
         treeview.append_column(treeviewcolumn)
         self.treeselection = treeview.get_selection()
         self.treeselection.connect("changed", self.treeselection_changed)
@@ -296,8 +298,6 @@ class ClubSelectionDialog(Gtk.Dialog):
             self.populate(items)
 
     def clear_search(self, entry, icon, event):
-        #entry.set_text("")
-
         self.populate(data.clubs)
 
     def treeselection_changed(self, treeselection):
@@ -311,8 +311,8 @@ class ClubSelectionDialog(Gtk.Dialog):
             treeview = treeselection.get_tree_view()
             treeview.scroll_to_cell(treepath)
 
-    def display(self, clubid):
-        self.populate(data.clubs)
+    def display(self, clubid, year):
+        self.populate(data.clubs, year)
 
         for item in self.treemodelsort:
             if item[0] == clubid:
@@ -330,11 +330,13 @@ class ClubSelectionDialog(Gtk.Dialog):
 
         return clubid
 
-    def populate(self, data):
+    def populate(self, data, year):
         self.liststore.clear()
 
         for clubid, club in data.items():
-            self.liststore.append([clubid, club.name])
+            for attributeid, attribute in club.attributes.items():
+                if attribute.year == year:
+                    self.liststore.append([clubid, club.name])
 
 
 class NationSelectionDialog(Gtk.Dialog):

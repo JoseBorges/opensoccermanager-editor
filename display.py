@@ -25,17 +25,17 @@ def age(date_of_birth):
     return age
 
 
-def club(player):
-    if player.club != 0:
-        club = data.clubs[player.club].name
+def club(clubid):
+    if clubid != 0:
+        club = data.clubs[clubid].name
     else:
-        club = ""
+        club = "Free Agent"
 
     return club
 
 
-def nation(player):
-    nation = data.nations[player.nationality].name
+def nation(nationid):
+    nation = data.nations[nationid].name
 
     return nation
 
