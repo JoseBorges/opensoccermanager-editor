@@ -177,30 +177,7 @@ class Window(Gtk.Window):
     def add_data(self, toolbutton):
         page = maineditor.get_current_page()
 
-        if page == 0:
-            dialogs.players.display()
-
-            if dialogs.players.state:
-                players.populate()
-                data.unsaved = True
-        elif page == 1:
-            dialogs.clubs.display()
-
-            if dialogs.clubs.state:
-                clubs.populate()
-                data.unsaved = True
-        elif page == 2:
-            dialogs.nations.display()
-
-            if dialogs.nations.state:
-                nations.populate()
-                data.unsaved = True
-        elif page == 3:
-            dialogs.stadiums.display()
-
-            if dialogs.stadiums.state:
-                stadiums.populate()
-                data.unsaved = True
+        pass
 
     def remove_data(self, toolbutton):
         page = maineditor.get_current_page()

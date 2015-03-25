@@ -9,6 +9,7 @@ import calculator
 import data
 import dialogs
 import display
+import interface
 import menu
 import widgets
 
@@ -22,41 +23,8 @@ class Players(Gtk.Grid):
         self.set_column_spacing(5)
         self.set_border_width(5)
 
-        grid1 = Gtk.Grid()
-        grid1.set_row_spacing(5)
-        grid1.set_column_spacing(5)
-        self.attach(grid1, 0, 0, 1, 1)
-
-        scrolledwindow = Gtk.ScrolledWindow()
-        scrolledwindow.set_size_request(200, -1)
-        scrolledwindow.set_policy(Gtk.PolicyType.NEVER,
-                                  Gtk.PolicyType.AUTOMATIC)
-        grid1.attach(scrolledwindow, 0, 0, 1, 1)
-
-        searchentry = Gtk.SearchEntry()
-        searchentry.connect("activate", self.search_activated)
-        searchentry.connect("icon-press", self.search_cleared)
-        searchentry.connect("changed", self.search_updated)
-        grid1.attach(searchentry, 0, 1, 1, 1)
-
-        self.liststore = Gtk.ListStore(int, str)
-        treemodelsort = Gtk.TreeModelSort(self.liststore)
-        treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
-
-        self.treeviewPlayers = Gtk.TreeView()
-        self.treeviewPlayers.set_vexpand(True)
-        self.treeviewPlayers.set_model(treemodelsort)
-        self.treeviewPlayers.set_headers_visible(False)
-        self.treeviewPlayers.set_enable_search(False)
-        self.treeviewPlayers.set_search_column(-1)
-        self.treeviewPlayers.set_activate_on_single_click(True)
-        self.treeviewPlayers.connect("row-activated", self.player_activated)
-        self.treeselection = self.treeviewPlayers.get_selection()
-        self.treeselection.connect("changed", self.selection_changed)
-        scrolledwindow.add(self.treeviewPlayers)
-
-        self.treeviewcolumnPlayers = widgets.TreeViewColumn(None, column=1)
-        self.treeviewPlayers.append_column(self.treeviewcolumnPlayers)
+        self.search = interface.Search()
+        self.attach(self.search, 0, 0, 1, 1)
 
         gridAttr = Gtk.Grid()
         gridAttr.set_row_spacing(5)
@@ -167,10 +135,6 @@ class Players(Gtk.Grid):
         self.buttonRemove.connect("clicked", self.remove_attribute)
         buttonbox.add(self.buttonRemove)
         grid3.attach(buttonbox, 1, 0, 1, 1)
-
-        # Staus Information
-        self.labelCount = widgets.Label()
-        self.attach(self.labelCount, 0, 1, 1, 1)
 
     def attribute_treeview_changed(self, treeselection):
         model, treeiter = treeselection.get_selected()
@@ -298,25 +262,6 @@ class Players(Gtk.Grid):
             widgets.window.menuitemRemove.set_sensitive(False)
             widgets.toolbuttonRemove.set_sensitive(False)
 
-    def populate(self, items=None):
-        self.liststore.clear()
-
-        if not items:
-            items = data.players
-            dbcount = True
-        else:
-            dbcount = False
-
-        count = 0
-
-        for count, (playerid, player) in enumerate(items.items(), start=1):
-            name = display.name(player)
-
-            self.liststore.append([playerid, name])
-
-        if dbcount:
-            self.labelCount.set_label("%i Players in Database" % (count))
-
     def populate_attributes(self):
         '''
         Populate attribute treeview with values for player id.
@@ -345,15 +290,7 @@ class Players(Gtk.Grid):
                                              ])
 
     def run(self):
-        self.populate()
-
         self.show_all()
-
-        treepath = Gtk.TreePath.new_first()
-        self.treeselection.select_path(treepath)
-
-        self.treeview.row_activated(treepath, self.treeviewcolumnPlayers)
-
 
 
 class AttributeDialog(Gtk.Dialog):
