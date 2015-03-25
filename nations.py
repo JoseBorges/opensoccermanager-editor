@@ -162,6 +162,8 @@ class Nations(Gtk.Grid):
             self.labelCount.set_label("%i Nations in Database" % (count))
 
     def run(self):
+        self.populate()
+
         self.show_all()
 
 

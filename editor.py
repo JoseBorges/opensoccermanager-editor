@@ -421,11 +421,6 @@ def new_database(widget=None, mode=0):
 
             data.db.load()
 
-            players.populate()
-            #clubs.populate()
-            nations.populate()
-            #stadiums.populate()
-
             maineditor.run()
 
 

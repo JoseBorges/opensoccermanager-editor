@@ -28,6 +28,7 @@ class Players(Gtk.Grid):
         self.attach(grid1, 0, 0, 1, 1)
 
         scrolledwindow = Gtk.ScrolledWindow()
+        scrolledwindow.set_size_request(200, -1)
         scrolledwindow.set_policy(Gtk.PolicyType.NEVER,
                                   Gtk.PolicyType.AUTOMATIC)
         grid1.attach(scrolledwindow, 0, 0, 1, 1)
@@ -54,8 +55,8 @@ class Players(Gtk.Grid):
         self.treeselection.connect("changed", self.selection_changed)
         scrolledwindow.add(self.treeviewPlayers)
 
-        treeviewcolumn = widgets.TreeViewColumn(None, column=1)
-        self.treeviewPlayers.append_column(treeviewcolumn)
+        self.treeviewcolumnPlayers = widgets.TreeViewColumn(None, column=1)
+        self.treeviewPlayers.append_column(self.treeviewcolumnPlayers)
 
         gridAttr = Gtk.Grid()
         gridAttr.set_row_spacing(5)
@@ -114,41 +115,41 @@ class Players(Gtk.Grid):
                                                  int, int)
         cellrenderertext = Gtk.CellRendererText()
 
-        treeview = Gtk.TreeView()
-        treeview.set_model(self.liststoreAttributes)
-        treeview.set_enable_search(False)
-        treeview.set_search_column(-1)
-        treeview.connect("row-activated", self.attribute_activated)
-        self.treeselectionAttribute = treeview.get_selection()
+        self.treeview = Gtk.TreeView()
+        self.treeview.set_model(self.liststoreAttributes)
+        self.treeview.set_enable_search(False)
+        self.treeview.set_search_column(-1)
+        self.treeview.connect("row-activated", self.attribute_activated)
+        self.treeselectionAttribute = self.treeview.get_selection()
         self.treeselectionAttribute.connect("changed", self.attribute_treeview_changed)
-        scrolledwindow.add(treeview)
+        scrolledwindow.add(self.treeview)
         treeviewcolumn = Gtk.TreeViewColumn("Year", cellrenderertext, text=1)
         treeviewcolumn.set_sort_column_id(1)
-        treeview.append_column(treeviewcolumn)
+        self.treeview.append_column(treeviewcolumn)
         treeviewcolumn = Gtk.TreeViewColumn("Club", cellrenderertext, text=2)
-        treeview.append_column(treeviewcolumn)
+        self.treeview.append_column(treeviewcolumn)
         treeviewcolumn = Gtk.TreeViewColumn("Position", cellrenderertext, text=3)
-        treeview.append_column(treeviewcolumn)
+        self.treeview.append_column(treeviewcolumn)
         treeviewcolumn = Gtk.TreeViewColumn("KP", cellrenderertext, text=4)
-        treeview.append_column(treeviewcolumn)
+        self.treeview.append_column(treeviewcolumn)
         treeviewcolumn = Gtk.TreeViewColumn("TK", cellrenderertext, text=5)
-        treeview.append_column(treeviewcolumn)
+        self.treeview.append_column(treeviewcolumn)
         treeviewcolumn = Gtk.TreeViewColumn("PS", cellrenderertext, text=6)
-        treeview.append_column(treeviewcolumn)
+        self.treeview.append_column(treeviewcolumn)
         treeviewcolumn = Gtk.TreeViewColumn("SH", cellrenderertext, text=7)
-        treeview.append_column(treeviewcolumn)
+        self.treeview.append_column(treeviewcolumn)
         treeviewcolumn = Gtk.TreeViewColumn("HD", cellrenderertext, text=8)
-        treeview.append_column(treeviewcolumn)
+        self.treeview.append_column(treeviewcolumn)
         treeviewcolumn = Gtk.TreeViewColumn("PC", cellrenderertext, text=9)
-        treeview.append_column(treeviewcolumn)
+        self.treeview.append_column(treeviewcolumn)
         treeviewcolumn = Gtk.TreeViewColumn("ST", cellrenderertext, text=10)
-        treeview.append_column(treeviewcolumn)
+        self.treeview.append_column(treeviewcolumn)
         treeviewcolumn = Gtk.TreeViewColumn("BC", cellrenderertext, text=11)
-        treeview.append_column(treeviewcolumn)
+        self.treeview.append_column(treeviewcolumn)
         treeviewcolumn = Gtk.TreeViewColumn("SP", cellrenderertext, text=12)
-        treeview.append_column(treeviewcolumn)
+        self.treeview.append_column(treeviewcolumn)
         treeviewcolumn = Gtk.TreeViewColumn("Training", cellrenderertext, text=13)
-        treeview.append_column(treeviewcolumn)
+        self.treeview.append_column(treeviewcolumn)
 
         buttonbox = Gtk.ButtonBox()
         buttonbox.set_spacing(5)
@@ -274,12 +275,14 @@ class Players(Gtk.Grid):
 
     def attribute_activated(self, treeview=None, treepath=None, treeviewcolumn=None):
         model, treeiter = self.treeselectionAttribute.get_selected()
-        attributeid = model[treeiter][0]
 
-        dialog = AttributeDialog(parent=widgets.window)
-        dialog.display(playerid=self.playerid, attributeid=attributeid)
+        if treeiter:
+            attributeid = model[treeiter][0]
 
-        self.populate_attributes()
+            dialog = AttributeDialog(parent=widgets.window)
+            dialog.display(playerid=self.playerid, attributeid=attributeid)
+
+            self.populate_attributes()
 
     def selection_changed(self, treeselection):
         model, treeiter = self.treeselection.get_selected()
@@ -345,6 +348,12 @@ class Players(Gtk.Grid):
         self.populate()
 
         self.show_all()
+
+        treepath = Gtk.TreePath.new_first()
+        self.treeselection.select_path(treepath)
+
+        self.treeview.row_activated(treepath, self.treeviewcolumnPlayers)
+
 
 
 class AttributeDialog(Gtk.Dialog):
