@@ -10,6 +10,8 @@ import widgets
 
 class Search(Gtk.Grid):
     def __init__(self):
+        self.selected = None
+
         Gtk.Grid.__init__(self)
         self.set_row_spacing(5)
 
@@ -23,23 +25,20 @@ class Search(Gtk.Grid):
         treemodelsort = Gtk.TreeModelSort(self.liststore)
         treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
 
-        treeview = Gtk.TreeView()
-        treeview.set_vexpand(True)
-        treeview.set_model(treemodelsort)
-        treeview.set_headers_visible(False)
-        treeview.set_enable_search(False)
-        treeview.set_search_column(-1)
-        scrolledwindow.add(treeview)
-        self.treeselection = treeview.get_selection()
-        self.treeselection.connect("changed", self.treeselection_changed)
-        treeviewcolumn = widgets.TreeViewColumn(None, column=1)
-        treeview.append_column(treeviewcolumn)
+        self.treeview = Gtk.TreeView()
+        self.treeview.set_vexpand(True)
+        self.treeview.set_model(treemodelsort)
+        self.treeview.set_headers_visible(False)
+        self.treeview.set_enable_search(False)
+        self.treeview.set_search_column(-1)
+        self.treeview.set_activate_on_single_click(True)
+        scrolledwindow.add(self.treeview)
+        self.treeselection = self.treeview.get_selection()
+        self.treeviewcolumn = widgets.TreeViewColumn(None, column=1)
+        self.treeview.append_column(self.treeviewcolumn)
 
-        searchentry = Gtk.SearchEntry()
-        searchentry.connect("activate", self.search_activated)
-        searchentry.connect("changed", self.search_changed)
-        searchentry.connect("icon-press", self.search_cleared)
-        self.attach(searchentry, 0, 1, 1, 1)
+        self.searchentry = Gtk.SearchEntry()
+        self.attach(self.searchentry, 0, 1, 1, 1)
 
     def search_activated(self, searchentry):
         criteria = searchentry.get_text()
@@ -69,22 +68,18 @@ class Search(Gtk.Grid):
             self.populate_data()
 
     def treeselection_changed(self, treeselection):
-        model, treeiter = treeselection.get_selected()
+        model, treeiter = self.treeselection.get_selected()
 
         if treeiter:
             self.selected = model[treeiter][0]
 
+            widgets.window.menuitemRemove.set_sensitive(True)
             widgets.toolbuttonRemove.set_sensitive(True)
         else:
             self.selected = None
 
+            widgets.window.menuitemRemove.set_sensitive(False)
             widgets.toolbuttonRemove.set_sensitive(False)
 
-    def populate_data(self, data=None):
+    def clear_data(self):
         self.liststore.clear()
-
-        if data is None:
-            data = self.data
-
-        for itemid, item in data.items():
-            self.liststore.append([itemid, item.name])

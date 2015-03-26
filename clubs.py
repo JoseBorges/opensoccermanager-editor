@@ -2,6 +2,8 @@
 
 from gi.repository import Gtk
 from gi.repository import Gdk
+import re
+import unicodedata
 
 import data
 import dialogs
@@ -21,29 +23,103 @@ class Clubs(Gtk.Grid):
         self.set_border_width(5)
 
         self.search = interface.Search()
+        self.search.searchentry.connect("activate", self.search_activated)
+        self.search.searchentry.connect("changed", self.search_changed)
+        self.search.searchentry.connect("icon-press", self.search_cleared)
+        self.search.treeview.connect("row-activated", self.club_activated)
+        self.search.treeselection.connect("changed", self.club_changed)
         self.attach(self.search, 0, 0, 1, 1)
 
-        # Attribute Editor
-        gridAttr = Gtk.Grid()
-        gridAttr.set_row_spacing(5)
-        self.attach(gridAttr, 1, 0, 1, 1)
+        self.attributes = Attributes()
+        self.attach(self.attributes, 1, 0, 1, 1)
+
+    def search_activated(self, searchentry):
+        criteria = searchentry.get_text()
+
+        if criteria is not "":
+            values = {}
+
+            for clubid, club in data.clubs.items():
+                for search in (club.name,):
+                    search = ''.join((c for c in unicodedata.normalize('NFD', search) if unicodedata.category(c) != 'Mn'))
+
+                    if re.findall(criteria, search, re.IGNORECASE):
+                        values[clubid] = club
+
+                        break
+
+            self.populate_data(values)
+
+    def search_changed(self, searchentry):
+        if searchentry.get_text() is "":
+            self.populate_data(data.clubs)
+
+    def search_cleared(self, searchentry, icon, event):
+        if icon == Gtk.EntryIconPosition.SECONDARY:
+            self.populate_data(data.clubs)
+
+    def club_activated(self, treeview, treepath, treeviewcolumn):
+        model = treeview.get_model()
+        self.clubid = model[treepath][0]
+
+        club = data.clubs[self.clubid]
+        self.attributes.clubid = self.clubid
+
+        self.attributes.entryName.set_text(club.name)
+        self.attributes.entryNickname.set_text(club.nickname)
+
+        self.attributes.populate_attributes()
+
+    def club_changed(self, treeselection):
+        model, treeiter = treeselection.get_selected()
+
+        if treeiter:
+            self.attributes.set_sensitive(True)
+        else:
+            self.attributes.set_sensitive(False)
+
+    def populate_data(self, values):
+        self.search.clear_data()
+
+        for clubid, club in values.items():
+            self.search.liststore.append([clubid, club.name])
+
+    def run(self):
+        self.populate_data(values=data.clubs)
+        self.show_all()
+
+        treepath = Gtk.TreePath.new_first()
+        self.search.treeselection.select_path(treepath)
+        column = self.search.treeviewcolumn
+        self.search.treeview.row_activated(treepath, column)
+
+
+class Attributes(Gtk.Grid):
+    def __init__(self):
+        self.clubid = None
+
+        Gtk.Grid.__init__(self)
+        self.set_row_spacing(5)
+        self.set_column_spacing(5)
+        self.set_sensitive(False)
 
         grid2 = Gtk.Grid()
         grid2.set_row_spacing(5)
         grid2.set_column_spacing(5)
-        gridAttr.attach(grid2, 0, 0, 1, 1)
+        self.attach(grid2, 0, 0, 1, 1)
 
         label = widgets.Label("Name")
         grid2.attach(label, 0, 0, 1, 1)
         self.entryName = Gtk.Entry()
         grid2.attach(self.entryName, 1, 0, 1, 1)
+
         label = widgets.Label("Nickname")
         grid2.attach(label, 0, 1, 1, 1)
         self.entryNickname = Gtk.Entry()
         grid2.attach(self.entryNickname, 1, 1, 1, 1)
 
         commonframe = widgets.CommonFrame("Attributes")
-        gridAttr.attach(commonframe, 0, 1, 1, 1)
+        self.attach(commonframe, 0, 1, 1, 1)
 
         self.liststoreAttributes = Gtk.ListStore(int, int, str, str, str, int)
         cellrenderertext = Gtk.CellRendererText()
@@ -60,12 +136,13 @@ class Clubs(Gtk.Grid):
         grid3.attach(scrolledwindow, 0, 0, 1, 1)
 
         self.treeview = Gtk.TreeView()
+        self.treeview.set_hexpand(True)
         self.treeview.set_model(self.liststoreAttributes)
         self.treeview.set_enable_search(False)
         self.treeview.set_search_column(-1)
-        #self.treeview.connect("row-activated", self.attribute_activated)
+        self.treeview.connect("row-activated", self.attribute_activated)
         self.treeselectionAttribute = self.treeview.get_selection()
-        #self.treeselectionAttribute.connect("changed", self.attribute_treeview_changed)
+        self.treeselectionAttribute.connect("changed", self.attribute_changed)
         scrolledwindow.add(self.treeview)
         treeviewcolumn = widgets.TreeViewColumn("Year", column=1)
         treeviewcolumn.set_sort_column_id(1)
@@ -96,19 +173,31 @@ class Clubs(Gtk.Grid):
         buttonbox.add(self.buttonRemove)
         grid3.attach(buttonbox, 1, 0, 1, 1)
 
-    def club_activated(self, treeview, path, column):
-        model = treeview.get_model()
-        self.clubid = model[path][0]
+    def attribute_changed(self, treeselection):
+        model, treeiter = treeselection.get_selected()
 
-        club = data.clubs[self.clubid]
-        self.club = club
+        if treeiter:
+            self.buttonEdit.set_sensitive(True)
+            self.buttonRemove.set_sensitive(True)
+        else:
+            self.buttonEdit.set_sensitive(False)
+            self.buttonRemove.set_sensitive(False)
 
-        self.entryName.set_text(club.name)
-        self.entryNickname.set_text(club.nickname)
+    def attribute_activated(self, treeview=None, treepath=None, treeviewcolumn=None):
+        model, treeiter = self.treeselectionAttribute.get_selected()
 
-        self.populate_attributes()
+        if treeiter:
+            attributeid = model[treeiter][0]
+
+            dialog = AttributeDialog(parent=widgets.window)
+            dialog.display(clubid=self.clubid, attributeid=attributeid)
+
+            self.populate_attributes()
 
     def populate_attributes(self):
+        '''
+        Populate attribute treeview with values for player id.
+        '''
         self.liststoreAttributes.clear()
 
         club = data.clubs[self.clubid]
@@ -123,45 +212,3 @@ class Clubs(Gtk.Grid):
                                              stadium,
                                              attribute.reputation
                                              ])
-
-    def row_delete(self, treeview, event=None):
-        if event:
-            key = Gdk.keyval_name(event.keyval)
-        else:
-            key = "Delete"
-
-        if key == "Delete":
-            if dialogs.remove_dialog(index=1):
-                model, treepath = self.treeselection.get_selected_rows()
-                clubid = [model[treepath][0] for treepath in treepath]
-
-                keys = [player.club for player in data.players.values()]
-
-                if [item for item in clubid if item in keys]:
-                    dialogs.error(0)
-                else:
-                    for item in clubid:
-                        del(data.clubs[item])
-
-                    data.unsaved = True
-
-                    self.populate()
-
-    def selection_changed(self, treeselection):
-        model, treeiter = treeselection.get_selected()
-
-        if treeiter:
-            self.selected = model[treeiter][0]
-
-            widgets.window.menuitemRemove.set_sensitive(True)
-            widgets.toolbuttonRemove.set_sensitive(True)
-        else:
-            self.selected = None
-
-            widgets.window.menuitemRemove.set_sensitive(False)
-            widgets.toolbuttonRemove.set_sensitive(False)
-
-    def run(self):
-        self.search.data = data.clubs
-        self.search.populate_data()
-        self.show_all()

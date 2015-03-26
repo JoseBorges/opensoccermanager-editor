@@ -54,5 +54,12 @@ class Nations(Gtk.Grid):
 
                     self.populate()
 
+    def populate_data(self):
+        self.search.clear_data()
+
+        for nationid, nation in data.nations.items():
+            self.search.liststore.append([nationid, nation.name])
+
     def run(self):
+        self.populate_data()
         self.show_all()

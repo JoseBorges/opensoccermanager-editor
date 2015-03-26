@@ -24,15 +24,100 @@ class Players(Gtk.Grid):
         self.set_border_width(5)
 
         self.search = interface.Search()
+        self.search.searchentry.connect("activate", self.search_activated)
+        self.search.searchentry.connect("changed", self.search_changed)
+        self.search.searchentry.connect("icon-press", self.search_cleared)
+        self.search.treeview.connect("row-activated", self.player_activated)
+        self.search.treeselection.connect("changed", self.player_changed)
         self.attach(self.search, 0, 0, 1, 1)
 
-        gridAttr = Gtk.Grid()
-        gridAttr.set_row_spacing(5)
-        self.attach(gridAttr, 1, 0, 1, 1)
+        self.attributes = Attributes()
+        self.attach(self.attributes, 1, 0, 1, 1)
 
-        # Attribute Editor
+    def search_activated(self, searchentry):
+        criteria = searchentry.get_text()
+
+        if criteria is not "":
+            values = {}
+
+            for playerid, player in data.players.items():
+                both = "%s %s" % (player.first_name, player.second_name)
+
+                for search in (player.second_name, player.first_name, player.common_name, both):
+                    search = ''.join((c for c in unicodedata.normalize('NFD', search) if unicodedata.category(c) != 'Mn'))
+
+                    if re.findall(criteria, search, re.IGNORECASE):
+                        values[playerid] = player
+
+                        break
+
+            self.populate_data(values)
+
+    def search_changed(self, searchentry):
+        if searchentry.get_text() is "":
+            self.populate_data(data.players)
+
+    def search_cleared(self, searchentry, icon, event):
+        if icon == Gtk.EntryIconPosition.SECONDARY:
+            self.populate_data(data.players)
+
+    def player_activated(self, treeview, treepath, treeviewcolumn):
+        model = treeview.get_model()
+        self.playerid = model[treepath][0]
+
+        player = data.players[self.playerid]
+        self.attributes.playerid = self.playerid
+
+        self.attributes.entryFirstName.set_text(player.first_name)
+        self.attributes.entrySecondName.set_text(player.second_name)
+        self.attributes.entryCommonName.set_text(player.common_name)
+
+        self.date_of_birth = player.date_of_birth
+        self.attributes.buttonDateOfBirth.set_label(self.date_of_birth)
+
+        self.nationid = player.nationality
+        nationality = data.nations[self.nationid].name
+        self.attributes.buttonNationality.set_label(nationality)
+
+        self.attributes.populate_attributes()
+
+    def player_changed(self, treeselection):
+        model, treeiter = treeselection.get_selected()
+
+        if treeiter:
+            self.attributes.set_sensitive(True)
+        else:
+            self.attributes.set_sensitive(False)
+
+    def populate_data(self, values):
+        self.search.clear_data()
+
+        for playerid, player in values.items():
+            name = display.name(player)
+
+            self.search.liststore.append([playerid, name])
+
+    def run(self):
+        self.populate_data(values=data.players)
+        self.show_all()
+
+        treepath = Gtk.TreePath.new_first()
+        self.search.treeselection.select_path(treepath)
+        column = self.search.treeviewcolumn
+        self.search.treeview.row_activated(treepath, column)
+
+
+class Attributes(Gtk.Grid):
+    def __init__(self):
+        self.playerid = None
+
+        Gtk.Grid.__init__(self)
+        self.set_row_spacing(5)
+        self.set_column_spacing(5)
+        self.set_sensitive(False)
+
         commonframe = widgets.CommonFrame("Personal")
-        gridAttr.attach(commonframe, 1, 0, 1, 1)
+        self.attach(commonframe, 1, 0, 1, 1)
 
         grid2 = Gtk.Grid()
         grid2.set_row_spacing(5)
@@ -43,10 +128,12 @@ class Players(Gtk.Grid):
         grid2.attach(label, 0, 0, 1, 1)
         self.entryFirstName = Gtk.Entry()
         grid2.attach(self.entryFirstName, 1, 0, 1, 1)
+
         label = widgets.Label("Second Name")
         grid2.attach(label, 0, 1, 1, 1)
         self.entrySecondName = Gtk.Entry()
         grid2.attach(self.entrySecondName, 1, 1, 1, 1)
+
         label = widgets.Label("Common Name")
         grid2.attach(label, 0, 2, 1, 1)
         self.entryCommonName = Gtk.Entry()
@@ -65,7 +152,7 @@ class Players(Gtk.Grid):
         grid2.attach(self.buttonNationality, 1, 4, 1, 1)
 
         commonframe = widgets.CommonFrame("Attributes")
-        gridAttr.attach(commonframe, 1, 1, 1, 1)
+        self.attach(commonframe, 1, 1, 1, 1)
 
         grid3 = Gtk.Grid()
         grid3.set_row_spacing(5)
@@ -84,12 +171,13 @@ class Players(Gtk.Grid):
         cellrenderertext = Gtk.CellRendererText()
 
         self.treeview = Gtk.TreeView()
+        self.treeview.set_hexpand(True)
         self.treeview.set_model(self.liststoreAttributes)
         self.treeview.set_enable_search(False)
         self.treeview.set_search_column(-1)
         self.treeview.connect("row-activated", self.attribute_activated)
         self.treeselectionAttribute = self.treeview.get_selection()
-        self.treeselectionAttribute.connect("changed", self.attribute_treeview_changed)
+        self.treeselectionAttribute.connect("changed", self.attribute_changed)
         scrolledwindow.add(self.treeview)
         treeviewcolumn = Gtk.TreeViewColumn("Year", cellrenderertext, text=1)
         treeviewcolumn.set_sort_column_id(1)
@@ -98,24 +186,20 @@ class Players(Gtk.Grid):
         self.treeview.append_column(treeviewcolumn)
         treeviewcolumn = Gtk.TreeViewColumn("Position", cellrenderertext, text=3)
         self.treeview.append_column(treeviewcolumn)
-        treeviewcolumn = Gtk.TreeViewColumn("KP", cellrenderertext, text=4)
-        self.treeview.append_column(treeviewcolumn)
-        treeviewcolumn = Gtk.TreeViewColumn("TK", cellrenderertext, text=5)
-        self.treeview.append_column(treeviewcolumn)
-        treeviewcolumn = Gtk.TreeViewColumn("PS", cellrenderertext, text=6)
-        self.treeview.append_column(treeviewcolumn)
-        treeviewcolumn = Gtk.TreeViewColumn("SH", cellrenderertext, text=7)
-        self.treeview.append_column(treeviewcolumn)
-        treeviewcolumn = Gtk.TreeViewColumn("HD", cellrenderertext, text=8)
-        self.treeview.append_column(treeviewcolumn)
-        treeviewcolumn = Gtk.TreeViewColumn("PC", cellrenderertext, text=9)
-        self.treeview.append_column(treeviewcolumn)
-        treeviewcolumn = Gtk.TreeViewColumn("ST", cellrenderertext, text=10)
-        self.treeview.append_column(treeviewcolumn)
-        treeviewcolumn = Gtk.TreeViewColumn("BC", cellrenderertext, text=11)
-        self.treeview.append_column(treeviewcolumn)
-        treeviewcolumn = Gtk.TreeViewColumn("SP", cellrenderertext, text=12)
-        self.treeview.append_column(treeviewcolumn)
+
+        for count, skill in enumerate(data.skill_short):
+            label = Gtk.Label("%s" % (skill))
+            label.set_tooltip_text("%s" % (data.skill[count]))
+            label.show()
+
+            cellrenderertext = Gtk.CellRendererText()
+
+            treeviewcolumn = Gtk.TreeViewColumn()
+            treeviewcolumn.set_widget(label)
+            treeviewcolumn.pack_start(cellrenderertext, False)
+            treeviewcolumn.add_attribute(cellrenderertext, "text", count + 4)
+            self.treeview.append_column(treeviewcolumn)
+
         treeviewcolumn = Gtk.TreeViewColumn("Training", cellrenderertext, text=13)
         self.treeview.append_column(treeviewcolumn)
 
@@ -136,7 +220,7 @@ class Players(Gtk.Grid):
         buttonbox.add(self.buttonRemove)
         grid3.attach(buttonbox, 1, 0, 1, 1)
 
-    def attribute_treeview_changed(self, treeselection):
+    def attribute_changed(self, treeselection):
         model, treeiter = treeselection.get_selected()
 
         if treeiter:
@@ -146,32 +230,16 @@ class Players(Gtk.Grid):
             self.buttonEdit.set_sensitive(False)
             self.buttonRemove.set_sensitive(False)
 
-    def search_activated(self, searchentry):
-        criteria = searchentry.get_text()
+    def attribute_activated(self, treeview=None, treepath=None, treeviewcolumn=None):
+        model, treeiter = self.treeselectionAttribute.get_selected()
 
-        if criteria is not "":
-            values = {}
+        if treeiter:
+            attributeid = model[treeiter][0]
 
-            for playerid, player in data.players.items():
-                both = "%s %s" % (player.first_name, player.second_name)
+            dialog = AttributeDialog(parent=widgets.window)
+            dialog.display(playerid=self.playerid, attributeid=attributeid)
 
-                for search in (player.second_name, player.common_name, player.first_name, both):
-                    search = ''.join((c for c in unicodedata.normalize('NFD', search) if unicodedata.category(c) != 'Mn'))
-
-                    if re.findall(criteria, search, re.IGNORECASE):
-                        values[playerid] = player
-
-                        break
-
-            self.populate(items=values)
-
-    def search_cleared(self, searchentry, icon, position):
-        if icon == Gtk.EntryIconPosition.SECONDARY:
-            self.populate(items=data.players)
-
-    def search_updated(self, searchentry):
-        if searchentry.get_text() == "":
-            self.populate(items=data.players)
+            self.populate_attributes()
 
     def date_of_birth_clicked(self, button):
         dialogDOB = dialogs.DateOfBirth(parent=widgets.window)
@@ -218,50 +286,6 @@ class Players(Gtk.Grid):
 
         self.populate_attributes()
 
-    def player_activated(self, treeview, treepath, treeviewcolumn):
-        model = treeview.get_model()
-        self.playerid = model[treepath][0]
-
-        player = data.players[self.playerid]
-
-        self.entryFirstName.set_text(player.first_name)
-        self.entrySecondName.set_text(player.second_name)
-        self.entryCommonName.set_text(player.common_name)
-
-        self.date_of_birth = player.date_of_birth
-        self.buttonDateOfBirth.set_label(self.date_of_birth)
-
-        self.nationid = player.nationality
-        nationality = data.nations[self.nationid].name
-        self.buttonNationality.set_label(nationality)
-
-        self.populate_attributes()
-
-    def attribute_activated(self, treeview=None, treepath=None, treeviewcolumn=None):
-        model, treeiter = self.treeselectionAttribute.get_selected()
-
-        if treeiter:
-            attributeid = model[treeiter][0]
-
-            dialog = AttributeDialog(parent=widgets.window)
-            dialog.display(playerid=self.playerid, attributeid=attributeid)
-
-            self.populate_attributes()
-
-    def selection_changed(self, treeselection):
-        model, treeiter = self.treeselection.get_selected()
-
-        if treeiter:
-            self.selected = model[treeiter][0]
-
-            widgets.window.menuitemRemove.set_sensitive(True)
-            widgets.toolbuttonRemove.set_sensitive(True)
-        else:
-            self.selected = None
-
-            widgets.window.menuitemRemove.set_sensitive(False)
-            widgets.toolbuttonRemove.set_sensitive(False)
-
     def populate_attributes(self):
         '''
         Populate attribute treeview with values for player id.
@@ -289,8 +313,14 @@ class Players(Gtk.Grid):
                                              attribute.training_value,
                                              ])
 
-    def run(self):
-        self.show_all()
+    def retrieve(self):
+        first_name = self.entryFirstName.get_text()
+        second_name = self.entrySecondName.get_text()
+        common_name = self.entryCommonName.get_text()
+
+        values = (first_name, second_name, common_name)
+
+        return values
 
 
 class AttributeDialog(Gtk.Dialog):

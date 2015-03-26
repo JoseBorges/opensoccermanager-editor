@@ -64,7 +64,8 @@ class Window(Gtk.Window):
         mainmenu.menuitemAdd.connect("activate", self.add_data)
         self.menuitemRemove = mainmenu.menuitemRemove
         mainmenu.menuitemRemove.connect("activate", self.remove_data)
-        mainmenu.menuitemYears.connect("activate", self.year_manager)
+        self.menuitemYear = mainmenu.menuitemYear
+        mainmenu.menuitemYear.connect("activate", self.year_manager)
         mainmenu.menuitemPreferences.connect("activate", self.open_preferences)
         mainmenu.menuitemPrevious.connect("activate", self.move_notebook_page, -1)
         mainmenu.menuitemNext.connect("activate", self.move_notebook_page, 1)
@@ -354,7 +355,7 @@ class MainEditor(Gtk.Notebook):
         widgets.window.menuitemImport.set_sensitive(True)
         widgets.window.menuitemExport.set_sensitive(True)
         widgets.window.menuitemAdd.set_sensitive(True)
-        widgets.window.menuitemRemove.set_sensitive(True)
+        widgets.window.menuitemYear.set_sensitive(True)
         widgets.window.toolbar.set_sensitive(True)
 
         players.run()

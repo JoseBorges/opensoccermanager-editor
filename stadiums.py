@@ -54,7 +54,12 @@ class Stadiums(Gtk.Grid):
 
                     self.populate()
 
+    def populate_data(self):
+        self.search.clear_data()
+
+        for stadiumid, stadium in data.stadiums.items():
+            self.search.liststore.append([stadiumid, stadium.name])
+
     def run(self):
-        self.search.data = data.stadiums
-        self.search.populate_data()
+        self.populate_data()
         self.show_all()
