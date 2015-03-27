@@ -103,20 +103,20 @@ class Attributes(Gtk.Grid):
         self.set_column_spacing(5)
         self.set_sensitive(False)
 
-        grid2 = Gtk.Grid()
-        grid2.set_row_spacing(5)
-        grid2.set_column_spacing(5)
-        self.attach(grid2, 0, 0, 1, 1)
+        grid1 = Gtk.Grid()
+        grid1.set_row_spacing(5)
+        grid1.set_column_spacing(5)
+        self.attach(grid1, 0, 0, 1, 1)
 
         label = widgets.Label("Name")
-        grid2.attach(label, 0, 0, 1, 1)
+        grid1.attach(label, 0, 0, 1, 1)
         self.entryName = Gtk.Entry()
-        grid2.attach(self.entryName, 1, 0, 1, 1)
+        grid1.attach(self.entryName, 1, 0, 1, 1)
 
         label = widgets.Label("Nickname")
-        grid2.attach(label, 0, 1, 1, 1)
+        grid1.attach(label, 0, 1, 1, 1)
         self.entryNickname = Gtk.Entry()
-        grid2.attach(self.entryNickname, 1, 1, 1, 1)
+        grid1.attach(self.entryNickname, 1, 1, 1, 1)
 
         commonframe = widgets.CommonFrame("Attributes")
         self.attach(commonframe, 0, 1, 1, 1)
@@ -124,16 +124,16 @@ class Attributes(Gtk.Grid):
         self.liststoreAttributes = Gtk.ListStore(int, int, str, str, str, int)
         cellrenderertext = Gtk.CellRendererText()
 
-        grid3 = Gtk.Grid()
-        grid3.set_row_spacing(5)
-        grid3.set_column_spacing(5)
-        commonframe.insert(grid3)
+        grid2 = Gtk.Grid()
+        grid2.set_row_spacing(5)
+        grid2.set_column_spacing(5)
+        commonframe.insert(grid2)
 
         scrolledwindow = Gtk.ScrolledWindow()
         scrolledwindow.set_size_request(-1, 120)
         scrolledwindow.set_policy(Gtk.PolicyType.NEVER,
                                   Gtk.PolicyType.AUTOMATIC)
-        grid3.attach(scrolledwindow, 0, 0, 1, 1)
+        grid2.attach(scrolledwindow, 0, 0, 1, 1)
 
         self.treeview = Gtk.TreeView()
         self.treeview.set_hexpand(True)
@@ -171,7 +171,7 @@ class Attributes(Gtk.Grid):
         self.buttonRemove.set_sensitive(False)
         #self.buttonRemove.connect("clicked", self.remove_attribute)
         buttonbox.add(self.buttonRemove)
-        grid3.attach(buttonbox, 1, 0, 1, 1)
+        grid2.attach(buttonbox, 1, 0, 1, 1)
 
     def attribute_changed(self, treeselection):
         model, treeiter = treeselection.get_selected()
