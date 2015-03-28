@@ -40,46 +40,5 @@ class Search(Gtk.Grid):
         self.searchentry = Gtk.SearchEntry()
         self.attach(self.searchentry, 0, 1, 1, 1)
 
-    def search_activated(self, searchentry):
-        criteria = searchentry.get_text()
-
-        data = self.data
-
-        if criteria is not "":
-            values = {}
-
-            for itemid, item in data.items():
-                for search in (item.name,):
-                    search = ''.join((c for c in unicodedata.normalize('NFD', search) if unicodedata.category(c) != 'Mn'))
-
-                    if re.findall(criteria, search, re.IGNORECASE):
-                        values[itemid] = item
-
-                        break
-
-            self.populate_data(data=values)
-
-    def search_changed(self, searchentry):
-        if searchentry.get_text() is "":
-            self.populate_data()
-
-    def search_cleared(self, searchentry, icon, event):
-        if icon == Gtk.EntryIconPosition.SECONDARY:
-            self.populate_data()
-
-    def treeselection_changed(self, treeselection):
-        model, treeiter = self.treeselection.get_selected()
-
-        if treeiter:
-            self.selected = model[treeiter][0]
-
-            widgets.window.menuitemRemove.set_sensitive(True)
-            widgets.toolbuttonRemove.set_sensitive(True)
-        else:
-            self.selected = None
-
-            widgets.window.menuitemRemove.set_sensitive(False)
-            widgets.toolbuttonRemove.set_sensitive(False)
-
     def clear_data(self):
         self.liststore.clear()
