@@ -30,7 +30,15 @@ class Nations(Gtk.Grid):
         self.attach(self.search, 0, 0, 1, 1)
 
         self.attributes = Attributes()
+        self.attributes.entryName.connect("focus-out-event", self.name_changed)
         self.attach(self.attributes, 1, 0, 1, 1)
+
+    def name_changed(self, entry, event):
+        name = entry.get_text()
+
+        if data.nations[self.selected].name != name:
+            data.nations[self.selected].name = name
+            self.populate_data(values=data.nations)
 
     def search_activated(self, searchentry):
         criteria = searchentry.get_text()
@@ -99,8 +107,10 @@ class Nations(Gtk.Grid):
         model, treeiter = treeselection.get_selected()
 
         if treeiter:
+            self.selected = model[treeiter][0]
             self.attributes.set_sensitive(True)
         else:
+            self.selected = None
             self.attributes.clear_fields()
             self.attributes.set_sensitive(False)
 

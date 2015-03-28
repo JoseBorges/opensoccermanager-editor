@@ -43,42 +43,42 @@ class Window(Gtk.Window):
         self.grid = Gtk.Grid()
         self.add(self.grid)
 
-        mainmenu = menu.Menu()
-        self.grid.attach(mainmenu, 0, 0, 1, 1)
+        menubar = menu.Menu()
+        self.grid.attach(menubar, 0, 0, 1, 1)
 
-        self.menuView = mainmenu.menuView
-        self.menuTools = mainmenu.menuTools
+        self.menuView = menubar.menuView
+        self.menuTools = menubar.menuTools
 
-        mainmenu.menuitemNew.connect("activate", new_database)
-        mainmenu.menuitemOpen.connect("activate", new_database, 1)
-        self.menuitemSave = mainmenu.menuitemSave
-        mainmenu.menuitemSave.connect("activate", self.save_database)
-        self.menuitemSaveAs = mainmenu.menuitemSaveAs
-        mainmenu.menuitemSaveAs.connect("activate", self.save_database)
-        self.menuitemImport = mainmenu.menuitemImport
-        mainmenu.menuitemImport.connect("activate", self.data_import)
-        self.menuitemExport = mainmenu.menuitemExport
-        mainmenu.menuitemExport.connect("activate", self.data_export)
-        mainmenu.menuitemQuit.connect("activate", self.close_application)
-        self.menuitemAdd = mainmenu.menuitemAdd
-        mainmenu.menuitemAdd.connect("activate", self.add_data)
-        self.menuitemRemove = mainmenu.menuitemRemove
-        mainmenu.menuitemRemove.connect("activate", self.remove_data)
-        self.menuitemYear = mainmenu.menuitemYear
-        mainmenu.menuitemYear.connect("activate", self.year_manager)
-        mainmenu.menuitemPreferences.connect("activate", self.open_preferences)
-        mainmenu.menuitemPrevious.connect("activate", self.move_notebook_page, -1)
-        mainmenu.menuitemNext.connect("activate", self.move_notebook_page, 1)
-        mainmenu.menuitemPlayers.connect("activate", self.switch_notebook_page, 0)
-        mainmenu.menuitemClubs.connect("activate", self.switch_notebook_page, 1)
-        mainmenu.menuitemNations.connect("activate", self.switch_notebook_page, 2)
-        mainmenu.menuitemStadiums.connect("activate", self.switch_notebook_page, 3)
-        self.menuitemValidate = mainmenu.menuitemValidate
-        mainmenu.menuitemValidate.connect("activate", self.validate_database)
-        self.menuitemFilter = mainmenu.menuitemFilter
-        mainmenu.menuitemFilter.connect("activate", self.filter_data)
-        mainmenu.menuitemClear.connect("activate", self.clear_data)
-        mainmenu.menuitemAbout.connect("activate", self.about_dialog)
+        menubar.menuitemNew.connect("activate", mainmenu.new_database)
+        menubar.menuitemOpen.connect("activate", mainmenu.new_database, 1)
+        self.menuitemSave = menubar.menuitemSave
+        menubar.menuitemSave.connect("activate", self.save_database)
+        self.menuitemSaveAs = menubar.menuitemSaveAs
+        menubar.menuitemSaveAs.connect("activate", self.save_database)
+        self.menuitemImport = menubar.menuitemImport
+        menubar.menuitemImport.connect("activate", self.data_import)
+        self.menuitemExport = menubar.menuitemExport
+        menubar.menuitemExport.connect("activate", self.data_export)
+        menubar.menuitemQuit.connect("activate", self.close_application)
+        self.menuitemAdd = menubar.menuitemAdd
+        menubar.menuitemAdd.connect("activate", self.add_data)
+        self.menuitemRemove = menubar.menuitemRemove
+        menubar.menuitemRemove.connect("activate", self.remove_data)
+        self.menuitemYear = menubar.menuitemYear
+        menubar.menuitemYear.connect("activate", self.year_manager)
+        menubar.menuitemPreferences.connect("activate", self.open_preferences)
+        menubar.menuitemPrevious.connect("activate", self.move_notebook_page, -1)
+        menubar.menuitemNext.connect("activate", self.move_notebook_page, 1)
+        menubar.menuitemPlayers.connect("activate", self.switch_notebook_page, 0)
+        menubar.menuitemClubs.connect("activate", self.switch_notebook_page, 1)
+        menubar.menuitemNations.connect("activate", self.switch_notebook_page, 2)
+        menubar.menuitemStadiums.connect("activate", self.switch_notebook_page, 3)
+        self.menuitemValidate = menubar.menuitemValidate
+        menubar.menuitemValidate.connect("activate", self.validate_database)
+        self.menuitemFilter = menubar.menuitemFilter
+        menubar.menuitemFilter.connect("activate", self.filter_data)
+        menubar.menuitemClear.connect("activate", self.clear_data)
+        menubar.menuitemAbout.connect("activate", self.about_dialog)
 
         self.toolbar = Gtk.Toolbar()
         self.toolbar.set_sensitive(False)
@@ -132,12 +132,12 @@ class Window(Gtk.Window):
                 if show:
                     filtered[playerid] = player
 
-            objPlayers.populate(items=filtered)
+            players.populate(items=filtered)
 
         filter_dialog.destroy()
 
     def clear_data(self, menuitem):
-        objPlayers.populate()
+        players.populate()
 
     def save_database(self, widget):
         if widget in (self.menuitemSave, self.toolbuttonSave):
@@ -180,7 +180,7 @@ class Window(Gtk.Window):
         page = maineditor.get_current_page()
 
         if page == 0:
-            objPlayers.add_player()
+            players.add_player()
 
     def remove_data(self, toolbutton):
         page = maineditor.get_current_page()
@@ -192,33 +192,28 @@ class Window(Gtk.Window):
 
         if state:
             if page == 0:
-                for item in players.selected:
-                    del(data.players[item])
-
-                players.populate()
-                data.unsaved = True
+                del data.players[players.selected]
+                players.populate_data(values=data.players)
             elif page == 1:
-                keys = [player.club for player in data.players.values()]
+                keys = []
 
-                if [item for item in clubs.selected if item in keys]:
+                for player in data.players.values():
+                    for attribute in player.attributes.values():
+                        keys.append(attribute.club)
+
+                if clubs.selected in keys:
                     dialogs.error(0)
                 else:
-                    for item in clubs.selected:
-                        del(data.clubs[item])
-
-                    clubs.populate()
-                    data.unsaved = True
+                    del data.clubs[clubs.selected]
+                    clubs.populate_data(values=data.clubs)
             elif page == 2:
                 keys = [player.nationality for player in data.players.values()]
 
-                if [item for item in nations.selected if item in keys]:
+                if nations.selected in keys:
                     dialogs.error(1)
                 else:
-                    for item in nations.selected:
-                        del(data.nations[item])
-
-                    nations.populate()
-                    data.unsaved = True
+                    del data.nations[nations.selected]
+                    nations.populate_data(values=data.nations)
             elif page == 3:
                 keys = [club.stadium for club in data.clubs.values()]
 
@@ -226,10 +221,11 @@ class Window(Gtk.Window):
                     dialogs.error(2)
                 else:
                     for item in stadiums.selected:
-                        del(data.stadiums[stadiums.selected])
+                        del data.stadiums[stadiums.selected]
 
                     stadiums.populate()
-                    data.unsaved = True
+
+            data.unsaved = True
 
     def move_notebook_page(self, menuitem, direction):
         if direction == -1:
@@ -301,6 +297,8 @@ class Window(Gtk.Window):
 
 class MainMenu(Gtk.Grid):
     def __init__(self):
+        self.active = False
+
         Gtk.Grid.__init__(self)
         self.set_hexpand(True)
         self.set_vexpand(True)
@@ -321,7 +319,7 @@ class MainMenu(Gtk.Grid):
         buttonNew.set_image(image)
         buttonNew.set_image_position(Gtk.PositionType.TOP)
         buttonNew.set_tooltip_text("Create a new database file")
-        buttonNew.connect("clicked", new_database)
+        buttonNew.connect("clicked", self.new_database)
         self.attach(buttonNew, 1, 1, 1, 1)
 
         image = Gtk.Image.new_from_icon_name("gtk-open",
@@ -332,8 +330,27 @@ class MainMenu(Gtk.Grid):
         buttonOpen.set_image(image)
         buttonOpen.set_image_position(Gtk.PositionType.TOP)
         buttonOpen.set_tooltip_text("Open existing database file")
-        buttonOpen.connect("clicked", new_database, 1)
+        buttonOpen.connect("clicked", self.new_database, 1)
         self.attach(buttonOpen, 2, 1, 1, 1)
+
+    def new_database(self, widget=None, mode=0):
+        if mode == 0:
+            new_database = dialogs.NewDatabase()
+            filename = new_database.display()
+        elif mode == 1:
+            filename = dialogs.file_dialog(mode=0)
+
+        if filename:
+            if data.db.connect(filename):
+                widgets.window.update_title(filename)
+
+                if not self.active:
+                    widgets.window.grid.remove(mainmenu)
+                    self.active = True
+
+                data.db.load()
+
+                maineditor.run()
 
     def run(self):
         self.show_all()
@@ -341,6 +358,8 @@ class MainMenu(Gtk.Grid):
 
 class MainEditor(Gtk.Notebook):
     def __init__(self):
+        self.active = False
+
         Gtk.Notebook.__init__(self)
         self.set_hexpand(True)
         self.set_vexpand(True)
@@ -358,17 +377,20 @@ class MainEditor(Gtk.Notebook):
         widgets.window.menuitemYear.set_sensitive(True)
         widgets.window.toolbar.set_sensitive(True)
 
-        objPlayers.run()
+        players.run()
         clubs.run()
         nations.run()
         stadiums.run()
-        self.add_tabs()
+
+        if not self.active:
+            self.add_tabs()
+            self.active = True
 
         self.show_all()
 
     def add_tabs(self):
         widgets.window.grid.attach(self, 0, 3, 1, 1)
-        self.append_page(objPlayers, widgets.Label("_Players"))
+        self.append_page(players, widgets.Label("_Players"))
         self.append_page(clubs, widgets.Label("_Clubs"))
         self.append_page(nations, widgets.Label("_Nations"))
         self.append_page(stadiums, widgets.Label("_Stadiums"))
@@ -382,29 +404,12 @@ class MainEditor(Gtk.Notebook):
             widgets.toolbuttonRemove.set_sensitive(True)
 
 
-def new_database(widget=None, mode=0):
-    if mode == 0:
-        new_database = dialogs.NewDatabase()
-        filename = new_database.display()
-    elif mode == 1:
-        filename = dialogs.file_dialog(mode=0)
-
-    if filename:
-        if data.db.connect(filename):
-            widgets.window.update_title(filename)
-            widgets.window.grid.remove(mainmenu)
-
-            data.db.load()
-
-            maineditor.run()
-
-
 data.options = preferences.Preferences()
 
-widgets.window = Window()
 mainmenu = MainMenu()
+widgets.window = Window()
 maineditor = MainEditor()
-objPlayers = players.Players()
+players = players.Players()
 clubs = clubs.Clubs()
 nations = nations.Nations()
 stadiums = stadiums.Stadiums()

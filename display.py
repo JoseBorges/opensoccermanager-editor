@@ -28,7 +28,7 @@ def age(date_of_birth):
 
 
 def club(clubid):
-    if clubid != 0:
+    if clubid:
         club = data.clubs[clubid].name
     else:
         club = "Free Agent"

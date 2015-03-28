@@ -56,11 +56,11 @@ def player(item):
 
     for data in db.cursor.fetchall():
         attributes = Attributes()
-        attributes.attributeid = data[0]
+        attributeid = data[0]
         attributes.year = data[2]
 
         if not data[3]:
-            attributes.club = 0
+            attributes.club = None
         else:
             attributes.club = data[3]
 
@@ -76,7 +76,7 @@ def player(item):
         attributes.set_pieces = data[13]
         attributes.training_value = data[14]
 
-        player.attributes[attributes.attributeid] = attributes
+        player.attributes[attributeid] = attributes
 
     players[playerid] = player
 

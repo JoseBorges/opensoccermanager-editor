@@ -24,7 +24,7 @@ class Database:
 
             self.cursor.execute("CREATE TABLE stadium (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, north INTEGER, east INTEGER, south INTEGER, west INTEGER, northeast INTEGER, northwest INTEGER, southeast INTEGER, southwest INTEGER, northbox INTEGER, eastbox INTEGER, southbox INTEGER, westbox INTEGER, northroof BOOLEAN, eastroof BOOLEAN, southroof BOOLEAN, westroof BOOLEAN, northeastroof BOOLEAN, northwestroof BOOLEAN, southeastroof BOOLEAN, southwestroof BOOLEAN, northseating BOOLEAN, eastseating BOOLEAN, southseating BOOLEAN, westseating BOOLEAN, northeastseating BOOLEAN, northwestseating BOOLEAN, southeastseating BOOLEAN, southwestseating BOOLEAN, stall INTEGER, programme INTEGER, smallshop INTEGER, largeshop INTEGER, bar INTEGER, burgerbar INTEGER, cafe INTEGER, restaurant INTEGER)")
 
-            self.cursor.execute("CREATE TABLE nation (id INTEGER PRIMARY KEY AUTOINCREMENT, nation TEXT, denonym TEXT)")
+            self.cursor.execute("CREATE TABLE nation (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, denonym TEXT)")
 
             self.cursor.execute("CREATE TABLE club (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, nickname TEXT)")
 
@@ -85,7 +85,7 @@ class Database:
 
         for nationid, nation in data.nations.items():
             if nationid in keys:
-                self.cursor.execute("UPDATE nation SET nation=?, denonym=? WHERE id=?", (nation.name, nation.denonym, nationid))
+                self.cursor.execute("UPDATE nation SET name=?, denonym=? WHERE id=?", (nation.name, nation.denonym, nationid))
             elif nationid not in keys:
                 self.cursor.execute("INSERT INTO nation VALUES (?, ?, ?)", (nationid, nation.name, nation.denonym))
 
@@ -94,6 +94,7 @@ class Database:
                 self.cursor.execute("DELETE FROM nation WHERE id=?", (nationid,))
 
         # Stadium
+        '''
         results = self.cursor.execute("SELECT * FROM stadium")
         content = results.fetchall()
 
@@ -114,6 +115,7 @@ class Database:
         for stadiumid in keys:
             if stadiumid not in data.stadiums.keys():
                 self.cursor.execute("DELETE FROM stadium WHERE id=?", (stadiumid,))
+
 
         # Club
         results = self.cursor.execute("SELECT * FROM club")
@@ -149,5 +151,12 @@ class Database:
         for playerid in keys:
             if playerid not in data.players.keys():
                 self.cursor.execute("DELETE FROM player WHERE id=?", (playerid,))
+
+        # Player attributes
+        results = self.cursor.execute("SELECT * FROM playerattr")
+        content = results.fetchall()
+
+        keys = [item[0] for item in content]
+        '''
 
         self.connection.commit()

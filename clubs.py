@@ -74,8 +74,12 @@ class Clubs(Gtk.Grid):
         model, treeiter = treeselection.get_selected()
 
         if treeiter:
+            self.selected = model[treeiter][0]
+            widgets.toolbuttonRemove.set_sensitive(True)
             self.attributes.set_sensitive(True)
         else:
+            self.selected = None
+            widgets.toolbuttonRemove.set_sensitive(False)
             self.attributes.clear_fields()
             self.attributes.set_sensitive(False)
 

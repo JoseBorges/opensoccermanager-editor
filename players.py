@@ -36,7 +36,6 @@ class Players(Gtk.Grid):
 
     def add_player(self):
         player = data.Player()
-        data.players[999] = player
 
         self.populate_data(values=data.players)
 
@@ -78,15 +77,15 @@ class Players(Gtk.Grid):
         self.attributes.entrySecondName.set_text(player.second_name)
         self.attributes.entryCommonName.set_text(player.common_name)
 
-        self.date_of_birth = player.date_of_birth
+        self.attributes.date_of_birth = player.date_of_birth
 
-        if self.date_of_birth:
-            self.attributes.buttonDateOfBirth.set_label(self.date_of_birth)
+        if self.attributes.date_of_birth:
+            self.attributes.buttonDateOfBirth.set_label(player.date_of_birth)
 
-        self.nationid = player.nationality
+        self.attributes.nationid = player.nationality
 
-        if self.nationid:
-            nationality = data.nations[self.nationid].name
+        if self.attributes.nationid:
+            nationality = data.nations[player.nationality].name
             self.attributes.buttonNationality.set_label(nationality)
 
         self.attributes.populate_attributes()
@@ -103,8 +102,6 @@ class Players(Gtk.Grid):
             widgets.toolbuttonRemove.set_sensitive(False)
             self.attributes.clear_fields()
             self.attributes.set_sensitive(False)
-
-        print(self.selected)
 
     def populate_data(self, values):
         self.search.clear_data()
@@ -138,51 +135,51 @@ class Attributes(Gtk.Grid):
         commonframe = widgets.CommonFrame("Personal")
         self.attach(commonframe, 1, 0, 1, 1)
 
+        grid1 = Gtk.Grid()
+        grid1.set_row_spacing(5)
+        grid1.set_column_spacing(5)
+        commonframe.insert(grid1)
+
+        label = widgets.Label("First Name")
+        grid1.attach(label, 0, 0, 1, 1)
+        self.entryFirstName = Gtk.Entry()
+        grid1.attach(self.entryFirstName, 1, 0, 1, 1)
+
+        label = widgets.Label("Second Name")
+        grid1.attach(label, 0, 1, 1, 1)
+        self.entrySecondName = Gtk.Entry()
+        grid1.attach(self.entrySecondName, 1, 1, 1, 1)
+
+        label = widgets.Label("Common Name")
+        grid1.attach(label, 0, 2, 1, 1)
+        self.entryCommonName = Gtk.Entry()
+        grid1.attach(self.entryCommonName, 1, 2, 1, 1)
+
+        label = widgets.Label("Date Of Birth")
+        grid1.attach(label, 0, 3, 1, 1)
+        self.buttonDateOfBirth = Gtk.Button("")
+        self.buttonDateOfBirth.connect("clicked", self.date_of_birth_clicked)
+        grid1.attach(self.buttonDateOfBirth, 1, 3, 1, 1)
+
+        label = widgets.Label("Nationality")
+        grid1.attach(label, 0, 4, 1, 1)
+        self.buttonNationality = Gtk.Button("")
+        self.buttonNationality.connect("clicked", self.nation_clicked)
+        grid1.attach(self.buttonNationality, 1, 4, 1, 1)
+
+        commonframe = widgets.CommonFrame("Attributes")
+        self.attach(commonframe, 1, 1, 1, 1)
+
         grid2 = Gtk.Grid()
         grid2.set_row_spacing(5)
         grid2.set_column_spacing(5)
         commonframe.insert(grid2)
 
-        label = widgets.Label("First Name")
-        grid2.attach(label, 0, 0, 1, 1)
-        self.entryFirstName = Gtk.Entry()
-        grid2.attach(self.entryFirstName, 1, 0, 1, 1)
-
-        label = widgets.Label("Second Name")
-        grid2.attach(label, 0, 1, 1, 1)
-        self.entrySecondName = Gtk.Entry()
-        grid2.attach(self.entrySecondName, 1, 1, 1, 1)
-
-        label = widgets.Label("Common Name")
-        grid2.attach(label, 0, 2, 1, 1)
-        self.entryCommonName = Gtk.Entry()
-        grid2.attach(self.entryCommonName, 1, 2, 1, 1)
-
-        label = widgets.Label("Date Of Birth")
-        grid2.attach(label, 0, 3, 1, 1)
-        self.buttonDateOfBirth = Gtk.Button("")
-        self.buttonDateOfBirth.connect("clicked", self.date_of_birth_clicked)
-        grid2.attach(self.buttonDateOfBirth, 1, 3, 1, 1)
-
-        label = widgets.Label("Nationality")
-        grid2.attach(label, 0, 4, 1, 1)
-        self.buttonNationality = Gtk.Button("")
-        self.buttonNationality.connect("clicked", self.nation_clicked)
-        grid2.attach(self.buttonNationality, 1, 4, 1, 1)
-
-        commonframe = widgets.CommonFrame("Attributes")
-        self.attach(commonframe, 1, 1, 1, 1)
-
-        grid3 = Gtk.Grid()
-        grid3.set_row_spacing(5)
-        grid3.set_column_spacing(5)
-        commonframe.insert(grid3)
-
         scrolledwindow = Gtk.ScrolledWindow()
         scrolledwindow.set_size_request(-1, 120)
         scrolledwindow.set_policy(Gtk.PolicyType.NEVER,
                                   Gtk.PolicyType.AUTOMATIC)
-        grid3.attach(scrolledwindow, 0, 0, 1, 1)
+        grid2.attach(scrolledwindow, 0, 0, 1, 1)
 
         self.liststoreAttributes = Gtk.ListStore(int, int, str, str, int, int,
                                                  int, int, int, int, int, int,
@@ -237,7 +234,7 @@ class Attributes(Gtk.Grid):
         self.buttonRemove.set_sensitive(False)
         self.buttonRemove.connect("clicked", self.remove_attribute)
         buttonbox.add(self.buttonRemove)
-        grid3.attach(buttonbox, 1, 0, 1, 1)
+        grid2.attach(buttonbox, 1, 0, 1, 1)
 
     def attribute_changed(self, treeselection):
         model, treeiter = treeselection.get_selected()

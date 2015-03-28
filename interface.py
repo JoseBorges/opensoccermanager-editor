@@ -4,7 +4,6 @@ from gi.repository import Gtk
 import re
 import unicodedata
 
-import data
 import widgets
 
 

@@ -47,6 +47,9 @@ class CommonFrame(Gtk.Frame):
 
 
 class TreeViewColumn(Gtk.TreeViewColumn):
+    '''
+    Column setting model column and title.
+    '''
     def __init__(self, title="", column=0):
         Gtk.TreeViewColumn.__init__(self)
 
@@ -57,4 +60,3 @@ class TreeViewColumn(Gtk.TreeViewColumn):
 
         self.pack_start(cellrenderertext, False)
         self.add_attribute(cellrenderertext, "text", column)
-        self.set_sort_column_id(column)
