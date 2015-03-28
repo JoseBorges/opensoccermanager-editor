@@ -16,11 +16,19 @@ stadiums = {}
 
 
 class Player:
-    pass
+    def __init__(self):
+        self.first_name = ""
+        self.second_name = ""
+        self.common_name = ""
+        self.date_of_birth = None
+        self.nationality = None
+
+        self.attributes = {}
 
 
 class Club:
-    pass
+    def __init__(self):
+        self.attributes = {}
 
 
 class Nation:
@@ -37,16 +45,14 @@ class Attributes:
 
 def player(item):
     player = Player()
-    player.playerid = item[0]
+    playerid = item[0]
     player.first_name = item[1]
     player.second_name = item[2]
     player.common_name = item[3]
     player.date_of_birth = item[4]
     player.nationality = item[5]
 
-    player.attributes = {}
-
-    db.cursor.execute("SELECT * FROM playerattr WHERE player=?", (player.playerid,))
+    db.cursor.execute("SELECT * FROM playerattr WHERE player=?", (playerid,))
 
     for data in db.cursor.fetchall():
         attributes = Attributes()
@@ -72,18 +78,16 @@ def player(item):
 
         player.attributes[attributes.attributeid] = attributes
 
-    players[player.playerid] = player
+    players[playerid] = player
 
 
 def club(item):
     club = Club()
-    club.clubid = item[0]
+    clubid = item[0]
     club.name = item[1]
     club.nickname = item[2]
 
-    club.attributes = {}
-
-    db.cursor.execute("SELECT * FROM clubattr WHERE club=?", (club.clubid,))
+    db.cursor.execute("SELECT * FROM clubattr WHERE club=?", (clubid,))
 
     for data in db.cursor.fetchall():
         attributes = Attributes()
@@ -96,20 +100,20 @@ def club(item):
 
         club.attributes[attributes.attributeid] = attributes
 
-    clubs[club.clubid] = club
+    clubs[clubid] = club
 
 
 def nation(item):
     nation = Nation()
-    nation.nationid = item[0]
+    nationid = item[0]
     nation.name = item[1]
     nation.denonym = item[2]
-    nations[nation.nationid] = nation
+    nations[nationid] = nation
 
 
 def stadium(item):
     stadium = Stadium()
-    stadium.stadiumid = item[0]
+    stadiumid = item[0]
     stadium.name = item[1]
     capacity = list(map(int, item[2:14]))
     stadium.capacity = sum(capacity)
@@ -118,7 +122,7 @@ def stadium(item):
     stadium.roof = list(map(bool, item[22:30]))
     stadium.box = list(map(int, item[10:14]))
     stadium.buildings = list(map(int, item[30:38]))
-    stadiums[stadium.stadiumid] = stadium
+    stadiums[stadiumid] = stadium
 
 
 positions = ("GK", "DL", "DR", "DC", "D", "ML", "MR", "MC", "M", "AS", "AF")

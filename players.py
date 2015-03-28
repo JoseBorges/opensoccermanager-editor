@@ -34,6 +34,12 @@ class Players(Gtk.Grid):
         self.attributes = Attributes()
         self.attach(self.attributes, 1, 0, 1, 1)
 
+    def add_player(self):
+        player = data.Player()
+        data.players[999] = player
+
+        self.populate_data(values=data.players)
+
     def search_activated(self, searchentry):
         criteria = searchentry.get_text()
 
@@ -44,7 +50,7 @@ class Players(Gtk.Grid):
                 both = "%s %s" % (player.first_name, player.second_name)
 
                 for search in (player.second_name, player.first_name, player.common_name, both):
-                    search = ''.join((c for c in unicodedata.normalize('NFD', search) if unicodedata.category(c) != 'Mn'))
+                    search = "".join((c for c in unicodedata.normalize("NFD", search) if unicodedata.category(c) != "Mn"))
 
                     if re.findall(criteria, search, re.IGNORECASE):
                         values[playerid] = player
@@ -73,11 +79,15 @@ class Players(Gtk.Grid):
         self.attributes.entryCommonName.set_text(player.common_name)
 
         self.date_of_birth = player.date_of_birth
-        self.attributes.buttonDateOfBirth.set_label(self.date_of_birth)
+
+        if self.date_of_birth:
+            self.attributes.buttonDateOfBirth.set_label(self.date_of_birth)
 
         self.nationid = player.nationality
-        nationality = data.nations[self.nationid].name
-        self.attributes.buttonNationality.set_label(nationality)
+
+        if self.nationid:
+            nationality = data.nations[self.nationid].name
+            self.attributes.buttonNationality.set_label(nationality)
 
         self.attributes.populate_attributes()
 
@@ -85,9 +95,16 @@ class Players(Gtk.Grid):
         model, treeiter = treeselection.get_selected()
 
         if treeiter:
+            self.selected = model[treeiter][0]
+            widgets.toolbuttonRemove.set_sensitive(True)
             self.attributes.set_sensitive(True)
         else:
+            self.selected = None
+            widgets.toolbuttonRemove.set_sensitive(False)
+            self.attributes.clear_fields()
             self.attributes.set_sensitive(False)
+
+        print(self.selected)
 
     def populate_data(self, values):
         self.search.clear_data()
@@ -104,7 +121,9 @@ class Players(Gtk.Grid):
         treepath = Gtk.TreePath.new_first()
         self.search.treeselection.select_path(treepath)
         column = self.search.treeviewcolumn
-        self.search.treeview.row_activated(treepath, column)
+
+        if self.search.treeselection.path_is_selected(treepath):
+            self.search.treeview.row_activated(treepath, column)
 
 
 class Attributes(Gtk.Grid):
@@ -286,6 +305,14 @@ class Attributes(Gtk.Grid):
 
         self.populate_attributes()
 
+    def clear_fields(self):
+        self.entryFirstName.set_text("")
+        self.entrySecondName.set_text("")
+        self.entryCommonName.set_text("")
+        self.buttonDateOfBirth.set_label("")
+        self.buttonNationality.set_label("")
+        self.liststoreAttributes.clear()
+
     def populate_attributes(self):
         '''
         Populate attribute treeview with values for player id.
@@ -326,7 +353,7 @@ class Attributes(Gtk.Grid):
 class AttributeDialog(Gtk.Dialog):
     def __init__(self, parent):
         Gtk.Dialog.__init__(self)
-        self.set_title("Edit Attributes")
+
         self.set_transient_for(parent)
         self.set_border_width(5)
         self.add_button("_Cancel", Gtk.ResponseType.CANCEL)

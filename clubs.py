@@ -41,7 +41,7 @@ class Clubs(Gtk.Grid):
 
             for clubid, club in data.clubs.items():
                 for search in (club.name,):
-                    search = ''.join((c for c in unicodedata.normalize('NFD', search) if unicodedata.category(c) != 'Mn'))
+                    search = "".join((c for c in unicodedata.normalize("NFD", search) if unicodedata.category(c) != "Mn"))
 
                     if re.findall(criteria, search, re.IGNORECASE):
                         values[clubid] = club
@@ -76,6 +76,7 @@ class Clubs(Gtk.Grid):
         if treeiter:
             self.attributes.set_sensitive(True)
         else:
+            self.attributes.clear_fields()
             self.attributes.set_sensitive(False)
 
     def populate_data(self, values):
@@ -91,7 +92,9 @@ class Clubs(Gtk.Grid):
         treepath = Gtk.TreePath.new_first()
         self.search.treeselection.select_path(treepath)
         column = self.search.treeviewcolumn
-        self.search.treeview.row_activated(treepath, column)
+
+        if self.search.treeselection.path_is_selected(treepath):
+            self.search.treeview.row_activated(treepath, column)
 
 
 class Attributes(Gtk.Grid):
@@ -193,6 +196,11 @@ class Attributes(Gtk.Grid):
             dialog.display(clubid=self.clubid, attributeid=attributeid)
 
             self.populate_attributes()
+
+    def clear_fields(self):
+        self.entryName.set_text("")
+        self.entryNickname.set_text("")
+        self.liststoreAttributes.clear()
 
     def populate_attributes(self):
         '''

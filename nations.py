@@ -40,7 +40,7 @@ class Nations(Gtk.Grid):
 
             for clubid, club in data.nations.items():
                 for search in (club.name,):
-                    search = ''.join((c for c in unicodedata.normalize('NFD', search) if unicodedata.category(c) != 'Mn'))
+                    search = "".join((c for c in unicodedata.normalize("NFD", search) if unicodedata.category(c) != "Mn"))
 
                     if re.findall(criteria, search, re.IGNORECASE):
                         values[clubid] = club
@@ -101,6 +101,7 @@ class Nations(Gtk.Grid):
         if treeiter:
             self.attributes.set_sensitive(True)
         else:
+            self.attributes.clear_fields()
             self.attributes.set_sensitive(False)
 
     def populate_data(self, values):
@@ -116,7 +117,9 @@ class Nations(Gtk.Grid):
         treepath = Gtk.TreePath.new_first()
         self.search.treeselection.select_path(treepath)
         column = self.search.treeviewcolumn
-        self.search.treeview.row_activated(treepath, column)
+
+        if self.search.treeselection.path_is_selected(treepath):
+            self.search.treeview.row_activated(treepath, column)
 
 
 class Attributes(Gtk.Grid):
@@ -138,12 +141,6 @@ class Attributes(Gtk.Grid):
         self.entryDenonym = Gtk.Entry()
         self.attach(self.entryDenonym, 1, 1, 1, 1)
 
-    def attribute_changed(self, treeselection):
-        model, treeiter = treeselection.get_selected()
-
-        if treeiter:
-            self.buttonEdit.set_sensitive(True)
-            self.buttonRemove.set_sensitive(True)
-        else:
-            self.buttonEdit.set_sensitive(False)
-            self.buttonRemove.set_sensitive(False)
+    def clear_fields(self):
+        self.entryName.set_text("")
+        self.entryDenonym.set_text("")

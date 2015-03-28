@@ -91,6 +91,7 @@ class Window(Gtk.Window):
         self.toolbar.add(toolbuttonAdd)
         toolbuttonRemove = Gtk.ToolButton(label="_Remove")
         widgets.toolbuttonRemove = toolbuttonRemove
+        toolbuttonRemove.set_sensitive(False)
         toolbuttonRemove.set_use_underline(True)
         toolbuttonRemove.set_icon_name("gtk-remove")
         toolbuttonRemove.set_tooltip_text("Remove item from database")
@@ -131,12 +132,12 @@ class Window(Gtk.Window):
                 if show:
                     filtered[playerid] = player
 
-            players.populate(items=filtered)
+            objPlayers.populate(items=filtered)
 
         filter_dialog.destroy()
 
     def clear_data(self, menuitem):
-        players.populate()
+        objPlayers.populate()
 
     def save_database(self, widget):
         if widget in (self.menuitemSave, self.toolbuttonSave):
@@ -178,7 +179,8 @@ class Window(Gtk.Window):
     def add_data(self, toolbutton):
         page = maineditor.get_current_page()
 
-        pass
+        if page == 0:
+            objPlayers.add_player()
 
     def remove_data(self, toolbutton):
         page = maineditor.get_current_page()
@@ -338,8 +340,6 @@ class MainMenu(Gtk.Grid):
 
 
 class MainEditor(Gtk.Notebook):
-    active = False
-
     def __init__(self):
         Gtk.Notebook.__init__(self)
         self.set_hexpand(True)
@@ -358,26 +358,23 @@ class MainEditor(Gtk.Notebook):
         widgets.window.menuitemYear.set_sensitive(True)
         widgets.window.toolbar.set_sensitive(True)
 
-        players.run()
+        objPlayers.run()
         clubs.run()
         nations.run()
         stadiums.run()
-
-        if not self.active:
-            self.add_tabs()
-            self.active = True
+        self.add_tabs()
 
         self.show_all()
 
     def add_tabs(self):
         widgets.window.grid.attach(self, 0, 3, 1, 1)
-        self.append_page(players, widgets.Label("_Players"))
+        self.append_page(objPlayers, widgets.Label("_Players"))
         self.append_page(clubs, widgets.Label("_Clubs"))
         self.append_page(nations, widgets.Label("_Nations"))
         self.append_page(stadiums, widgets.Label("_Stadiums"))
 
     def switch_page(self, notebook, page, number):
-        if page.selected:
+        if not page.selected:
             widgets.window.menuitemRemove.set_sensitive(False)
             widgets.toolbuttonRemove.set_sensitive(False)
         else:
@@ -407,7 +404,7 @@ data.options = preferences.Preferences()
 widgets.window = Window()
 mainmenu = MainMenu()
 maineditor = MainEditor()
-players = players.Players()
+objPlayers = players.Players()
 clubs = clubs.Clubs()
 nations = nations.Nations()
 stadiums = stadiums.Stadiums()

@@ -6,6 +6,8 @@ import data
 def name(player, mode=0):
     if player.common_name != "":
         name = player.common_name
+    elif player.first_name == "" and player.second_name == "":
+        name = ""
     else:
         if mode == 0:
             name = "%s, %s" % (player.second_name, player.first_name)
@@ -35,7 +37,10 @@ def club(clubid):
 
 
 def nation(nationid):
-    nation = data.nations[nationid].name
+    if nationid:
+        nation = data.nations[nationid].name
+    else:
+        nation = ""
 
     return nation
 
