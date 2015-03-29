@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 
-import database
+import data
 import display
 
-
-db = database.Database()
 
 unsaved = False
 
@@ -52,29 +50,29 @@ def player(item):
     player.date_of_birth = item[4]
     player.nationality = item[5]
 
-    db.cursor.execute("SELECT * FROM playerattr WHERE player=?", (playerid,))
+    data.db.cursor.execute("SELECT * FROM playerattr WHERE player=?", (playerid,))
 
-    for data in db.cursor.fetchall():
+    for values in data.db.cursor.fetchall():
         attributes = Attributes()
-        attributeid = data[0]
-        attributes.year = data[2]
+        attributeid = values[0]
+        attributes.year = values[2]
 
-        if not data[3]:
+        if not values[3]:
             attributes.club = None
         else:
-            attributes.club = data[3]
+            attributes.club = values[3]
 
-        attributes.position = data[4]
-        attributes.keeping = data[5]
-        attributes.tackling = data[6]
-        attributes.passing = data[7]
-        attributes.shooting = data[8]
-        attributes.heading = data[9]
-        attributes.pace = data[10]
-        attributes.stamina = data[11]
-        attributes.ball_control = data[12]
-        attributes.set_pieces = data[13]
-        attributes.training_value = data[14]
+        attributes.position = values[4]
+        attributes.keeping = values[5]
+        attributes.tackling = values[6]
+        attributes.passing = values[7]
+        attributes.shooting = values[8]
+        attributes.heading = values[9]
+        attributes.pace = values[10]
+        attributes.stamina = values[11]
+        attributes.ball_control = values[12]
+        attributes.set_pieces = values[13]
+        attributes.training_value = values[14]
 
         player.attributes[attributeid] = attributes
 
@@ -87,16 +85,16 @@ def club(item):
     club.name = item[1]
     club.nickname = item[2]
 
-    db.cursor.execute("SELECT * FROM clubattr WHERE club=?", (clubid,))
+    data.db.cursor.execute("SELECT * FROM clubattr WHERE club=?", (clubid,))
 
-    for data in db.cursor.fetchall():
+    for values in data.db.cursor.fetchall():
         attributes = Attributes()
-        attributes.attributeid = data[0]
-        attributes.year = data[2]
-        attributes.manager = data[3]
-        attributes.chairman = data[4]
-        attributes.stadium = data[5]
-        attributes.reputation = data[6]
+        attributes.attributeid = values[0]
+        attributes.year = values[2]
+        attributes.manager = values[3]
+        attributes.chairman = values[4]
+        attributes.stadium = values[5]
+        attributes.reputation = values[6]
 
         club.attributes[attributes.attributeid] = attributes
 
