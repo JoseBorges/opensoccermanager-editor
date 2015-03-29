@@ -144,7 +144,8 @@ class Window(Gtk.Window):
             data.db.save()
             data.unsaved = False
         elif widget is self.menuitemSaveAs:
-            filename = dialogs.file_dialog(mode=1)
+            dialog = dialogs.FileDialog(mode=1)
+            filename = dialog.display()
 
             if filename:
                 data.db.connect(filename)
@@ -335,10 +336,11 @@ class MainMenu(Gtk.Grid):
 
     def new_database(self, widget=None, mode=0):
         if mode == 0:
-            new_database = dialogs.NewDatabase()
-            filename = new_database.display()
+            dialog = dialogs.FileDialog(mode=2)
+            filename = dialog.display()
         elif mode == 1:
-            filename = dialogs.file_dialog(mode=0)
+            dialog = dialogs.FileDialog(mode=0)
+            filename = dialog.display()
 
         if filename:
             if data.db.connect(filename):

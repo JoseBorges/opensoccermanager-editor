@@ -98,27 +98,50 @@ class Preferences(Gtk.Dialog):
         self.run()
 
 
-class NewDatabase(Gtk.FileChooserDialog):
-    def __init__(self):
+class FileDialog(Gtk.FileChooserDialog):
+    def __init__(self, mode=0):
         Gtk.FileChooserDialog.__init__(self)
-        self.set_title("New Database")
         self.set_transient_for(widgets.window)
         self.add_button("C_ancel", Gtk.ResponseType.CANCEL)
-        self.add_button("_Create", Gtk.ResponseType.OK)
         self.set_default_response(Gtk.ResponseType.OK)
-        self.set_action(Gtk.FileChooserAction.SAVE)
-        self.set_current_name("New Database")
-        self.set_do_overwrite_confirmation(True)
+
+        if mode == 0:
+            title = "Open Database"
+            button = "Open"
+            action = Gtk.FileChooserAction.OPEN
+        elif mode == 1:
+            title = "Save Database"
+            button = "Save"
+            action = Gtk.FileChooserAction.SAVE
+            self.set_current_name("New Database")
+            self.set_do_overwrite_confirmation(True)
+        elif mode == 2:
+            title = "New Database"
+            button = "Create"
+            action = Gtk.FileChooserAction.SAVE
+
+        self.set_action(action)
+        self.set_title(title)
+        self.add_button("_%s" % (button), Gtk.ResponseType.OK)
+
+        filefilter = Gtk.FileFilter()
+        filefilter.set_name("All Files")
+        filefilter.add_pattern("*")
+        self.add_filter(filefilter)
+
+        filefilter = Gtk.FileFilter()
+        filefilter.set_name("Database Files")
+        filefilter.add_pattern("*.db")
+        self.add_filter(filefilter)
+        self.set_filter(filefilter)
 
     def display(self):
-        self.show_all()
-
         filename = None
 
         if self.run() == Gtk.ResponseType.OK:
             filename = self.get_filename()
 
-        self.hide()
+        self.destroy()
 
         return filename
 
@@ -447,6 +470,7 @@ class DateOfBirth(Gtk.Dialog):
         Gtk.Dialog.__init__(self)
         self.set_transient_for(parent)
         self.set_title("Date of Birth")
+        self.set_border_width(5)
         self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
         self.add_button("_Select", Gtk.ResponseType.OK)
         self.set_default_response(Gtk.ResponseType.OK)
@@ -796,43 +820,6 @@ def remove_from_squad_dialog(mode=0):
     messagedialog.destroy()
 
     return state
-
-
-def file_dialog(mode=0):
-    if mode == 0:
-        title = "Open File"
-        button = "Open"
-    elif mode == 1:
-        title = "Save File"
-        button = "Save"
-
-    dialog = Gtk.FileChooserDialog()
-    dialog.set_transient_for(widgets.window)
-    dialog.set_title(title)
-    dialog.set_action(Gtk.FileChooserAction.OPEN)
-    dialog.add_button("_Cancel", Gtk.ResponseType.CANCEL)
-    dialog.add_button("_%s" % (button), Gtk.ResponseType.OK)
-    dialog.set_default_response(Gtk.ResponseType.OK)
-
-    filefilter = Gtk.FileFilter()
-    filefilter.set_name("All Files")
-    filefilter.add_pattern("*")
-    dialog.add_filter(filefilter)
-
-    filefilter = Gtk.FileFilter()
-    filefilter.set_name("Database Files")
-    filefilter.add_pattern("*.db")
-    dialog.add_filter(filefilter)
-    dialog.set_filter(filefilter)
-
-    filename = None
-
-    if dialog.run() == Gtk.ResponseType.OK:
-        filename = dialog.get_filename()
-
-    dialog.destroy()
-
-    return filename
 
 
 def unsaved_dialog():

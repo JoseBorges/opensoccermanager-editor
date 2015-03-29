@@ -22,7 +22,7 @@ class Database:
 
             self.cursor.execute("CREATE TABLE year (year INTEGER PRIMARY KEY)")
 
-            self.cursor.execute("CREATE TABLE stadium (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, north INTEGER, east INTEGER, south INTEGER, west INTEGER, northeast INTEGER, northwest INTEGER, southeast INTEGER, southwest INTEGER, northbox INTEGER, eastbox INTEGER, southbox INTEGER, westbox INTEGER, northroof BOOLEAN, eastroof BOOLEAN, southroof BOOLEAN, westroof BOOLEAN, northeastroof BOOLEAN, northwestroof BOOLEAN, southeastroof BOOLEAN, southwestroof BOOLEAN, northseating BOOLEAN, eastseating BOOLEAN, southseating BOOLEAN, westseating BOOLEAN, northeastseating BOOLEAN, northwestseating BOOLEAN, southeastseating BOOLEAN, southwestseating BOOLEAN, stall INTEGER, programme INTEGER, smallshop INTEGER, largeshop INTEGER, bar INTEGER, burgerbar INTEGER, cafe INTEGER, restaurant INTEGER)")
+            self.cursor.execute("CREATE TABLE stadium (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)")
 
             self.cursor.execute("CREATE TABLE nation (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, denonym TEXT)")
 
@@ -30,9 +30,9 @@ class Database:
 
             self.cursor.execute("CREATE TABLE clubattr (id INTEGER PRIMARY KEY AUTOINCREMENT, club INTEGER NOT NULL, manager TEXT, chairman TEXT, stadium INTEGER, reputation INTEGER, FOREIGN KEY(stadium) REFERENCES stadium(id), FOREIGN KEY(club) REFERENCES club(id))")
 
-            self.cursor.execute("CREATE TABLE player (id INTEGER PRIMARY KEY AUTOINCREMENT, firstname TEXT, secondname TEXT, commonname TEXT, dateofbirth TEXT, club INTEGER, nation INTEGER, FOREIGN KEY(nation) REFERENCES nation(id))")
+            self.cursor.execute("CREATE TABLE player (id INTEGER PRIMARY KEY AUTOINCREMENT, firstname TEXT, secondname TEXT, commonname TEXT, dateofbirth TEXT, nation INTEGER, FOREIGN KEY(nation) REFERENCES nation(id))")
 
-            self.cursor.execute("CREATE TABLE playerattr (id INTEGER PRIMARY KEY AUTOINCREMENT, player INTEGER NOT NULL, club INTEGER, position TEXT, keeping INTEGER, tackling INTEGER, passing INTEGER, shooting INTEGER, heading INTEGER, pace INTEGER, stamina INTEGER, ballcontrol INTEGER, setpieces INTEGER, training INTEGER, FOREIGN KEY(player) REFERENCES player(id), FOREIGN KEY(club) REFERENCES club(id))")
+            self.cursor.execute("CREATE TABLE playerattr (id INTEGER PRIMARY KEY AUTOINCREMENT, year INTEGER NOT NULL, player INTEGER NOT NULL, club INTEGER, position TEXT, keeping INTEGER, tackling INTEGER, passing INTEGER, shooting INTEGER, heading INTEGER, pace INTEGER, stamina INTEGER, ballcontrol INTEGER, setpieces INTEGER, training INTEGER, FOREIGN KEY(player) REFERENCES player(id), FOREIGN KEY(club) REFERENCES club(id))")
 
             self.connection.commit()
 
@@ -81,7 +81,7 @@ class Database:
         results = self.cursor.execute("SELECT * FROM nation")
         content = results.fetchall()
 
-        keys = [item[0] for item in content]
+        keys = (item[0] for item in content)
 
         for nationid, nation in data.nations.items():
             if nationid in keys:
@@ -94,40 +94,32 @@ class Database:
                 self.cursor.execute("DELETE FROM nation WHERE id=?", (nationid,))
 
         # Stadium
-        '''
         results = self.cursor.execute("SELECT * FROM stadium")
         content = results.fetchall()
 
-        keys = [item[0] for item in content]
+        keys = (item[0] for item in content)
 
         for stadiumid, stadium in data.stadiums.items():
-            north, east, south, west, northeast, northwest, southeast, southwest = stadium.stands
-            northseating, eastseating, southseating, westseating, northeastseating, northwestseating, southeastseating, southwestseating = stadium.seating
-            northroof, eastroof, southroof, westroof, northeastroof, northwestroof, southeastroof, southwestroof = stadium.roof
-            northbox, eastbox, southbox, westbox = stadium.box
-            stall, programme, smallshop, largeshop, bar, burgerbar, cafe, restaurant = stadium.buildings
-
             if stadiumid in keys:
-                self.cursor.execute("UPDATE stadium SET name=?, north=?, east=?, south=?, west=?, northeast=?, northwest=?, southeast=?, southwest=?, northbox=?, eastbox=?, southbox=?, westbox=?, northroof=?, eastroof=?, southroof=?, westroof=?, northeastroof=?, northwestroof=?, southeastroof=?, southwestroof=?, northseating=?, eastseating=?, southseating=?, westseating=?, northeastseating=?, northwestseating=?, southeastseating=?, southwestseating=?, stall=?, programme=?, smallshop=?, largeshop=?, bar=?, burgerbar=?, cafe=?, restaurant=? WHERE id=?", (stadium.name, north, east, south, west, northeast, northwest, southeast, southwest, northbox, eastbox, southbox, westbox, northseating, eastseating, southseating, westseating, northeastseating, northwestseating, southeastseating, southwestseating, northroof, eastroof, southroof, westroof, northeastroof, northwestroof, southeastroof, southwestroof, stall, programme, smallshop, largeshop, bar, burgerbar, cafe, restaurant, stadiumid))
+                self.cursor.execute("UPDATE stadium SET name=? WHERE id=?", (stadium.name, stadiumid))
             elif stadiumid not in keys:
-                self.cursor.execute("INSERT INTO stadium VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (stadiumid, stadium.name, north, east, south, west, northeast, northwest, southeast, southwest, northbox, eastbox, southbox, westbox, northseating, eastseating, southseating, westseating, northeastseating, northwestseating, southeastseating, southwestseating, northroof, eastroof, southroof, westroof, northeastroof, northwestroof, southeastroof, southwestroof, stall, programme, smallshop, largeshop, bar, burgerbar, cafe, restaurant))
+                self.cursor.execute("INSERT INTO stadium VALUES (?, ?)", (stadiumid, stadium.name))
 
         for stadiumid in keys:
             if stadiumid not in data.stadiums.keys():
                 self.cursor.execute("DELETE FROM stadium WHERE id=?", (stadiumid,))
 
-
         # Club
         results = self.cursor.execute("SELECT * FROM club")
         content = results.fetchall()
 
-        keys = [item[0] for item in content]
+        keys = (item[0] for item in content)
 
         for clubid, club in data.clubs.items():
             if clubid in keys:
-                self.cursor.execute("UPDATE club SET name=?, nickname=?, manager=?, chairman=?, stadium=?, reputation=? WHERE id=?", (club.name, club.nickname, club.manager, club.chairman, club.stadium, club.reputation, clubid))
+                self.cursor.execute("UPDATE club SET name=?, nickname=? WHERE id=?", (club.name, club.nickname, clubid))
             elif clubid not in keys:
-                self.cursor.execute("INSERT INTO club VALUES (?, ?, ?, ?, ?, ?, ?)", (clubid, club.name, club.nickname, club.manager, club.chairman, club.stadium, club.reputation))
+                self.cursor.execute("INSERT INTO club VALUES (?, ?, ?)", (clubid, club.name, club.nickname))
 
         for clubid in keys:
             if clubid not in data.clubs.keys():
@@ -137,26 +129,26 @@ class Database:
         results = self.cursor.execute("SELECT * FROM player")
         content = results.fetchall()
 
-        keys = [item[0] for item in content]
+        player_keys = (item[0] for item in content)
 
-        for playerid, player in data.players.items():
-            if player.club == 0:
-                player.club = None
-
-            if playerid in keys:
-                self.cursor.execute("UPDATE player SET firstname=?, secondname=?, commonname=?, dateofbirth=?, club=?, nation=?, position=?, keeping=?, tackling=?, passing=?, shooting=?, heading=?, pace=?, stamina=?, ballcontrol=?, setpieces=?, training=? WHERE id=?", (player.first_name, player.second_name, player.common_name, player.date_of_birth, player.club, player.nationality, player.position, player.keeping, player.tackling, player.passing, player.shooting, player.heading, player.pace, player.stamina, player.ball_control, player.set_pieces, player.training_value, playerid))
-            elif playerid not in keys:
-                self.cursor.execute("INSERT INTO player VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (playerid, player.first_name, player.second_name, player.common_name, player.date_of_birth, player.club, player.nationality, player.position, player.keeping, player.tackling, player.passing, player.shooting, player.heading, player.pace, player.stamina, player.ball_control, player.set_pieces, player.training_value))
-
-        for playerid in keys:
-            if playerid not in data.players.keys():
-                self.cursor.execute("DELETE FROM player WHERE id=?", (playerid,))
-
-        # Player attributes
+        '''
         results = self.cursor.execute("SELECT * FROM playerattr")
         content = results.fetchall()
 
-        keys = [item[0] for item in content]
+        playerattr_keys = (item[0] for item in content)
         '''
+
+        for playerid, player in data.players.items():
+            if playerid in player_keys:
+                self.cursor.execute("UPDATE player SET firstname=?, secondname=?, commonname=?, dateofbirth=?, nation=? WHERE id=?", (player.first_name, player.second_name, player.common_name, player.date_of_birth, player.nationality, playerid))
+
+                for attributeid, attribute in player.attributes.items():
+                    self.cursor.execute("UPDATE playerattr SET player=?, year=?, club=?, position=?, keeping=?, tackling=?, passing=?, shooting=?, heading=?, pace=?, stamina=?, ballcontrol=?, setpieces=?, training=? WHERE id=?", (playerid, attribute.year, attribute.club, attribute.position, attribute.keeping, attribute.tackling, attribute.passing, attribute.shooting, attribute.heading, attribute.pace, attribute.stamina, attribute.ball_control, attribute.set_pieces, attribute.training_value, attributeid))
+            elif playerid not in player_keys:
+                self.cursor.execute("INSERT INTO player VALUES (?, ?, ?, ?, ?, ?)", (playerid, player.first_name, player.second_name, player.common_name, player.date_of_birth, player.nationality))
+
+        for playerid in player_keys:
+            if playerid not in data.players.keys():
+                self.cursor.execute("DELETE FROM player WHERE id=?", (playerid,))
 
         self.connection.commit()
