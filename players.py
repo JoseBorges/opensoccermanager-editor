@@ -36,6 +36,8 @@ class Players(Gtk.Grid):
 
     def add_player(self):
         player = data.Player()
+        playerid = data.idnumbers.request_playerid()
+        data.players[playerid] = player
 
         self.populate_data(values=data.players)
 
@@ -200,7 +202,9 @@ class Attributes(Gtk.Grid):
         self.treeview.append_column(treeviewcolumn)
         treeviewcolumn = Gtk.TreeViewColumn("Club", cellrenderertext, text=2)
         self.treeview.append_column(treeviewcolumn)
-        treeviewcolumn = Gtk.TreeViewColumn("Position", cellrenderertext, text=3)
+        treeviewcolumn = Gtk.TreeViewColumn("Position",
+                                            cellrenderertext,
+                                            text=3)
         self.treeview.append_column(treeviewcolumn)
 
         for count, skill in enumerate(data.skill_short):
@@ -216,21 +220,26 @@ class Attributes(Gtk.Grid):
             treeviewcolumn.add_attribute(cellrenderertext, "text", count + 4)
             self.treeview.append_column(treeviewcolumn)
 
-        treeviewcolumn = Gtk.TreeViewColumn("Training", cellrenderertext, text=13)
+        treeviewcolumn = Gtk.TreeViewColumn("Training",
+                                            cellrenderertext,
+                                            text=13)
         self.treeview.append_column(treeviewcolumn)
 
         buttonbox = Gtk.ButtonBox()
         buttonbox.set_spacing(5)
         buttonbox.set_layout(Gtk.ButtonBoxStyle.START)
         buttonbox.set_orientation(Gtk.Orientation.VERTICAL)
-        buttonAdd = Gtk.Button.new_from_icon_name("gtk-add", Gtk.IconSize.BUTTON)
+        buttonAdd = Gtk.Button.new_from_icon_name("gtk-add",
+                                                  Gtk.IconSize.BUTTON)
         buttonAdd.connect("clicked", self.add_attribute)
         buttonbox.add(buttonAdd)
-        self.buttonEdit = Gtk.Button.new_from_icon_name("gtk-edit", Gtk.IconSize.BUTTON)
+        self.buttonEdit = Gtk.Button.new_from_icon_name("gtk-edit",
+                                                        Gtk.IconSize.BUTTON)
         self.buttonEdit.set_sensitive(False)
         self.buttonEdit.connect("clicked", self.edit_attribute)
         buttonbox.add(self.buttonEdit)
-        self.buttonRemove = Gtk.Button.new_from_icon_name("gtk-remove", Gtk.IconSize.BUTTON)
+        self.buttonRemove = Gtk.Button.new_from_icon_name("gtk-remove",
+                                                          Gtk.IconSize.BUTTON)
         self.buttonRemove.set_sensitive(False)
         self.buttonRemove.connect("clicked", self.remove_attribute)
         buttonbox.add(self.buttonRemove)
@@ -282,7 +291,10 @@ class Attributes(Gtk.Grid):
         Launch dialog used to input new attribute values.
         '''
         dialog = AttributeDialog(parent=widgets.window)
+        dialog.playerid = self.playerid
         dialog.display()
+
+        self.populate_attributes()
 
     def edit_attribute(self, button):
         '''
@@ -295,12 +307,13 @@ class Attributes(Gtk.Grid):
         Delete selected attribute when delete is clicked.
         '''
         model, treeiter = self.treeselectionAttribute.get_selected()
-        attributeid = model[treeiter][0]
 
-        player = data.players[self.playerid]
-        del player.attributes[attributeid]
+        if dialogs.remove_dialog(index=4):
+            attributeid = model[treeiter][0]
+            player = data.players[self.playerid]
+            del player.attributes[attributeid]
 
-        self.populate_attributes()
+            self.populate_attributes()
 
     def clear_fields(self):
         self.entryFirstName.set_text("")
@@ -350,7 +363,6 @@ class Attributes(Gtk.Grid):
 class AttributeDialog(Gtk.Dialog):
     def __init__(self, parent):
         Gtk.Dialog.__init__(self)
-
         self.set_transient_for(parent)
         self.set_border_width(5)
         self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
@@ -362,6 +374,11 @@ class AttributeDialog(Gtk.Dialog):
         self.vbox.add(grid)
 
         self.liststoreYear = Gtk.ListStore(str)
+
+        for year in data.years:
+            year = str(year)
+            self.liststoreYear.append([year])
+
         cellrenderertext = Gtk.CellRendererText()
 
         label = widgets.Label("_Year")
@@ -369,14 +386,11 @@ class AttributeDialog(Gtk.Dialog):
         self.comboboxYear = Gtk.ComboBox()
         self.comboboxYear.set_model(self.liststoreYear)
         self.comboboxYear.set_id_column(0)
+        self.comboboxYear.set_active(0)
         self.comboboxYear.pack_start(cellrenderertext, True)
         self.comboboxYear.add_attribute(cellrenderertext, "text", 0)
         label.set_mnemonic_widget(self.comboboxYear)
         grid.attach(self.comboboxYear, 1, 0, 2, 1)
-
-        for year in data.years:
-            year = str(year)
-            self.liststoreYear.append([year])
 
         label = widgets.Label("_Club")
         grid.attach(label, 0, 1, 1, 1)
@@ -399,6 +413,8 @@ class AttributeDialog(Gtk.Dialog):
         for position in data.positions:
             self.comboboxPosition.append(position, position)
 
+        self.comboboxPosition.set_active(0)
+
         self.spinbuttonSkills = []
 
         for count, skill in enumerate(data.skill):
@@ -419,6 +435,8 @@ class AttributeDialog(Gtk.Dialog):
         label.set_mnemonic_widget(self.spinbuttonTraining)
         grid.attach(self.spinbuttonTraining, 1, 12, 1, 1)
 
+        self.clubid = None
+
     def club_clicked(self, button):
         model = self.comboboxYear.get_model()
         treeiter = self.comboboxYear.get_active()
@@ -430,6 +448,8 @@ class AttributeDialog(Gtk.Dialog):
 
         if clubid:
             player = data.players[self.playerid]
+            self.attributeid = data.idnumbers.request_playerattrid()
+            player.attributes[self.attributeid] = data.Attributes()
             attribute = player.attributes[self.attributeid]
 
             club = data.clubs[clubid].name

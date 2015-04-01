@@ -20,11 +20,19 @@ class Stadiums(Gtk.Grid):
         self.set_border_width(5)
 
         self.search = interface.Search()
+        self.search.treeview.connect("row-activated", self.row_activated)
         self.attach(self.search, 0, 0, 1, 1)
+
+        self.attributes = Attributes()
+        self.attach(self.attributes, 1, 0, 1, 1)
 
     def row_activated(self, treeview=None, treepath=None, treeviewcolumn=None):
         model = treeview.get_model()
         stadiumid = model[treepath][0]
+
+        stadium = data.stadiums[stadiumid]
+
+        self.attributes.entryName.set_text(stadium.name)
 
     def row_delete(self, treeview=None, event=None):
         if event:
@@ -63,3 +71,15 @@ class Stadiums(Gtk.Grid):
     def run(self):
         self.populate_data()
         self.show_all()
+
+
+class Attributes(Gtk.Grid):
+    def __init__(self):
+        Gtk.Grid.__init__(self)
+        self.set_row_spacing(5)
+        self.set_column_spacing(5)
+
+        label = widgets.Label("Name")
+        self.attach(label, 0, 0, 1, 1)
+        self.entryName = Gtk.Entry()
+        self.attach(self.entryName, 1, 0, 1, 1)

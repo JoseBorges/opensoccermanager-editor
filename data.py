@@ -41,6 +41,24 @@ class Attributes:
     pass
 
 
+class IDNumbers:
+    playerid = 0
+    playerattrid = 0
+
+    def request_playerid(self):
+        self.playerid += 1
+
+        return self.playerid
+
+    def request_playerattrid(self):
+        self.playerattrid += 1
+
+        return self.playerattrid
+
+
+idnumbers = IDNumbers()
+
+
 def player(item):
     player = Player()
     playerid = item[0]
@@ -76,7 +94,13 @@ def player(item):
 
         player.attributes[attributeid] = attributes
 
+        if attributeid > idnumbers.playerattrid:
+            idnumbers.playerattrid = attributeid
+
     players[playerid] = player
+
+    if playerid > idnumbers.playerid:
+        idnumbers.playerid = playerid
 
 
 def club(item):

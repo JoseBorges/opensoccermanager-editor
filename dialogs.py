@@ -771,7 +771,7 @@ class YearManager(Gtk.Dialog):
 
 
 def remove_dialog(index):
-    item = ("Player", "Club", "Nation", "Stadium")[index]
+    item = ("Player", "Club", "Nation", "Stadium", "Attribute")[index]
 
     messagedialog = Gtk.MessageDialog(type=Gtk.MessageType.QUESTION)
     messagedialog.set_transient_for(widgets.window)
