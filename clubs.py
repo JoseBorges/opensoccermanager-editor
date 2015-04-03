@@ -168,17 +168,48 @@ class Attributes(Gtk.Grid):
         buttonbox.set_layout(Gtk.ButtonBoxStyle.START)
         buttonbox.set_orientation(Gtk.Orientation.VERTICAL)
         buttonAdd = Gtk.Button.new_from_icon_name("gtk-add", Gtk.IconSize.BUTTON)
-        #buttonAdd.connect("clicked", self.add_attribute)
+        buttonAdd.connect("clicked", self.add_attribute)
         buttonbox.add(buttonAdd)
         self.buttonEdit = Gtk.Button.new_from_icon_name("gtk-edit", Gtk.IconSize.BUTTON)
         self.buttonEdit.set_sensitive(False)
-        #self.buttonEdit.connect("clicked", self.edit_attribute)
+        self.buttonEdit.connect("clicked", self.edit_attribute)
         buttonbox.add(self.buttonEdit)
         self.buttonRemove = Gtk.Button.new_from_icon_name("gtk-remove", Gtk.IconSize.BUTTON)
         self.buttonRemove.set_sensitive(False)
-        #self.buttonRemove.connect("clicked", self.remove_attribute)
+        self.buttonRemove.connect("clicked", self.remove_attribute)
         buttonbox.add(self.buttonRemove)
         grid2.attach(buttonbox, 1, 0, 1, 1)
+
+    def add_attribute(self, button):
+        '''
+        Launch dialog used to input new attribute values.
+        '''
+        dialog = AttributeDialog(parent=widgets.window)
+        dialog.clubid = self.clubid
+        dialog.stadiumid = None
+        dialog.year = None
+        dialog.display()
+
+        self.populate_attributes()
+
+    def edit_attribute(self, button):
+        '''
+        Run when edit button for selected attribute is clicked.
+        '''
+        self.attribute_activated()
+
+    def remove_attribute(self, button):
+        '''
+        Delete selected attribute when delete is clicked.
+        '''
+        model, treeiter = self.treeselectionAttribute.get_selected()
+
+        if dialogs.remove_dialog(index=4):
+            attributeid = model[treeiter][0]
+            club = data.clubs[self.clubid]
+            del club.attributes[attributeid]
+
+            self.populate_attributes()
 
     def attribute_changed(self, treeselection):
         model, treeiter = treeselection.get_selected()
@@ -190,7 +221,7 @@ class Attributes(Gtk.Grid):
             self.buttonEdit.set_sensitive(False)
             self.buttonRemove.set_sensitive(False)
 
-    def attribute_activated(self, treeview=None, treepath=None, treeviewcolumn=None):
+    def attribute_activated(self, widget=None, treepath=None, treeviewcolumn=None):
         model, treeiter = self.treeselectionAttribute.get_selected()
 
         if treeiter:
@@ -224,3 +255,132 @@ class Attributes(Gtk.Grid):
                                              stadium,
                                              attribute.reputation
                                              ])
+
+
+class AttributeDialog(Gtk.Dialog):
+    def __init__(self, parent):
+        Gtk.Dialog.__init__(self)
+        self.set_transient_for(parent)
+        self.set_border_width(5)
+        self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
+        self.add_button("_Save", Gtk.ResponseType.OK)
+        self.set_default_response(Gtk.ResponseType.OK)
+        self.connect("response", self.response_handler)
+
+        grid = Gtk.Grid()
+        grid.set_row_spacing(5)
+        grid.set_column_spacing(5)
+        self.vbox.add(grid)
+
+        self.liststoreYear = Gtk.ListStore(str)
+
+        for year in data.years:
+            year = str(year)
+            self.liststoreYear.append([year])
+
+        cellrenderertext = Gtk.CellRendererText()
+
+        label = widgets.Label("_Year")
+        grid.attach(label, 0, 0, 1, 1)
+        self.comboboxYear = Gtk.ComboBox()
+        self.comboboxYear.set_model(self.liststoreYear)
+        self.comboboxYear.set_id_column(0)
+        self.comboboxYear.set_active(0)
+        self.comboboxYear.pack_start(cellrenderertext, True)
+        self.comboboxYear.add_attribute(cellrenderertext, "text", 0)
+        label.set_mnemonic_widget(self.comboboxYear)
+        grid.attach(self.comboboxYear, 1, 0, 1, 1)
+
+        label = widgets.Label("_Manager")
+        grid.attach(label, 0, 1, 1, 1)
+        self.entryManager = Gtk.Entry()
+        label.set_mnemonic_widget(self.entryManager)
+        grid.attach(self.entryManager, 1, 1, 2, 1)
+
+        label = widgets.Label("_Chairman")
+        grid.attach(label, 0, 2, 1, 1)
+        self.entryChairman = Gtk.Entry()
+        label.set_mnemonic_widget(self.entryChairman)
+        grid.attach(self.entryChairman, 1, 2, 2, 1)
+
+        label = widgets.Label("_Stadium")
+        grid.attach(label, 0, 3, 1, 1)
+        self.buttonStadium = Gtk.Button("")
+        self.buttonStadium.connect("clicked", self.stadium_clicked)
+        label.set_mnemonic_widget(self.buttonStadium)
+        grid.attach(self.buttonStadium, 1, 3, 2, 1)
+
+        label = widgets.Label("_Reputation")
+        grid.attach(label, 0, 4, 1, 1)
+        self.spinbuttonReputation = Gtk.SpinButton.new_with_range(1, 20, 1)
+        label.set_mnemonic_widget(self.spinbuttonReputation)
+        grid.attach(self.spinbuttonReputation, 1, 4, 1, 1)
+
+    def stadium_clicked(self, button):
+        model = self.comboboxYear.get_model()
+        treeiter = self.comboboxYear.get_active()
+
+        year = int(model[treeiter][0])
+
+        dialog = dialogs.StadiumSelectionDialog()
+        dialog.set_transient_for(widgets.window)
+        stadiumid = dialog.display(stadiumid=self.stadiumid, year=self.year)
+
+        if stadiumid:
+            club = data.clubs[self.clubid]
+            self.attributeid = data.idnumbers.request_clubattrid()
+            club.attributes[self.attributeid] = data.Attributes()
+            attribute = club.attributes[self.attributeid]
+
+            stadium = data.stadiums[stadiumid].name
+            button.set_label("%s" % (stadium))
+
+            attribute.stadium = stadiumid
+
+        dialog.destroy()
+
+    def response_handler(self, dialog, response):
+        if response == Gtk.ResponseType.OK:
+            self.save_fields()
+
+        self.destroy()
+
+    def load_fields(self):
+        club = data.clubs[self.clubid]
+        attribute = club.attributes[self.attributeid]
+
+        year = str(attribute.year)
+        stadium = data.stadiums[attribute.stadium].name
+
+        self.comboboxYear.set_active_id(year)
+        self.entryManager.set_text(attribute.manager)
+        self.entryChairman.set_text(attribute.chairman)
+        self.buttonStadium.set_label(stadium)
+        self.spinbuttonReputation.set_value(attribute.reputation)
+
+        self.year = year
+        self.stadiumid = attribute.stadium
+
+    def save_fields(self):
+        club = data.clubs[self.clubid]
+        attribute = club.attributes[self.attributeid]
+
+        model = self.comboboxYear.get_model()
+        treeiter = self.comboboxYear.get_active()
+        attribute.year = int(model[treeiter][0])
+
+        attribute.manager = self.entryManager.get_text()
+        attribute.chairman = self.entryChairman.get_text()
+        attribute.reputation = self.spinbuttonReputation.get_value_as_int()
+        attribute.stadium = self.stadiumid
+
+    def display(self, clubid=None, attributeid=None):
+        self.show_all()
+
+        if clubid:
+            self.clubid = clubid
+            self.attributeid = attributeid
+
+            self.load_fields()
+
+        self.run()

@@ -34,7 +34,8 @@ class Nation:
 
 
 class Stadium:
-    pass
+    def __init__(self):
+        self.attributes = {}
 
 
 class Attributes:
@@ -44,6 +45,8 @@ class Attributes:
 class IDNumbers:
     playerid = 0
     playerattrid = 0
+    clubid = 0
+    clubattrid = 0
 
     def request_playerid(self):
         self.playerid += 1
@@ -54,6 +57,16 @@ class IDNumbers:
         self.playerattrid += 1
 
         return self.playerattrid
+
+    def request_clubid(self):
+        self.clubid += 1
+
+        return self.clubid
+
+    def request_clubattrid(self):
+        self.clubattrid += 1
+
+        return self.clubattrid
 
 
 idnumbers = IDNumbers()
@@ -113,16 +126,22 @@ def club(item):
 
     for values in data.db.cursor.fetchall():
         attributes = Attributes()
-        attributes.attributeid = values[0]
+        attributeid = values[0]
         attributes.year = values[2]
         attributes.manager = values[3]
         attributes.chairman = values[4]
         attributes.stadium = values[5]
         attributes.reputation = values[6]
 
-        club.attributes[attributes.attributeid] = attributes
+        club.attributes[attributeid] = attributes
+
+        if attributeid > idnumbers.clubattrid:
+            idnumbers.clubattrid = attributeid
 
     clubs[clubid] = club
+
+    if clubid > idnumbers.playerid:
+        idnumbers.clubid = playerid
 
 
 def nation(item):

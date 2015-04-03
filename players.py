@@ -285,6 +285,7 @@ class Attributes(Gtk.Grid):
 
         player = data.players[self.playerid]
         player.nationality = nationid
+        self.nationid = nationid
 
     def add_attribute(self, button):
         '''
@@ -367,6 +368,8 @@ class AttributeDialog(Gtk.Dialog):
         self.set_border_width(5)
         self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
         self.add_button("_Save", Gtk.ResponseType.OK)
+        self.set_default_response(Gtk.ResponseType.OK)
+        self.connect("response", self.response_handler)
 
         grid = Gtk.Grid()
         grid.set_row_spacing(5)
@@ -443,8 +446,8 @@ class AttributeDialog(Gtk.Dialog):
 
         year = int(model[treeiter][0])
 
-        club_dialog = dialogs.ClubSelectionDialog(parent=self)
-        clubid = club_dialog.display(clubid=self.clubid, year=year)
+        dialog = dialogs.ClubSelectionDialog(parent=self)
+        clubid = dialog.display(clubid=self.clubid, year=year)
 
         if clubid:
             player = data.players[self.playerid]
@@ -457,7 +460,7 @@ class AttributeDialog(Gtk.Dialog):
 
             attribute.club = clubid
 
-        club_dialog.destroy()
+        dialog.destroy()
 
     def free_agent_toggled(self, checkbutton):
         if checkbutton.get_active():
@@ -531,8 +534,10 @@ class AttributeDialog(Gtk.Dialog):
             self.load_fields()
 
         self.show_all()
+        self.run()
 
-        if self.run() == Gtk.ResponseType.OK:
+    def response_handler(self, dialog, response):
+        if response == Gtk.ResponseType.OK:
             self.save_fields()
 
         self.destroy()

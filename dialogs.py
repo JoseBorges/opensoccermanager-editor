@@ -370,7 +370,7 @@ class NationSelectionDialog(Gtk.Dialog):
         self.set_border_width(5)
         self.set_default_size(-1, 250)
         self.set_transient_for(parent)
-        self.set_title("Select Club")
+        self.set_title("Select Nation")
         self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
         self.add_button("_Select", Gtk.ResponseType.OK)
         self.set_default_response(Gtk.ResponseType.OK)
@@ -432,7 +432,7 @@ class NationSelectionDialog(Gtk.Dialog):
             model, treeiter = self.treeselection.get_selected()
             nationid = model[treeiter][0]
 
-        self.hide()
+        self.destroy()
 
         return nationid
 
@@ -463,6 +463,107 @@ class NationSelectionDialog(Gtk.Dialog):
 
         for nationid, nation in data.items():
             self.liststore.append([nationid, nation.name])
+
+
+class StadiumSelectionDialog(Gtk.Dialog):
+    def __init__(self):
+        Gtk.Dialog.__init__(self)
+        self.set_border_width(5)
+        self.set_default_size(-1, 250)
+        #self.set_transient_for(parent)
+        self.set_title("Select Stadium")
+        self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
+        self.add_button("_Select", Gtk.ResponseType.OK)
+        self.set_default_response(Gtk.ResponseType.OK)
+        self.set_response_sensitive(Gtk.ResponseType.OK, False)
+
+        grid = Gtk.Grid()
+        grid.set_hexpand(True)
+        grid.set_row_spacing(5)
+        self.vbox.add(grid)
+
+        scrolledwindow = Gtk.ScrolledWindow()
+        grid.attach(scrolledwindow, 0, 0, 1, 1)
+
+        cellrenderertext = Gtk.CellRendererText()
+        self.liststore = Gtk.ListStore(int, str)
+        self.treemodelsort = Gtk.TreeModelSort(self.liststore)
+        self.treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
+
+        treeview = Gtk.TreeView()
+        treeview.set_hexpand(True)
+        treeview.set_vexpand(True)
+        treeview.set_model(self.treemodelsort)
+        treeview.set_headers_visible(False)
+        treeview.set_enable_search(False)
+        treeview.set_search_column(-1)
+        treeviewcolumn = Gtk.TreeViewColumn(None, cellrenderertext, text=1)
+        treeview.append_column(treeviewcolumn)
+        self.treeselection = treeview.get_selection()
+        self.treeselection.connect("changed", self.treeselection_changed)
+        scrolledwindow.add(treeview)
+
+        self.entrySearch = Gtk.SearchEntry()
+        self.entrySearch.connect("activate", self.activate_search)
+        self.entrySearch.connect("icon-press", self.clear_search)
+        grid.attach(self.entrySearch, 0, 1, 1, 1)
+
+    def treeselection_changed(self, treeselection):
+        state = not treeselection.count_selected_rows() == 0
+        self.set_response_sensitive(Gtk.ResponseType.OK, state)
+
+        model, treeiter = treeselection.get_selected()
+        treeview = treeselection.get_tree_view()
+
+        if treeiter:
+            treepath = model.get_path(treeiter)
+            treeview.scroll_to_cell(treepath)
+
+    def display(self, stadiumid, year):
+        self.populate(data.stadiums)
+
+        for item in self.treemodelsort:
+            if item[0] == stadiumid:
+                self.treeselection.select_iter(item.iter)
+
+        self.set_focus(self.entrySearch)
+        self.show_all()
+
+        if self.run() == Gtk.ResponseType.OK:
+            model, treeiter = self.treeselection.get_selected()
+            stadiumid = model[treeiter][0]
+
+        self.destroy()
+
+        return stadiumid
+
+    def activate_search(self, entry):
+        criteria = entry.get_text()
+
+        if criteria is not "":
+            items = {}
+
+            for stadiumid, stadium in data.stadiums.items():
+                for search in (stadium.name,):
+                    search = "".join((c for c in unicodedata.normalize("NFD", search) if unicodedata.category(c) != "Mn"))
+
+                    if re.findall(criteria, search, re.IGNORECASE):
+                        items[stadiumid] = stadium
+
+                        break
+
+            self.populate(items)
+
+    def clear_search(self, entry, icon, event):
+        entry.set_text("")
+
+        self.populate(data.stadiums)
+
+    def populate(self, data):
+        self.liststore.clear()
+
+        for stadiumid, stadium in data.items():
+            self.liststore.append([stadiumid, stadium.name])
 
 
 class DateOfBirth(Gtk.Dialog):
