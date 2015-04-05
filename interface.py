@@ -13,6 +13,7 @@ class Search(Gtk.Grid):
 
         Gtk.Grid.__init__(self)
         self.set_row_spacing(5)
+        self.set_column_spacing(5)
 
         scrolledwindow = Gtk.ScrolledWindow()
         scrolledwindow.set_size_request(200, -1)
@@ -32,7 +33,9 @@ class Search(Gtk.Grid):
         self.treeview.set_search_column(-1)
         self.treeview.set_activate_on_single_click(True)
         scrolledwindow.add(self.treeview)
+
         self.treeselection = self.treeview.get_selection()
+
         self.treeviewcolumn = widgets.TreeViewColumn(None, column=1)
         self.treeview.append_column(self.treeviewcolumn)
 

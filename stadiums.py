@@ -2,6 +2,8 @@
 
 from gi.repository import Gtk
 from gi.repository import Gdk
+import re
+import unicodedata
 
 import data
 import dialogs
@@ -20,11 +22,42 @@ class Stadiums(Gtk.Grid):
         self.set_border_width(5)
 
         self.search = interface.Search()
+        self.search.searchentry.connect("activate", self.search_activated)
+        self.search.searchentry.connect("changed", self.search_changed)
+        self.search.searchentry.connect("icon-press", self.search_cleared)
         self.search.treeview.connect("row-activated", self.row_activated)
+        self.search.treeselection.connect("changed", self.stadium_changed)
         self.attach(self.search, 0, 0, 1, 1)
 
         self.attributes = Attributes()
+        self.attributes.entryName.connect("focus-out-event", self.name_changed)
         self.attach(self.attributes, 1, 0, 1, 1)
+
+    def name_changed(self, entry, event):
+        name = entry.get_text()
+
+        model, treeiter = self.search.treeselection.get_selected()
+        liststore = model.get_model()
+        child_treeiter = model.convert_iter_to_child_iter(treeiter)
+
+        liststore[child_treeiter][1] = name
+        data.stadiums[self.selected].name = name
+
+        # Get new position of modified item
+        model, treeiter = self.search.treeselection.get_selected()
+        treepath = model.get_path(treeiter)
+        self.search.treeview.scroll_to_cell(treepath)
+
+    def stadium_changed(self, treeselection):
+        model, treeiter = treeselection.get_selected()
+
+        if treeiter:
+            self.selected = model[treeiter][0]
+            self.attributes.set_sensitive(True)
+        else:
+            self.selected = None
+            self.attributes.clear_fields()
+            self.attributes.set_sensitive(False)
 
     def row_activated(self, treeview=None, treepath=None, treeviewcolumn=None):
         model = treeview.get_model()
@@ -62,15 +95,47 @@ class Stadiums(Gtk.Grid):
 
                     self.populate()
 
-    def populate_data(self):
+    def search_activated(self, searchentry):
+        criteria = searchentry.get_text()
+
+        if criteria is not "":
+            values = {}
+
+            for stadiumid, stadium in data.stadiums.items():
+                for search in (stadium.name,):
+                    search = "".join((c for c in unicodedata.normalize("NFD", search) if unicodedata.category(c) != "Mn"))
+
+                    if re.findall(criteria, search, re.IGNORECASE):
+                        values[stadiumid] = stadium
+
+                        break
+
+            self.populate_data(values=values)
+
+    def search_changed(self, searchentry):
+        if searchentry.get_text() is "":
+            self.populate_data(data.stadiums)
+
+    def search_cleared(self, searchentry, icon, event):
+        if icon == Gtk.EntryIconPosition.SECONDARY:
+            self.populate_data(values=data.stadiums)
+
+    def populate_data(self, values):
         self.search.clear_data()
 
-        for stadiumid, stadium in data.stadiums.items():
+        for stadiumid, stadium in values.items():
             self.search.liststore.append([stadiumid, stadium.name])
 
     def run(self):
-        self.populate_data()
+        self.populate_data(values=data.stadiums)
         self.show_all()
+
+        treepath = Gtk.TreePath.new_first()
+        self.search.treeselection.select_path(treepath)
+        column = self.search.treeviewcolumn
+
+        if self.search.treeselection.path_is_selected(treepath):
+            self.search.treeview.row_activated(treepath, column)
 
 
 class Attributes(Gtk.Grid):
@@ -83,3 +148,6 @@ class Attributes(Gtk.Grid):
         self.attach(label, 0, 0, 1, 1)
         self.entryName = Gtk.Entry()
         self.attach(self.entryName, 1, 0, 1, 1)
+
+    def clear_fields(self):
+        self.entryName.set_text("")

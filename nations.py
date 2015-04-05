@@ -36,9 +36,17 @@ class Nations(Gtk.Grid):
     def name_changed(self, entry, event):
         name = entry.get_text()
 
-        if data.nations[self.selected].name != name:
-            data.nations[self.selected].name = name
-            self.populate_data(values=data.nations)
+        model, treeiter = self.search.treeselection.get_selected()
+        liststore = model.get_model()
+        child_treeiter = model.convert_iter_to_child_iter(treeiter)
+
+        liststore[child_treeiter][1] = name
+        data.nations[self.selected].name = name
+
+        # Get new position of modified item
+        model, treeiter = self.search.treeselection.get_selected()
+        treepath = model.get_path(treeiter)
+        self.search.treeview.scroll_to_cell(treepath)
 
     def search_activated(self, searchentry):
         criteria = searchentry.get_text()
@@ -46,12 +54,12 @@ class Nations(Gtk.Grid):
         if criteria is not "":
             values = {}
 
-            for clubid, club in data.nations.items():
-                for search in (club.name,):
+            for nationid, nation in data.nations.items():
+                for search in (nation.name,):
                     search = "".join((c for c in unicodedata.normalize("NFD", search) if unicodedata.category(c) != "Mn"))
 
                     if re.findall(criteria, search, re.IGNORECASE):
-                        values[clubid] = club
+                        values[nationid] = nation
 
                         break
 

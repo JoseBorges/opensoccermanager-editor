@@ -32,7 +32,34 @@ class Players(Gtk.Grid):
         self.attach(self.search, 0, 0, 1, 1)
 
         self.attributes = Attributes()
+        self.attributes.entryFirstName.connect("focus-out-event", self.name_changed, 0)
+        self.attributes.entrySecondName.connect("focus-out-event", self.name_changed, 1)
+        self.attributes.entryCommonName.connect("focus-out-event", self.name_changed, 2)
         self.attach(self.attributes, 1, 0, 1, 1)
+
+    def name_changed(self, entry, event, index):
+        model, treeiter = self.search.treeselection.get_selected()
+        liststore = model.get_model()
+        child_treeiter = model.convert_iter_to_child_iter(treeiter)
+
+        player = data.players[self.selected]
+
+        if index == 0:
+            player.first_name = entry.get_text()
+            name = display.name(player)
+        elif index == 1:
+            player.second_name = entry.get_text()
+            name = display.name(player)
+        elif index == 2:
+            player.common_name = entry.get_text()
+            name = display.name(player)
+
+        liststore[child_treeiter][1] = name
+
+        # Get new position of modified item
+        model, treeiter = self.search.treeselection.get_selected()
+        treepath = model.get_path(treeiter)
+        self.search.treeview.scroll_to_cell(treepath)
 
     def add_player(self):
         player = data.Player()

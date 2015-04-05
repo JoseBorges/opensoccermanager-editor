@@ -588,7 +588,7 @@ class DateOfBirth(Gtk.Dialog):
         if date:
             year, month, day = list(map(int, date.split("-")))
         else:
-            year, month, day = [data.season - 18, 1, 1]
+            year, month, day = [1990, 1, 1]
 
         self.calendar.select_day(day)
         self.calendar.select_month(month - 1, year)
