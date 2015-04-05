@@ -62,11 +62,23 @@ class Players(Gtk.Grid):
         self.search.treeview.scroll_to_cell(treepath)
 
     def add_player(self):
+        '''
+        Add the player to the date structure, and append to the search
+        interface.
+        '''
         player = data.Player()
         playerid = data.idnumbers.request_playerid()
         data.players[playerid] = player
 
-        self.populate_data(values=data.players)
+        child_treeiter = self.search.liststore.append([playerid, ""])
+        treeiter = self.search.treemodelsort.convert_child_iter_to_iter(child_treeiter)
+        treepath = self.search.treemodelsort.get_path(treeiter[1])
+
+        self.search.treeview.scroll_to_cell(treepath)
+        self.search.treeview.set_cursor_on_cell(treepath, None, None, False)
+
+        self.attributes.clear_fields()
+        self.attributes.entryFirstName.grab_focus()
 
     def search_activated(self, searchentry):
         criteria = searchentry.get_text()
@@ -86,6 +98,8 @@ class Players(Gtk.Grid):
                         break
 
             self.populate_data(values)
+
+        self.search.treeview.set_cursor(0)
 
     def search_changed(self, searchentry):
         if searchentry.get_text() is "":
