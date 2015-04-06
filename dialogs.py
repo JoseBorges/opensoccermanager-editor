@@ -11,7 +11,6 @@ import data
 import database
 import dialogs
 import display
-import filters
 import preferences
 import widgets
 
@@ -733,56 +732,6 @@ class DataExport(Gtk.Dialog):
             else:
                 table = items[active - 1]
                 export(table)
-
-
-class Filter(Gtk.Dialog):
-    def __init__(self):
-        self.criteria = None
-
-        Gtk.Dialog.__init__(self)
-        self.set_transient_for(widgets.window)
-        self.set_border_width(5)
-        self.set_title("Data Filter")
-        self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
-        self.add_button("_Filter", Gtk.ResponseType.OK)
-        self.set_default_response(Gtk.ResponseType.OK)
-        self.connect("response", self.response_handler)
-
-        grid = Gtk.Grid()
-        grid.set_row_spacing(5)
-        self.vbox.add(grid)
-
-        notebook = Gtk.Notebook()
-        grid.attach(notebook, 0, 0, 1, 1)
-
-        self.players = filters.Players()
-        self.clubs = filters.Clubs()
-        self.nations = filters.Nations()
-        self.stadiums = filters.Stadiums()
-
-        label = widgets.Label("_Players")
-        notebook.append_page(self.players, label)
-
-        label = widgets.Label("_Clubs")
-        notebook.append_page(self.clubs, label)
-
-        label = widgets.Label("_Nations")
-        notebook.append_page(self.nations, label)
-
-        label = widgets.Label("_Stadiums")
-        notebook.append_page(self.stadiums, label)
-
-    def display(self):
-        self.show_all()
-        self.run()
-
-        return self.criteria
-
-    def response_handler(self, dialog, response):
-        if response == Gtk.ResponseType.OK:
-            self.criteria = self.players.get_criteria()
-
-        self.hide()
 
 
 class YearManager(Gtk.Dialog):

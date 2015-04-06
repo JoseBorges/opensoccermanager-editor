@@ -117,27 +117,10 @@ class Window(Gtk.Window):
         validator.destroy()
 
     def filter_data(self, menuitem):
-        filter_dialog = dialogs.Filter()
-        criteria = filter_dialog.display()
-
-        if criteria:
-            filtered = {}
-
-            for playerid, player in data.players.items():
-                show = False
-
-                if criteria[0](player.age, criteria[1]):
-                    show = True
-
-                if show:
-                    filtered[playerid] = player
-
-            players.populate(items=filtered)
-
-        filter_dialog.destroy()
+        pass
 
     def clear_data(self, menuitem):
-        players.populate()
+        pass
 
     def save_database(self, widget):
         if widget in (self.menuitemSave, self.toolbuttonSave):
