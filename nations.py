@@ -168,14 +168,16 @@ class Attributes(Gtk.Grid):
         self.set_column_spacing(5)
         self.set_sensitive(False)
 
-        label = widgets.Label("Name")
+        label = widgets.Label("_Name")
         self.attach(label, 0, 0, 1, 1)
         self.entryName = Gtk.Entry()
+        label.set_mnemonic_widget(self.entryName)
         self.attach(self.entryName, 1, 0, 1, 1)
 
-        label = widgets.Label("Denonym")
+        label = widgets.Label("_Denonym")
         self.attach(label, 0, 1, 1, 1)
         self.entryDenonym = Gtk.Entry()
+        label.set_mnemonic_widget(self.entryDenonym)
         self.attach(self.entryDenonym, 1, 1, 1, 1)
 
     def clear_fields(self):

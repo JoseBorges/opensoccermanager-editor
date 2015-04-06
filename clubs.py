@@ -131,12 +131,12 @@ class Attributes(Gtk.Grid):
         grid1.set_column_spacing(5)
         self.attach(grid1, 0, 0, 1, 1)
 
-        label = widgets.Label("Name")
+        label = widgets.Label("_Name")
         grid1.attach(label, 0, 0, 1, 1)
         self.entryName = Gtk.Entry()
         grid1.attach(self.entryName, 1, 0, 1, 1)
 
-        label = widgets.Label("Nickname")
+        label = widgets.Label("_Nickname")
         grid1.attach(label, 0, 1, 1, 1)
         self.entryNickname = Gtk.Entry()
         grid1.attach(self.entryNickname, 1, 1, 1, 1)

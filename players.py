@@ -183,28 +183,28 @@ class Attributes(Gtk.Grid):
         grid1.set_column_spacing(5)
         commonframe.insert(grid1)
 
-        label = widgets.Label("First Name")
+        label = widgets.Label("_First Name")
         grid1.attach(label, 0, 0, 1, 1)
         self.entryFirstName = Gtk.Entry()
         grid1.attach(self.entryFirstName, 1, 0, 1, 1)
 
-        label = widgets.Label("Second Name")
+        label = widgets.Label("_Second Name")
         grid1.attach(label, 0, 1, 1, 1)
         self.entrySecondName = Gtk.Entry()
         grid1.attach(self.entrySecondName, 1, 1, 1, 1)
 
-        label = widgets.Label("Common Name")
+        label = widgets.Label("_Common Name")
         grid1.attach(label, 0, 2, 1, 1)
         self.entryCommonName = Gtk.Entry()
         grid1.attach(self.entryCommonName, 1, 2, 1, 1)
 
-        label = widgets.Label("Date Of Birth")
+        label = widgets.Label("_Date Of Birth")
         grid1.attach(label, 0, 3, 1, 1)
         self.buttonDateOfBirth = Gtk.Button("")
         self.buttonDateOfBirth.connect("clicked", self.date_of_birth_clicked)
         grid1.attach(self.buttonDateOfBirth, 1, 3, 1, 1)
 
-        label = widgets.Label("Nationality")
+        label = widgets.Label("_Nationality")
         grid1.attach(label, 0, 4, 1, 1)
         self.buttonNationality = Gtk.Button("")
         self.buttonNationality.connect("clicked", self.nation_clicked)
@@ -448,7 +448,7 @@ class AttributeDialog(Gtk.Dialog):
         self.checkbuttonFreeAgent.connect("toggled", self.free_agent_toggled)
         grid.attach(self.checkbuttonFreeAgent, 4, 1, 1, 1)
 
-        label = widgets.Label("Position")
+        label = widgets.Label("_Position")
         grid.attach(label, 0, 2, 1, 1)
         self.comboboxPosition = Gtk.ComboBoxText()
         label.set_mnemonic_widget(self.comboboxPosition)

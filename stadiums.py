@@ -144,10 +144,28 @@ class Attributes(Gtk.Grid):
         self.set_row_spacing(5)
         self.set_column_spacing(5)
 
-        label = widgets.Label("Name")
-        self.attach(label, 0, 0, 1, 1)
+        grid1 = Gtk.Grid()
+        grid1.set_column_spacing(5)
+        self.attach(grid1, 0, 0, 2, 1)
+
+        label = widgets.Label("_Name")
+        grid1.attach(label, 0, 0, 1, 1)
         self.entryName = Gtk.Entry()
-        self.attach(self.entryName, 1, 0, 1, 1)
+        label.set_mnemonic_widget(self.entryName)
+        grid1.attach(self.entryName, 1, 0, 1, 1)
+
+        notebook = Gtk.Notebook()
+        notebook.set_hexpand(True)
+        notebook.set_vexpand(True)
+        self.attach(notebook, 0, 1, 3, 1)
+
+        grid = Gtk.Grid()
+        label = widgets.Label("_Capacity")
+        notebook.append_page(grid, label)
+
+        grid = Gtk.Grid()
+        label = widgets.Label("_Buildings")
+        notebook.append_page(grid, label)
 
     def clear_fields(self):
         self.entryName.set_text("")
