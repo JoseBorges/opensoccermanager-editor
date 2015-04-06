@@ -26,15 +26,20 @@ class Player:
 
 class Club:
     def __init__(self):
+        self.name = ""
+        self.nickname = ""
         self.attributes = {}
 
 
 class Nation:
-    pass
+    def __init__(self):
+        self.name = ""
+        self.denonym = ""
 
 
 class Stadium:
     def __init__(self):
+        self.name = ""
         self.attributes = {}
 
 
@@ -47,6 +52,7 @@ class IDNumbers:
     playerattrid = 0
     clubid = 0
     clubattrid = 0
+    nationid = 0
 
     def request_playerid(self):
         self.playerid += 1
@@ -67,6 +73,11 @@ class IDNumbers:
         self.clubattrid += 1
 
         return self.clubattrid
+
+    def request_nationid(self):
+        self.nationid += 1
+
+        return self.nationid
 
 
 idnumbers = IDNumbers()
@@ -150,6 +161,9 @@ def nation(item):
     nation.name = item[1]
     nation.denonym = item[2]
     nations[nationid] = nation
+
+    if nationid > idnumbers.nationid:
+        idnumbers.nationid = nationid
 
 
 def stadium(item):

@@ -33,6 +33,25 @@ class Nations(Gtk.Grid):
         self.attributes.entryName.connect("focus-out-event", self.name_changed)
         self.attach(self.attributes, 1, 0, 1, 1)
 
+    def add_nation(self):
+        '''
+        Add the nation to the date structure, and append to the search
+        interface.
+        '''
+        nation = data.Nation()
+        nationid = data.idnumbers.request_nationid()
+        data.nations[nationid] = nation
+
+        child_treeiter = self.search.liststore.append([nationid, ""])
+        treeiter = self.search.treemodelsort.convert_child_iter_to_iter(child_treeiter)
+        treepath = self.search.treemodelsort.get_path(treeiter[1])
+
+        self.search.treeview.scroll_to_cell(treepath)
+        self.search.treeview.set_cursor_on_cell(treepath, None, None, False)
+
+        self.attributes.clear_fields()
+        self.attributes.entryName.grab_focus()
+
     def name_changed(self, entry, event):
         name = entry.get_text()
 

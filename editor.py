@@ -165,6 +165,8 @@ class Window(Gtk.Window):
 
         if page == 0:
             players.add_player()
+        elif page == 2:
+            nations.add_nation()
 
     def remove_data(self, toolbutton):
         page = maineditor.get_current_page()
