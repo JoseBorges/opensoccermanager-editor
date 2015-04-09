@@ -160,12 +160,42 @@ class Attributes(Gtk.Grid):
         self.attach(notebook, 0, 1, 3, 1)
 
         grid = Gtk.Grid()
+        grid.set_row_spacing(5)
+        grid.set_column_spacing(5)
+        grid.set_border_width(5)
         label = widgets.Label("_Capacity")
         notebook.append_page(grid, label)
 
         grid = Gtk.Grid()
+        grid.set_row_spacing(5)
+        grid.set_column_spacing(5)
+        grid.set_border_width(5)
         label = widgets.Label("_Buildings")
         notebook.append_page(grid, label)
+
+        label = widgets.Label("Programme Vendor")
+        grid.attach(label, 0, 0, 1, 1)
+        label = widgets.Label("Stall")
+        grid.attach(label, 0, 1, 1, 1)
+        label = widgets.Label("Small Shop")
+        grid.attach(label, 0, 2, 1, 1)
+        label = widgets.Label("Large Shop")
+        grid.attach(label, 0, 3, 1, 1)
+        label = widgets.Label("Burger Bar")
+        grid.attach(label, 0, 4, 1, 1)
+        label = widgets.Label("Bar")
+        grid.attach(label, 0, 5, 1, 1)
+        label = widgets.Label("Cafe")
+        grid.attach(label, 0, 6, 1, 1)
+        label = widgets.Label("Restaurant")
+        grid.attach(label, 0, 7, 1, 1)
+
+        self.buildings = []
+
+        for count in range(8):
+            spinbutton = Gtk.SpinButton.new_with_range(0, 8, 1)
+            grid.attach(spinbutton, 1, count, 1, 1)
+            self.buildings.append(spinbutton)
 
     def clear_fields(self):
         self.entryName.set_text("")
