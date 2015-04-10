@@ -159,6 +159,7 @@ class Attributes(Gtk.Grid):
         notebook.set_vexpand(True)
         self.attach(notebook, 0, 1, 3, 1)
 
+        # Stands
         grid = Gtk.Grid()
         grid.set_row_spacing(5)
         grid.set_column_spacing(5)
@@ -166,6 +167,42 @@ class Attributes(Gtk.Grid):
         label = widgets.Label("_Capacity")
         notebook.append_page(grid, label)
 
+        for count, item in enumerate(("North", "East", "South", "West", "North East", "North West", "South East", "South West")):
+            label = widgets.Label("_%s" % (item))
+            grid.attach(label, 0, count, 1, 1)
+
+            spinbutton = Gtk.SpinButton()
+            spinbutton.set_increments(1000, 1000)
+            spinbutton.set_snap_to_ticks(True)
+            label.set_mnemonic_widget(spinbutton)
+
+            if count < 4:
+                spinbutton.set_range(0, 15000)
+            else:
+                spinbutton.set_range(0, 3000)
+
+            grid.attach(spinbutton, 1, count, 1, 1)
+
+            radiobuttonStanding = Gtk.RadioButton("_Standing")
+            radiobuttonStanding.set_use_underline(True)
+            grid.attach(radiobuttonStanding, 2, count, 1, 1)
+            radiobuttonSeating = Gtk.RadioButton("_Seating")
+            radiobuttonSeating.join_group(radiobuttonStanding)
+            radiobuttonSeating.set_use_underline(True)
+            grid.attach(radiobuttonSeating, 3, count, 1, 1)
+
+            checkbutton = Gtk.CheckButton("_Roof")
+            checkbutton.set_use_underline(True)
+            grid.attach(checkbutton, 4, count, 1, 1)
+
+            if count < 4:
+                label = widgets.Label("_Box")
+                grid.attach(label, 5, count, 1, 1)
+                spinbutton = Gtk.SpinButton.new_with_range(0, 500, 250)
+                label.set_mnemonic_widget(spinbutton)
+                grid.attach(spinbutton, 6, count, 1, 1)
+
+        # Buildings
         grid = Gtk.Grid()
         grid.set_row_spacing(5)
         grid.set_column_spacing(5)
