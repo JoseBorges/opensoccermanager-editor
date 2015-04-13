@@ -53,6 +53,8 @@ class IDNumbers:
     clubid = 0
     clubattrid = 0
     nationid = 0
+    stadiumid = 0
+    stadiumattrid = 0
 
     def request_playerid(self):
         self.playerid += 1
@@ -78,6 +80,16 @@ class IDNumbers:
         self.nationid += 1
 
         return self.nationid
+
+    def request_stadiumid(self):
+        self.stadiumid += 1
+
+        return self.stadiumid
+
+    def request_stadiumattrid(self):
+        self.stadiumattrid += 1
+
+        return self.stadiumattrid
 
 
 idnumbers = IDNumbers()
@@ -170,13 +182,26 @@ def stadium(item):
     stadium = Stadium()
     stadiumid = item[0]
     stadium.name = item[1]
-    capacity = list(map(int, item[2:14]))
-    stadium.capacity = sum(capacity)
-    stadium.stands = list(map(int, item[2:10]))
-    stadium.seating = list(map(bool, item[14:22]))
-    stadium.roof = list(map(bool, item[22:30]))
-    stadium.box = list(map(int, item[10:14]))
-    stadium.buildings = list(map(int, item[30:38]))
+
+    data.db.cursor.execute("SELECT * FROM stadiumattr WHERE stadium=?", (stadiumid,))
+
+    for values in data.db.cursor.fetchall():
+        attributes = Attributes()
+        attributeid = values[0]
+        attributes.year = values[2]
+        capacity = list(map(int, values[3:15]))
+        attributes.capacity = sum(capacity)
+        attributes.stands = list(map(int, values[3:11]))
+        attributes.seating = list(map(bool, values[15:23]))
+        attributes.roof = list(map(bool, values[23:31]))
+        attributes.box = list(map(int, values[11:15]))
+        attributes.buildings = list(map(int, values[31:39]))
+
+        stadium.attributes[attributeid] = attributes
+
+        if attributeid > idnumbers.stadiumattrid:
+            idnumbers.stadiumattrid = attributeid
+
     stadiums[stadiumid] = stadium
 
 

@@ -67,6 +67,12 @@ class Stadiums(Gtk.Grid):
 
         self.attributes.entryName.set_text(stadium.name)
 
+        attributes = stadium.attributes
+
+        self.attributes.stadiumid = stadiumid
+
+        self.attributes.populate_attributes()
+
     def row_delete(self, treeview=None, event=None):
         if event:
             key = Gdk.keyval_name(event.keyval)
@@ -154,10 +160,59 @@ class Attributes(Gtk.Grid):
         label.set_mnemonic_widget(self.entryName)
         grid1.attach(self.entryName, 1, 0, 1, 1)
 
+        commonframe = widgets.CommonFrame("Attributes")
+        self.attach(commonframe, 0, 1, 3, 1)
+
+        scrolledwindow = Gtk.ScrolledWindow()
+        scrolledwindow.set_policy(Gtk.PolicyType.NEVER,
+                                  Gtk.PolicyType.AUTOMATIC)
+        commonframe.insert(scrolledwindow)
+
+        self.liststoreAttributes = Gtk.ListStore(int, str, str)
+
+        treeview = Gtk.TreeView()
+        treeview.set_hexpand(True)
+        treeview.set_model(self.liststoreAttributes)
+        treeview.set_enable_search(False)
+        treeview.set_search_column(-1)
+        scrolledwindow.add(treeview)
+        treeviewcolumn = widgets.TreeViewColumn(title="Year", column=1)
+        treeview.append_column(treeviewcolumn)
+        treeviewcolumn = widgets.TreeViewColumn(title="Capacity", column=2)
+        treeview.append_column(treeviewcolumn)
+
+    def populate_attributes(self):
+        '''
+        Populate attribute treeview with values for player id.
+        '''
+        self.liststoreAttributes.clear()
+
+        stadium = data.stadiums[self.stadiumid]
+
+        for attributeid, attribute in stadium.attributes.items():
+            self.liststoreAttributes.append([attributeid,
+                                             "%i" % (attribute.year),
+                                             "%i" % (attribute.capacity)
+                                            ])
+
+    def clear_fields(self):
+        self.entryName.set_text("")
+
+
+class AttributeDialog(Gtk.Dialog):
+    def __init__(self, parent):
+        Gtk.Dialog.__init__(self)
+        self.set_transient_for(parent)
+        self.set_border_width(5)
+        self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
+        self.add_button("_Save", Gtk.ResponseType.OK)
+        self.set_default_response(Gtk.ResponseType.OK)
+        self.connect("response", self.response_handler)
+
         notebook = Gtk.Notebook()
         notebook.set_hexpand(True)
         notebook.set_vexpand(True)
-        self.attach(notebook, 0, 1, 3, 1)
+        self.vbox.add(notebook)
 
         # Stands
         grid = Gtk.Grid()
@@ -234,5 +289,9 @@ class Attributes(Gtk.Grid):
             grid.attach(spinbutton, 1, count, 1, 1)
             self.buildings.append(spinbutton)
 
-    def clear_fields(self):
-        self.entryName.set_text("")
+    def display(self):
+        self.show_all()
+        self.run()
+
+    def response_handler(self, dialog, response):
+        self.destroy()
