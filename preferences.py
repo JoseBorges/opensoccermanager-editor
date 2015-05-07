@@ -27,6 +27,8 @@ class Preferences(ConfigParser):
         self.window_maximize = True
         self.window_width = 0
         self.window_height = 0
+        self.window_xposition = 0
+        self.window_yposition = 0
         self.show_toolbar = True
         self.confirm_quit = True
         self.confirm_remove = True
@@ -36,6 +38,8 @@ class Preferences(ConfigParser):
         self["INTERFACE"] = {"Maximized": True,
                              "Width": 0,
                              "Height": 0,
+                             "XPosition": 0,
+                             "YPosition": 0,
                              "ShowToolbar": True,
                              "ConfirmQuit": True,
                              "ConfirmRemove": True,
@@ -53,6 +57,8 @@ class Preferences(ConfigParser):
         self.window_maximize = self["INTERFACE"].getboolean("Maximized")
         self.window_width = int(self["INTERFACE"].get("Width"))
         self.window_height = int(self["INTERFACE"].get("Height"))
+        self.window_xposition = int(self["INTERFACE"].get("XPosition"))
+        self.window_yposition = int(self["INTERFACE"].get("YPosition"))
         self.show_toolbar = self["INTERFACE"].getboolean("ShowToolbar")
         self.confirm_quit = self["INTERFACE"].getboolean("ConfirmQuit")
         self.confirm_remove = self["INTERFACE"].getboolean("ConfirmRemove")

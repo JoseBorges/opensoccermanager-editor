@@ -57,6 +57,9 @@ class Window(Gtk.Window):
         else:
             self.unmaximize()
 
+            self.move(data.options.window_xposition,
+                        data.options.window_yposition)
+
         widgets.accelgroup = Gtk.AccelGroup()
         self.add_accel_group(widgets.accelgroup)
 
@@ -279,14 +282,16 @@ class Window(Gtk.Window):
         return True
 
     def quit_application(self):
-        width = str(self.get_size()[0])
-        height = str(self.get_size()[1])
-
         if self.is_maximized():
             data.options["INTERFACE"]["Maximized"] = "True"
         else:
-            data.options["INTERFACE"]["Width"] = width
-            data.options["INTERFACE"]["Height"] = height
+            width, height = self.get_size()
+            xposition, yposition = self.get_position()
+
+            data.options["INTERFACE"]["Width"] = str(width)
+            data.options["INTERFACE"]["Height"] = str(height)
+            data.options["INTERFACE"]["XPosition"] = str(xposition)
+            data.options["INTERFACE"]["YPosition"] = str(yposition)
             data.options["INTERFACE"]["Maximized"] = "False"
 
         data.options.write_file()
