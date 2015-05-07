@@ -58,7 +58,7 @@ class Window(Gtk.Window):
             self.unmaximize()
 
             self.move(data.options.window_xposition,
-                        data.options.window_yposition)
+                      data.options.window_yposition)
 
         widgets.accelgroup = Gtk.AccelGroup()
         self.add_accel_group(widgets.accelgroup)
@@ -188,7 +188,7 @@ class Window(Gtk.Window):
 
         if page == 0:
             players.add_player()
-        elif page == 2:
+        elif page == 3:
             nations.add_nation()
 
     def remove_data(self, toolbutton):
@@ -216,14 +216,6 @@ class Window(Gtk.Window):
                     del data.clubs[clubs.selected]
                     clubs.populate_data(values=data.clubs)
             elif page == 2:
-                keys = [player.nationality for player in data.players.values()]
-
-                if nations.selected in keys:
-                    dialogs.error(1)
-                else:
-                    del data.nations[nations.selected]
-                    nations.populate_data(values=data.nations)
-            elif page == 3:
                 keys = [club.stadium for club in data.clubs.values()]
 
                 if [item for item in stadiums.selected if item in keys]:
@@ -233,6 +225,14 @@ class Window(Gtk.Window):
                         del data.stadiums[stadiums.selected]
 
                     stadiums.populate()
+            elif page == 3:
+                keys = [player.nationality for player in data.players.values()]
+
+                if nations.selected in keys:
+                    dialogs.error(1)
+                else:
+                    del data.nations[nations.selected]
+                    nations.populate_data(values=data.nations)
 
             data.unsaved = True
 
@@ -404,8 +404,8 @@ class MainEditor(Gtk.Notebook):
         widgets.window.grid.attach(self, 0, 3, 1, 1)
         self.append_page(players, widgets.Label("_Players"))
         self.append_page(clubs, widgets.Label("_Clubs"))
-        self.append_page(nations, widgets.Label("_Nations"))
         self.append_page(stadiums, widgets.Label("_Stadiums"))
+        self.append_page(nations, widgets.Label("_Nations"))
 
     def switch_page(self, notebook, page, number):
         if not page.selected:
