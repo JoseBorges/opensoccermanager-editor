@@ -46,13 +46,13 @@ class Nations(Gtk.Grid):
         self.attach(self.search, 0, 0, 1, 1)
 
         self.attributes = Attributes()
-        self.attributes.entryName.connect("focus-out-event", self.name_changed)
+        self.attributes.buttonSave.connect("clicked", self.save_data)
+        self.attributes.buttonReset.connect("clicked", self.reset_data)
         self.attach(self.attributes, 1, 0, 1, 1)
 
     def add_nation(self):
         '''
-        Add the nation to the date structure, and append to the search
-        interface.
+        Add the nation to the date structure, and append to search interface.
         '''
         nation = data.Nation()
         nationid = data.idnumbers.request_nationid()
@@ -68,20 +68,25 @@ class Nations(Gtk.Grid):
         self.attributes.clear_fields()
         self.attributes.entryName.grab_focus()
 
-    def name_changed(self, entry, event):
-        name = entry.get_text()
+    def save_data(self, button):
+        name = self.attributes.entryName.get_text()
 
         model, treeiter = self.search.treeselection.get_selected()
         liststore = model.get_model()
         child_treeiter = model.convert_iter_to_child_iter(treeiter)
 
         liststore[child_treeiter][1] = name
-        data.nations[self.selected].name = name
+        self.attributes.save_fields()
 
-        # Get new position of modified item
         model, treeiter = self.search.treeselection.get_selected()
         treepath = model.get_path(treeiter)
         self.search.treeview.scroll_to_cell(treepath)
+
+    def reset_data(self, button):
+        nation = data.nations[self.selected]
+
+        self.attributes.entryName.set_text(nation.name)
+        self.attributes.entryDenonym.set_text(nation.denonym)
 
     def search_activated(self, searchentry):
         criteria = searchentry.get_text()
@@ -184,17 +189,39 @@ class Attributes(Gtk.Grid):
         self.set_column_spacing(5)
         self.set_sensitive(False)
 
+        grid = Gtk.Grid()
+        grid.set_hexpand(True)
+        grid.set_vexpand(True)
+        grid.set_row_spacing(5)
+        grid.set_column_spacing(5)
+        self.attach(grid, 0, 0, 1, 1)
+
         label = widgets.Label("_Name")
-        self.attach(label, 0, 0, 1, 1)
+        grid.attach(label, 0, 0, 1, 1)
         self.entryName = Gtk.Entry()
         label.set_mnemonic_widget(self.entryName)
-        self.attach(self.entryName, 1, 0, 1, 1)
+        grid.attach(self.entryName, 1, 0, 1, 1)
 
         label = widgets.Label("_Denonym")
-        self.attach(label, 0, 1, 1, 1)
+        grid.attach(label, 0, 1, 1, 1)
         self.entryDenonym = Gtk.Entry()
         label.set_mnemonic_widget(self.entryDenonym)
-        self.attach(self.entryDenonym, 1, 1, 1, 1)
+        grid.attach(self.entryDenonym, 1, 1, 1, 1)
+
+        buttonbox = Gtk.ButtonBox()
+        buttonbox.set_spacing(5)
+        buttonbox.set_layout(Gtk.ButtonBoxStyle.END)
+        self.attach(buttonbox, 0, 1, 1, 1)
+        self.buttonReset = widgets.Button("_Reset")
+        buttonbox.add(self.buttonReset)
+        self.buttonSave = widgets.Button("_Save")
+        buttonbox.add(self.buttonSave)
+
+    def save_fields(self):
+        nation = data.nations[self.nationid]
+
+        nation.name = self.entryName.get_text()
+        nation.denonym = self.entryDenonym.get_text()
 
     def clear_fields(self):
         self.entryName.set_text("")

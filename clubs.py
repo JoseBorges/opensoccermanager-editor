@@ -50,7 +50,28 @@ class Clubs(Gtk.Grid):
         self.attributes.entryName.connect("focus-out-event", self.name_changed)
         self.attach(self.attributes, 1, 0, 1, 1)
 
+    def add_club(self):
+        '''
+        Add the club to the data structure, and append to search interface.
+        '''
+        club = data.Club()
+        clubid = data.idnumbers.request_clubid()
+        data.clubs[clubid] = club
+
+        child_treeiter = self.search.liststore.append([clubid, ""])
+        treeiter = self.search.treemodelsort.convert_child_iter_to_iter(child_treeiter)
+        treepath = self.search.treemodelsort.get_path(treeiter[1])
+
+        self.search.treeview.scroll_to_cell(treepath)
+        self.search.treeview.set_cursor_on_cell(treepath, None, None, False)
+
+        self.attributes.clear_fields()
+        self.attributes.entryName.grab_focus()
+
     def name_changed(self, entry, event):
+        '''
+        Update list with new name of club.
+        '''
         name = entry.get_text()
 
         model, treeiter = self.search.treeselection.get_selected()

@@ -36,7 +36,6 @@ class Player:
         self.common_name = ""
         self.date_of_birth = None
         self.nationality = None
-
         self.attributes = {}
 
 
@@ -47,16 +46,16 @@ class Club:
         self.attributes = {}
 
 
-class Nation:
-    def __init__(self):
-        self.name = ""
-        self.denonym = ""
-
-
 class Stadium:
     def __init__(self):
         self.name = ""
         self.attributes = {}
+
+
+class Nation:
+    def __init__(self):
+        self.name = ""
+        self.denonym = ""
 
 
 class Attributes:
@@ -179,8 +178,8 @@ def club(item):
 
     clubs[clubid] = club
 
-    if clubid > idnumbers.playerid:
-        idnumbers.clubid = playerid
+    if clubid > idnumbers.clubid:
+        idnumbers.clubid = clubid
 
 
 def nation(item):
@@ -219,6 +218,9 @@ def stadium(item):
             idnumbers.stadiumattrid = attributeid
 
     stadiums[stadiumid] = stadium
+
+    if stadiumid > idnumbers.stadiumid:
+        idnumbers.stadiumid = stadiumid
 
 
 positions = ("GK", "DL", "DR", "DC", "D", "ML", "MR", "MC", "M", "AS", "AF")

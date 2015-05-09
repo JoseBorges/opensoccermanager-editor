@@ -79,8 +79,7 @@ class Players(Gtk.Grid):
 
     def add_player(self):
         '''
-        Add the player to the date structure, and append to the search
-        interface.
+        Add the player to the date structure, and append to search interface.
         '''
         player = data.Player()
         playerid = data.idnumbers.request_playerid()

@@ -94,8 +94,8 @@ class Window(Gtk.Window):
         menubar.menuitemNext.connect("activate", self.move_notebook_page, 1)
         menubar.menuitemPlayers.connect("activate", self.switch_notebook_page, 0)
         menubar.menuitemClubs.connect("activate", self.switch_notebook_page, 1)
-        menubar.menuitemNations.connect("activate", self.switch_notebook_page, 2)
-        menubar.menuitemStadiums.connect("activate", self.switch_notebook_page, 3)
+        menubar.menuitemStadiums.connect("activate", self.switch_notebook_page, 2)
+        menubar.menuitemNations.connect("activate", self.switch_notebook_page, 3)
         self.menuitemValidate = menubar.menuitemValidate
         menubar.menuitemValidate.connect("activate", self.validate_database)
         self.menuitemFilter = menubar.menuitemFilter
@@ -188,6 +188,10 @@ class Window(Gtk.Window):
 
         if page == 0:
             players.add_player()
+        elif page == 1:
+            clubs.add_club()
+        elif page == 2:
+            stadiums.add_stadium()
         elif page == 3:
             nations.add_nation()
 
@@ -216,20 +220,22 @@ class Window(Gtk.Window):
                     del data.clubs[clubs.selected]
                     clubs.populate_data(values=data.clubs)
             elif page == 2:
-                keys = [club.stadium for club in data.clubs.values()]
+                keys = []
 
-                if [item for item in stadiums.selected if item in keys]:
-                    dialogs.error(2)
+                for club in data.clubs.values():
+                    for attribute in club.attributes.values():
+                        keys.append(attribute.stadium)
+
+                if stadiums.selected in keys:
+                    dialogs.error(1)
                 else:
-                    for item in stadiums.selected:
-                        del data.stadiums[stadiums.selected]
-
-                    stadiums.populate()
+                    del data.stadiums[stadiums.selected]
+                    stadiums.populate_data(values=data.stadiums)
             elif page == 3:
                 keys = [player.nationality for player in data.players.values()]
 
                 if nations.selected in keys:
-                    dialogs.error(1)
+                    dialogs.error(2)
                 else:
                     del data.nations[nations.selected]
                     nations.populate_data(values=data.nations)
@@ -269,9 +275,8 @@ class Window(Gtk.Window):
                 self.quit_application()
         else:
             if data.options.confirm_quit:
-                state = dialogs.quit_dialog()
 
-                if state:
+                if dialogs.quit_dialog():
                     if data.db.cursor:
                         data.db.disconnect()
 

@@ -49,6 +49,24 @@ class Stadiums(Gtk.Grid):
         self.attributes.entryName.connect("focus-out-event", self.name_changed)
         self.attach(self.attributes, 1, 0, 1, 1)
 
+    def add_stadium(self):
+        '''
+        Add the stadium to the date structure, and append to search interface.
+        '''
+        stadium = data.Stadium()
+        stadiumid = data.idnumbers.request_stadiumid()
+        data.stadiums[stadiumid] = stadium
+
+        child_treeiter = self.search.liststore.append([stadiumid, ""])
+        treeiter = self.search.treemodelsort.convert_child_iter_to_iter(child_treeiter)
+        treepath = self.search.treemodelsort.get_path(treeiter[1])
+
+        self.search.treeview.scroll_to_cell(treepath)
+        self.search.treeview.set_cursor_on_cell(treepath, None, None, False)
+
+        self.attributes.clear_fields()
+        self.attributes.entryName.grab_focus()
+
     def name_changed(self, entry, event):
         name = entry.get_text()
 
@@ -82,8 +100,6 @@ class Stadiums(Gtk.Grid):
         stadium = data.stadiums[stadiumid]
 
         self.attributes.entryName.set_text(stadium.name)
-
-        attributes = stadium.attributes
 
         self.attributes.stadiumid = stadiumid
 
@@ -210,14 +226,17 @@ class Attributes(Gtk.Grid):
         buttonbox.set_spacing(5)
         buttonbox.set_layout(Gtk.ButtonBoxStyle.START)
         buttonbox.set_orientation(Gtk.Orientation.VERTICAL)
-        buttonAdd = Gtk.Button.new_from_icon_name("gtk-add", Gtk.IconSize.BUTTON)
+        buttonAdd = Gtk.Button.new_from_icon_name("gtk-add",
+                                                  Gtk.IconSize.BUTTON)
         #buttonAdd.connect("clicked", self.add_attribute)
         buttonbox.add(buttonAdd)
-        self.buttonEdit = Gtk.Button.new_from_icon_name("gtk-edit", Gtk.IconSize.BUTTON)
+        self.buttonEdit = Gtk.Button.new_from_icon_name("gtk-edit",
+                                                        Gtk.IconSize.BUTTON)
         self.buttonEdit.set_sensitive(False)
         #self.buttonEdit.connect("clicked", self.edit_attribute)
         buttonbox.add(self.buttonEdit)
-        self.buttonRemove = Gtk.Button.new_from_icon_name("gtk-remove", Gtk.IconSize.BUTTON)
+        self.buttonRemove = Gtk.Button.new_from_icon_name("gtk-remove",
+                                                          Gtk.IconSize.BUTTON)
         self.buttonRemove.set_sensitive(False)
         #self.buttonRemove.connect("clicked", self.remove_attribute)
         buttonbox.add(self.buttonRemove)
@@ -239,6 +258,7 @@ class Attributes(Gtk.Grid):
 
     def clear_fields(self):
         self.entryName.set_text("")
+        self.liststoreAttributes.clear()
 
 
 class AttributeDialog(Gtk.Dialog):
