@@ -64,12 +64,12 @@ class Database:
         data.players = {}
         data.clubs = {}
         data.nations = {}
+        data.leagues = {}
         data.stadiums = {}
 
         self.cursor.execute("SELECT * FROM year")
-        values = self.cursor.fetchall()
 
-        for item in values:
+        for item in self.cursor.fetchall():
             data.years.append(item[0])
 
         self.cursor.execute("SELECT * FROM player")
@@ -81,6 +81,11 @@ class Database:
 
         for item in self.cursor.fetchall():
             data.club(item)
+
+        self.cursor.execute("SELECT * FROM league")
+
+        for item in self.cursor.fetchall():
+            data.league(item)
 
         self.cursor.execute("SELECT * FROM nation")
 
@@ -146,13 +151,6 @@ class Database:
         content = results.fetchall()
 
         player_keys = (item[0] for item in content)
-
-        '''
-        results = self.cursor.execute("SELECT * FROM playerattr")
-        content = results.fetchall()
-
-        playerattr_keys = (item[0] for item in content)
-        '''
 
         for playerid, player in data.players.items():
             if playerid in player_keys:

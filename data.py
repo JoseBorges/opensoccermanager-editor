@@ -25,8 +25,9 @@ unsaved = False
 years = []
 players = {}
 clubs = {}
-nations = {}
+leagues = {}
 stadiums = {}
+nations = {}
 
 
 class Player:
@@ -44,6 +45,11 @@ class Club:
         self.name = ""
         self.nickname = ""
         self.attributes = {}
+
+
+class League:
+    def __init__(self):
+        self.name = ""
 
 
 class Stadium:
@@ -166,10 +172,11 @@ def club(item):
         attributes = Attributes()
         attributeid = values[0]
         attributes.year = values[2]
-        attributes.manager = values[3]
-        attributes.chairman = values[4]
-        attributes.stadium = values[5]
-        attributes.reputation = values[6]
+        attributes.league = values[3]
+        attributes.manager = values[4]
+        attributes.chairman = values[5]
+        attributes.stadium = values[6]
+        attributes.reputation = values[7]
 
         club.attributes[attributeid] = attributes
 
@@ -180,6 +187,21 @@ def club(item):
 
     if clubid > idnumbers.clubid:
         idnumbers.clubid = clubid
+
+
+def league(item):
+    league = League()
+    leagueid = item[0]
+    league.name = item[1]
+
+    data.db.cursor.execute("SELECT * FROM leagueattr WHERE league=?", (leagueid,))
+
+    for values in data.db.cursor.fetchall():
+        attributes = Attributes()
+        attributeid = values[0]
+        attributes.name = values[1]
+
+    leagues[leagueid] = league
 
 
 def nation(item):

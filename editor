@@ -30,6 +30,7 @@ import clubs
 import data
 import database
 import dialogs
+import leagues
 import menu
 import nations
 import players
@@ -275,7 +276,6 @@ class Window(Gtk.Window):
                 self.quit_application()
         else:
             if data.options.confirm_quit:
-
                 if dialogs.quit_dialog():
                     if data.db.cursor:
                         data.db.disconnect()
@@ -396,8 +396,9 @@ class MainEditor(Gtk.Notebook):
 
         players.run()
         clubs.run()
-        nations.run()
         stadiums.run()
+        leagues.run()
+        nations.run()
 
         if not self.active:
             self.add_tabs()
@@ -410,6 +411,7 @@ class MainEditor(Gtk.Notebook):
         self.append_page(players, widgets.Label("_Players"))
         self.append_page(clubs, widgets.Label("_Clubs"))
         self.append_page(stadiums, widgets.Label("_Stadiums"))
+        self.append_page(leagues, widgets.Label("_Leagues"))
         self.append_page(nations, widgets.Label("_Nations"))
 
     def switch_page(self, notebook, page, number):
@@ -428,6 +430,7 @@ widgets.window = Window()
 maineditor = MainEditor()
 players = players.Players()
 clubs = clubs.Clubs()
+leagues = leagues.Leagues()
 nations = nations.Nations()
 stadiums = stadiums.Stadiums()
 data.db = database.Database()
