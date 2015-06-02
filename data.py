@@ -73,6 +73,7 @@ class IDNumbers:
     playerattrid = 0
     clubid = 0
     clubattrid = 0
+    leagueid = 0
     nationid = 0
     stadiumid = 0
     stadiumattrid = 0
@@ -194,14 +195,10 @@ def league(item):
     leagueid = item[0]
     league.name = item[1]
 
-    data.db.cursor.execute("SELECT * FROM leagueattr WHERE league=?", (leagueid,))
-
-    for values in data.db.cursor.fetchall():
-        attributes = Attributes()
-        attributeid = values[0]
-        attributes.name = values[1]
-
     leagues[leagueid] = league
+
+    if leagueid > idnumbers.leagueid:
+        idnumbers.leagueid = leagueid
 
 
 def nation(item):
