@@ -163,10 +163,17 @@ class Attributes(Gtk.Grid):
         self.set_column_spacing(5)
         self.set_sensitive(False)
 
+        grid = Gtk.Grid()
+        grid.set_hexpand(True)
+        grid.set_vexpand(True)
+        grid.set_row_spacing(5)
+        grid.set_column_spacing(5)
+        self.attach(grid, 0, 0, 1, 1)
+
         grid1 = Gtk.Grid()
         grid1.set_row_spacing(5)
         grid1.set_column_spacing(5)
-        self.attach(grid1, 0, 0, 1, 1)
+        grid.attach(grid1, 0, 0, 1, 1)
 
         label = widgets.Label("_Name")
         grid1.attach(label, 0, 0, 1, 1)
@@ -179,7 +186,7 @@ class Attributes(Gtk.Grid):
         grid1.attach(self.entryNickname, 1, 1, 1, 1)
 
         commonframe = widgets.CommonFrame("Attributes")
-        self.attach(commonframe, 0, 1, 1, 1)
+        grid.attach(commonframe, 0, 1, 1, 1)
 
         self.liststoreAttributes = Gtk.ListStore(int, int, str, str, str, int)
         cellrenderertext = Gtk.CellRendererText()
@@ -220,18 +227,30 @@ class Attributes(Gtk.Grid):
         buttonbox.set_spacing(5)
         buttonbox.set_layout(Gtk.ButtonBoxStyle.START)
         buttonbox.set_orientation(Gtk.Orientation.VERTICAL)
-        buttonAdd = Gtk.Button.new_from_icon_name("gtk-add", Gtk.IconSize.BUTTON)
+        buttonAdd = Gtk.Button.new_from_icon_name("gtk-add",
+                                                  Gtk.IconSize.BUTTON)
         buttonAdd.connect("clicked", self.add_attribute)
         buttonbox.add(buttonAdd)
-        self.buttonEdit = Gtk.Button.new_from_icon_name("gtk-edit", Gtk.IconSize.BUTTON)
+        self.buttonEdit = Gtk.Button.new_from_icon_name("gtk-edit",
+                                                        Gtk.IconSize.BUTTON)
         self.buttonEdit.set_sensitive(False)
         self.buttonEdit.connect("clicked", self.edit_attribute)
         buttonbox.add(self.buttonEdit)
-        self.buttonRemove = Gtk.Button.new_from_icon_name("gtk-remove", Gtk.IconSize.BUTTON)
+        self.buttonRemove = Gtk.Button.new_from_icon_name("gtk-remove",
+                                                          Gtk.IconSize.BUTTON)
         self.buttonRemove.set_sensitive(False)
         self.buttonRemove.connect("clicked", self.remove_attribute)
         buttonbox.add(self.buttonRemove)
         grid2.attach(buttonbox, 1, 0, 1, 1)
+
+        buttonbox = Gtk.ButtonBox()
+        buttonbox.set_spacing(5)
+        buttonbox.set_layout(Gtk.ButtonBoxStyle.END)
+        self.attach(buttonbox, 0, 1, 1, 1)
+        self.buttonReset = widgets.Button("_Reset")
+        buttonbox.add(self.buttonReset)
+        self.buttonSave = widgets.Button("_Save")
+        buttonbox.add(self.buttonSave)
 
     def add_attribute(self, button):
         '''

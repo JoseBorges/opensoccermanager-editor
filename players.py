@@ -48,10 +48,18 @@ class Players(Gtk.Grid):
         self.attach(self.search, 0, 0, 1, 1)
 
         self.attributes = Attributes()
-        self.attributes.entryFirstName.connect("focus-out-event", self.name_changed, 0)
-        self.attributes.entrySecondName.connect("focus-out-event", self.name_changed, 1)
-        self.attributes.entryCommonName.connect("focus-out-event", self.name_changed, 2)
         self.attach(self.attributes, 1, 0, 1, 1)
+
+        self.attributes.buttonSave.connect("clicked", self.on_save_button_clicked)
+
+    def on_save_button_clicked(self, button):
+        names = self.attributes.get_names()
+
+        playerid = self.attributes.playerid
+
+        data.players[playerid].first_name = names[0]
+        data.players[playerid].second_name = names[1]
+        data.players[playerid].common_name = names[2]
 
     def name_changed(self, entry, event, index):
         model, treeiter = self.search.treeselection.get_selected()
@@ -190,8 +198,15 @@ class Attributes(Gtk.Grid):
         self.set_column_spacing(5)
         self.set_sensitive(False)
 
+        grid = Gtk.Grid()
+        grid.set_hexpand(True)
+        grid.set_vexpand(True)
+        grid.set_row_spacing(5)
+        grid.set_column_spacing(5)
+        self.attach(grid, 0, 0, 1, 1)
+
         commonframe = widgets.CommonFrame("Personal")
-        self.attach(commonframe, 1, 0, 1, 1)
+        grid.attach(commonframe, 0, 0, 1, 1)
 
         grid1 = Gtk.Grid()
         grid1.set_row_spacing(5)
@@ -226,7 +241,7 @@ class Attributes(Gtk.Grid):
         grid1.attach(self.buttonNationality, 1, 4, 1, 1)
 
         commonframe = widgets.CommonFrame("Attributes")
-        self.attach(commonframe, 1, 1, 1, 1)
+        grid.attach(commonframe, 0, 1, 1, 1)
 
         grid2 = Gtk.Grid()
         grid2.set_row_spacing(5)
@@ -253,14 +268,12 @@ class Attributes(Gtk.Grid):
         self.treeselectionAttribute = self.treeview.get_selection()
         self.treeselectionAttribute.connect("changed", self.attribute_changed)
         scrolledwindow.add(self.treeview)
-        treeviewcolumn = Gtk.TreeViewColumn("Year", cellrenderertext, text=1)
+        treeviewcolumn = widgets.TreeViewColumn(title="Year", column=1)
         treeviewcolumn.set_sort_column_id(1)
         self.treeview.append_column(treeviewcolumn)
-        treeviewcolumn = Gtk.TreeViewColumn("Club", cellrenderertext, text=2)
+        treeviewcolumn = widgets.TreeViewColumn(title="Club", column=2)
         self.treeview.append_column(treeviewcolumn)
-        treeviewcolumn = Gtk.TreeViewColumn("Position",
-                                            cellrenderertext,
-                                            text=3)
+        treeviewcolumn = widgets.TreeViewColumn(title="Position", column=3)
         self.treeview.append_column(treeviewcolumn)
 
         for count, skill in enumerate(data.skill_short):
@@ -276,9 +289,7 @@ class Attributes(Gtk.Grid):
             treeviewcolumn.add_attribute(cellrenderertext, "text", count + 4)
             self.treeview.append_column(treeviewcolumn)
 
-        treeviewcolumn = Gtk.TreeViewColumn("Training",
-                                            cellrenderertext,
-                                            text=13)
+        treeviewcolumn = widgets.TreeViewColumn(title="Training", column=13)
         self.treeview.append_column(treeviewcolumn)
 
         buttonbox = Gtk.ButtonBox()
@@ -300,6 +311,15 @@ class Attributes(Gtk.Grid):
         self.buttonRemove.connect("clicked", self.remove_attribute)
         buttonbox.add(self.buttonRemove)
         grid2.attach(buttonbox, 1, 0, 1, 1)
+
+        buttonbox = Gtk.ButtonBox()
+        buttonbox.set_spacing(5)
+        buttonbox.set_layout(Gtk.ButtonBoxStyle.END)
+        self.attach(buttonbox, 0, 2, 1, 1)
+        self.buttonReset = widgets.Button("_Reset")
+        buttonbox.add(self.buttonReset)
+        self.buttonSave = widgets.Button("_Save")
+        buttonbox.add(self.buttonSave)
 
     def attribute_changed(self, treeselection):
         model, treeiter = treeselection.get_selected()
@@ -407,7 +427,10 @@ class Attributes(Gtk.Grid):
                                              attribute.training_value,
                                              ])
 
-    def retrieve(self):
+    def get_names(self):
+        '''
+        Get displayed names from Entry widgets.
+        '''
         first_name = self.entryFirstName.get_text()
         second_name = self.entrySecondName.get_text()
         common_name = self.entryCommonName.get_text()

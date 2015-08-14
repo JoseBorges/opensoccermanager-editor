@@ -38,9 +38,13 @@ class Database:
 
             self.cursor.execute("CREATE TABLE year (year INTEGER PRIMARY KEY)")
 
-            self.cursor.execute("CREATE TABLE stadium (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)")
+            self.cursor.execute("CREATE TABLE league (leagueid INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)")
 
             self.cursor.execute("CREATE TABLE nation (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, denonym TEXT)")
+
+            self.cursor.execute("CREATE TABLE stadium (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)")
+
+            self.cursor.execute("CREATE TABLE stadiumattr (id INTEGER PRIMARY KEY AUTOINCREMENT, year INTEGER NOT NULL)")
 
             self.cursor.execute("CREATE TABLE club (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, nickname TEXT)")
 
