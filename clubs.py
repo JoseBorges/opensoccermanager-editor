@@ -450,9 +450,13 @@ class AttributeDialog(Gtk.Dialog):
         self.show_all()
 
         if clubid:
+            self.set_title("Edit Attribute")
+
             self.clubid = clubid
             self.attributeid = attributeid
 
             self.load_fields()
+        else:
+            self.set_title("Add Attribute")
 
         self.run()

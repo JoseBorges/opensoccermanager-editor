@@ -53,30 +53,23 @@ class Players(Gtk.Grid):
         self.attributes.buttonSave.connect("clicked", self.on_save_button_clicked)
 
     def on_save_button_clicked(self, button):
-        names = self.attributes.get_names()
-
-        playerid = self.attributes.playerid
-
-        data.players[playerid].first_name = names[0]
-        data.players[playerid].second_name = names[1]
-        data.players[playerid].common_name = names[2]
-
-    def name_changed(self, entry, event, index):
+        '''
+        Save data and update TreeView list.
+        '''
         model, treeiter = self.search.treeselection.get_selected()
         liststore = model.get_model()
         child_treeiter = model.convert_iter_to_child_iter(treeiter)
 
-        player = data.players[self.selected]
+        names = self.attributes.get_names()
 
-        if index == 0:
-            player.first_name = entry.get_text()
-            name = display.name(player)
-        elif index == 1:
-            player.second_name = entry.get_text()
-            name = display.name(player)
-        elif index == 2:
-            player.common_name = entry.get_text()
-            name = display.name(player)
+        playerid = self.attributes.playerid
+        player = data.players[playerid]
+
+        player.first_name = names[0]
+        player.second_name = names[1]
+        player.common_name = names[2]
+
+        name = display.name(player)
 
         liststore[child_treeiter][1] = name
 
@@ -582,7 +575,12 @@ class AttributeDialog(Gtk.Dialog):
 
     def save_fields(self):
         player = data.players[self.playerid]
-        attribute = player.attributes[self.attributeid]
+
+        if self.attributeid in player.attributes.keys():
+            attribute = player.attributes[self.attributeid]
+        else:
+            player.attributes[self.attributeid] = data.Attributes()
+            attribute = player.attributes[self.attributeid]
 
         model = self.comboboxYear.get_model()
         treeiter = self.comboboxYear.get_active()
@@ -607,10 +605,16 @@ class AttributeDialog(Gtk.Dialog):
 
     def display(self, playerid=None, attributeid=None):
         if playerid:
+            self.set_title("Edit Attribute")
+
             self.playerid = playerid
             self.attributeid = attributeid
 
             self.load_fields()
+        else:
+            self.set_title("Add Attribute")
+
+            self.attributeid = data.idnumbers.request_playerattrid()
 
         self.show_all()
         self.run()
