@@ -2,7 +2,7 @@
 
 #  OpenSoccerManager-Editor
 #
-#  Copyright 2015 Andrew Steele <andrew.steele@opensoccermanager.org>
+#  Copyright 2015 Andrew Steele <andrew@andrewsteele.me.uk>
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -96,7 +96,8 @@ class Window(Gtk.Window):
         menubar.menuitemPlayers.connect("activate", self.switch_notebook_page, 0)
         menubar.menuitemClubs.connect("activate", self.switch_notebook_page, 1)
         menubar.menuitemStadiums.connect("activate", self.switch_notebook_page, 2)
-        menubar.menuitemNations.connect("activate", self.switch_notebook_page, 3)
+        menubar.menuitemLeagues.connect("activate", self.switch_notebook_page, 3)
+        menubar.menuitemNations.connect("activate", self.switch_notebook_page, 4)
         self.menuitemValidate = menubar.menuitemValidate
         menubar.menuitemValidate.connect("activate", self.validate_database)
         self.menuitemFilter = menubar.menuitemFilter
