@@ -163,12 +163,6 @@ class FileDialog(Gtk.FileChooserDialog):
 
 class PlayerSelectionDialog(Gtk.Dialog):
     def __init__(self):
-        def treeselection_changed(treeselection):
-            if treeselection.count_selected_rows() == 0:
-                self.set_response_sensitive(Gtk.ResponseType.OK, False)
-            else:
-                self.set_response_sensitive(Gtk.ResponseType.OK, True)
-
         Gtk.Dialog.__init__(self)
         self.set_border_width(5)
         self.set_default_size(-1, 250)
@@ -198,10 +192,11 @@ class PlayerSelectionDialog(Gtk.Dialog):
         treeview.set_headers_visible(False)
         treeview.set_enable_search(False)
         treeview.set_search_column(-1)
+        treeview.connect("row-activated", self.on_treeview_double_click)
         treeviewcolumn = Gtk.TreeViewColumn("", cellrenderertext, text=1)
         treeview.append_column(treeviewcolumn)
         self.treeselection = treeview.get_selection()
-        self.treeselection.connect("changed", treeselection_changed)
+        self.treeselection.connect("changed", self.treeselection_changed)
         scrolledwindow.add(treeview)
 
         self.entrySearch = Gtk.SearchEntry()
@@ -209,6 +204,15 @@ class PlayerSelectionDialog(Gtk.Dialog):
         self.entrySearch.connect("activate", self.activate_search)
         self.entrySearch.connect("icon-press", self.clear_search)
         grid.attach(self.entrySearch, 0, 1, 1, 1)
+
+    def on_treeview_double_click(self, *args):
+        self.response(Gtk.ResponseType.OK)
+
+    def treeselection_changed(self, treeselection):
+        if treeselection.count_selected_rows() == 0:
+            self.set_response_sensitive(Gtk.ResponseType.OK, False)
+        else:
+            self.set_response_sensitive(Gtk.ResponseType.OK, True)
 
     def display(self, parent):
         self.set_transient_for(parent)
@@ -300,6 +304,7 @@ class ClubSelectionDialog(Gtk.Dialog):
         treeview.set_headers_visible(False)
         treeview.set_enable_search(False)
         treeview.set_search_column(-1)
+        treeview.connect("row-activated", self.on_treeview_double_click)
         treeviewcolumn = Gtk.TreeViewColumn(None,
                                             cellrenderertext,
                                             text=1)
@@ -313,6 +318,9 @@ class ClubSelectionDialog(Gtk.Dialog):
         self.entrySearch.connect("activate", self.search_activated)
         self.entrySearch.connect("icon-press", self.search_cleared)
         grid.attach(self.entrySearch, 0, 1, 1, 1)
+
+    def on_treeview_double_click(self, *args):
+        self.response(Gtk.ResponseType.OK)
 
     def search_changed(self, entry):
         if entry.get_text() is "":
@@ -411,6 +419,7 @@ class NationSelectionDialog(Gtk.Dialog):
         treeview.set_headers_visible(False)
         treeview.set_enable_search(False)
         treeview.set_search_column(-1)
+        treeview.connect("row-activated", self.on_treeview_double_click)
         treeviewcolumn = Gtk.TreeViewColumn("", cellrenderertext, text=1)
         treeview.append_column(treeviewcolumn)
         self.treeselection = treeview.get_selection()
@@ -421,6 +430,9 @@ class NationSelectionDialog(Gtk.Dialog):
         self.entrySearch.connect("activate", self.activate_search)
         self.entrySearch.connect("icon-press", self.clear_search)
         grid.attach(self.entrySearch, 0, 1, 1, 1)
+
+    def on_treeview_double_click(self, *args):
+        self.response(Gtk.ResponseType.OK)
 
     def treeselection_changed(self, treeselection):
         state = not treeselection.count_selected_rows() == 0
@@ -512,6 +524,7 @@ class StadiumSelectionDialog(Gtk.Dialog):
         treeview.set_headers_visible(False)
         treeview.set_enable_search(False)
         treeview.set_search_column(-1)
+        treeview.connect("row-activated", self.on_treeview_double_click)
         treeviewcolumn = Gtk.TreeViewColumn(None, cellrenderertext, text=1)
         treeview.append_column(treeviewcolumn)
         self.treeselection = treeview.get_selection()
@@ -522,6 +535,9 @@ class StadiumSelectionDialog(Gtk.Dialog):
         self.entrySearch.connect("activate", self.activate_search)
         self.entrySearch.connect("icon-press", self.clear_search)
         grid.attach(self.entrySearch, 0, 1, 1, 1)
+
+    def on_treeview_double_click(self, *args):
+        self.response(Gtk.ResponseType.OK)
 
     def treeselection_changed(self, treeselection):
         state = not treeselection.count_selected_rows() == 0
@@ -593,9 +609,16 @@ class DateOfBirth(Gtk.Dialog):
 
         self.calendar = Gtk.Calendar()
         self.calendar.set_property("year", True)
+        self.calendar.connect("day-selected-double-click", self.on_calendar_double_click)
         self.vbox.add(self.calendar)
 
         self.date_of_birth = None
+
+    def on_calendar_double_click(self, calendar):
+        '''
+        Emit response for double-click on calendar date.
+        '''
+        self.response(Gtk.ResponseType.OK)
 
     def display(self, date):
         state = False
