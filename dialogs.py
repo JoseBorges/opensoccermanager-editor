@@ -456,13 +456,19 @@ class NationSelectionDialog(Gtk.Dialog):
         self.set_focus(self.entrySearch)
         self.show_all()
 
+        state = False
+
         if self.run() == Gtk.ResponseType.OK:
             model, treeiter = self.treeselection.get_selected()
             nationid = model[treeiter][0]
 
-        self.destroy()
+            self.nationid = nationid
 
-        return nationid
+            state = True
+
+        self.hide()
+
+        return state
 
     def activate_search(self, entry):
         criteria = entry.get_text()

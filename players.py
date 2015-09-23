@@ -51,6 +51,7 @@ class Players(Gtk.Grid):
         self.attach(self.attributes, 1, 0, 1, 1)
 
         self.attributes.buttonSave.connect("clicked", self.on_save_button_clicked)
+        self.attributes.buttonReset.connect("clicked", self.on_reset_button_clicked)
 
     def on_save_button_clicked(self, button):
         '''
@@ -60,11 +61,9 @@ class Players(Gtk.Grid):
         liststore = model.get_model()
         child_treeiter = model.convert_iter_to_child_iter(treeiter)
 
+        player = data.players[self.attributes.playerid]
+
         names = self.attributes.get_names()
-
-        playerid = self.attributes.playerid
-        player = data.players[playerid]
-
         player.first_name = names[0]
         player.second_name = names[1]
         player.common_name = names[2]
@@ -77,6 +76,21 @@ class Players(Gtk.Grid):
         model, treeiter = self.search.treeselection.get_selected()
         treepath = model.get_path(treeiter)
         self.search.treeview.scroll_to_cell(treepath)
+
+    def on_reset_button_clicked(self, button):
+        '''
+        Reset any changed data back to default.
+        '''
+        player = data.players[self.attributes.playerid]
+
+        self.attributes.entryFirstName.set_text(player.first_name)
+        self.attributes.entrySecondName.set_text(player.second_name)
+        self.attributes.entryCommonName.set_text(player.common_name)
+
+        self.attributes.buttonDateOfBirth.set_label(self.attributes.date_of_birth)
+
+        nationality = data.nations[self.attributes.nationid].name
+        self.attributes.buttonNationality.set_label(nationality)
 
     def add_player(self):
         '''
@@ -309,8 +323,10 @@ class Attributes(Gtk.Grid):
         buttonbox.set_layout(Gtk.ButtonBoxStyle.END)
         self.attach(buttonbox, 0, 2, 1, 1)
         self.buttonReset = widgets.Button("_Reset")
+        self.buttonReset.set_tooltip_text("Reset unsaved data which has been changed.")
         buttonbox.add(self.buttonReset)
         self.buttonSave = widgets.Button("_Save")
+        self.buttonSave.set_tooltip_text("Update data records with new information.")
         buttonbox.add(self.buttonSave)
 
     def attribute_changed(self, treeselection):
@@ -346,14 +362,14 @@ class Attributes(Gtk.Grid):
 
     def nation_clicked(self, button):
         dialogNation = dialogs.NationSelectionDialog(parent=widgets.window)
-        nationid = dialogNation.display(self.nationid)
 
-        nationality = display.nation(nationid)
-        self.buttonNationality.set_label(nationality)
+        if dialogNation.display(self.nationid):
+            nationid = dialogNation.nationid
+            nationality = display.nation(nationid)
+            self.buttonNationality.set_label(nationality)
 
-        player = data.players[self.playerid]
-        player.nationality = nationid
-        self.nationid = nationid
+            player = data.players[self.playerid]
+            player.nationality = nationid
 
     def add_attribute(self, button):
         '''
