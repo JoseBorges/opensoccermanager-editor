@@ -104,6 +104,7 @@ class Window(Gtk.Window):
         menubar.menuitemFilter.connect("activate", self.filter_data)
         menubar.menuitemClear.connect("activate", self.clear_data)
         menubar.menuitemAbout.connect("activate", self.about_dialog)
+        menubar.menuitemDatabaseInfo.connect("activate", self.database_info_dialog)
 
         self.toolbar = Gtk.Toolbar()
         self.toolbar.set_sensitive(False)
@@ -135,6 +136,11 @@ class Window(Gtk.Window):
         aboutdialog = dialogs.AboutDialog()
         aboutdialog.run()
         aboutdialog.destroy()
+
+    def database_info_dialog(self, menuitem):
+        databaseinfodialog = dialogs.DatabaseInfo()
+        databaseinfodialog.display()
+        databaseinfodialog.destroy()
 
     def validate_database(self, menuitem):
         validator = validation.Validate()

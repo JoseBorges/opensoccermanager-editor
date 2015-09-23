@@ -202,6 +202,10 @@ class Menu(Gtk.MenuBar):
         menu.append(self.menuitemFilter)
         self.menuitemClear = widgets.MenuItem("_Clear Filter")
         menu.append(self.menuitemClear)
+        separator = Gtk.SeparatorMenuItem()
+        menu.append(separator)
+        self.menuitemDatabaseInfo = widgets.MenuItem("_Database Information")
+        menu.append(self.menuitemDatabaseInfo)
 
         menuitem = widgets.MenuItem("_Help")
         self.append(menuitem)

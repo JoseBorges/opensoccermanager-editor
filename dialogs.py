@@ -27,6 +27,7 @@ import data
 import database
 import dialogs
 import display
+import players
 import preferences
 import widgets
 
@@ -854,6 +855,52 @@ class YearManager(Gtk.Dialog):
 
     def display(self):
         self.populate()
+
+        self.show_all()
+        self.run()
+
+
+class DatabaseInfo(Gtk.Dialog):
+    def __init__(self):
+        Gtk.Dialog.__init__(self)
+        self.set_transient_for(widgets.window)
+        self.set_title("Database Information")
+        self.set_resizable(False)
+        self.set_border_width(5)
+        self.add_button("_Close", Gtk.ResponseType.CLOSE)
+
+        grid = Gtk.Grid()
+        grid.set_row_spacing(5)
+        grid.set_column_spacing(5)
+        self.vbox.add(grid)
+
+        label = widgets.Label("Players")
+        grid.attach(label, 0, 0, 1, 1)
+        self.labelPlayerCount = widgets.Label()
+        grid.attach(self.labelPlayerCount, 1, 0, 1, 1)
+        label = widgets.Label("Clubs")
+        grid.attach(label, 0, 1, 1, 1)
+        self.labelClubCount = widgets.Label()
+        grid.attach(self.labelClubCount, 1, 1, 1, 1)
+        label = widgets.Label("Stadiums")
+        grid.attach(label, 0, 2, 1, 1)
+        self.labelStadiumCount = widgets.Label()
+        grid.attach(self.labelStadiumCount, 1, 2, 1, 1)
+        label = widgets.Label("Leagues")
+        grid.attach(label, 0, 3, 1, 1)
+        self.labelLeagueCount = widgets.Label()
+        grid.attach(self.labelLeagueCount, 1, 3, 1, 1)
+        label = widgets.Label("Nations")
+        grid.attach(label, 0, 4, 1, 1)
+        self.labelNationCount = widgets.Label()
+        grid.attach(self.labelNationCount, 1, 4, 1, 1)
+
+    def display(self):
+        self.labelPlayerCount.set_text("%i" % len(data.players))
+        self.labelClubCount.set_text("%i" % len(data.clubs))
+        self.labelStadiumCount.set_text("%i" % len(data.stadiums))
+        self.labelLeagueCount.set_text("%i" % len(data.leagues))
+        self.labelNationCount.set_text("%i" % len(data.nations))
 
         self.show_all()
         self.run()
