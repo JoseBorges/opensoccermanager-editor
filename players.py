@@ -96,34 +96,31 @@ class Players(Gtk.Grid):
         self.attributes.clear_fields()
         self.attributes.entryFirstName.grab_focus()
 
+    def filter_visible(self, model, treeiter, data):
+        criteria = self.search.searchentry.get_text()
+
+        display = True
+
+        for search in (model[treeiter][1],):
+            search = "".join((c for c in unicodedata.normalize("NFD", search) if unicodedata.category(c) != "Mn"))
+
+            if not re.findall(criteria, search, re.IGNORECASE):
+                display = False
+
+                break
+
+        return display
+
     def search_activated(self, searchentry):
-        criteria = searchentry.get_text()
-
-        if criteria is not "":
-            values = {}
-
-            for playerid, player in data.players.items():
-                both = "%s %s" % (player.first_name, player.second_name)
-
-                for search in (player.second_name, player.first_name, player.common_name, both):
-                    search = "".join((c for c in unicodedata.normalize("NFD", search) if unicodedata.category(c) != "Mn"))
-
-                    if re.findall(criteria, search, re.IGNORECASE):
-                        values[playerid] = player
-
-                        break
-
-            self.populate_data(values)
-
-        self.search.treeview.set_cursor(0)
+        self.search.treemodelfilter.refilter()
 
     def search_changed(self, searchentry):
-        if searchentry.get_text() is "":
-            self.populate_data(data.players)
+        if searchentry.get_text() == "":
+            self.search.treemodelfilter.refilter()
 
     def search_cleared(self, searchentry, icon, event):
         if icon == Gtk.EntryIconPosition.SECONDARY:
-            self.populate_data(data.players)
+            self.search.treemodelfilter.refilter()
 
     def player_activated(self, treeview, treepath, treeviewcolumn):
         model = treeview.get_model()
@@ -171,6 +168,8 @@ class Players(Gtk.Grid):
             self.search.liststore.append([playerid, name])
 
     def run(self):
+        self.search.treemodelfilter.set_visible_func(self.filter_visible, data.players)
+
         self.populate_data(values=data.players)
         self.show_all()
 

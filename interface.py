@@ -38,7 +38,8 @@ class Search(Gtk.Grid):
         self.attach(scrolledwindow, 0, 0, 1, 1)
 
         self.liststore = Gtk.ListStore(int, str)
-        self.treemodelsort = Gtk.TreeModelSort(self.liststore)
+        self.treemodelfilter = self.liststore.filter_new()
+        self.treemodelsort = Gtk.TreeModelSort(self.treemodelfilter)
         self.treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
 
         self.treeview = Gtk.TreeView()
