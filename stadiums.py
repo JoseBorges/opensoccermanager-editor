@@ -136,7 +136,7 @@ class Stadiums(Gtk.Grid):
     def search_activated(self, searchentry):
         criteria = searchentry.get_text()
 
-        if criteria is not "":
+        if criteria != "":
             values = {}
 
             for stadiumid, stadium in data.stadiums.items():
@@ -151,7 +151,7 @@ class Stadiums(Gtk.Grid):
             self.populate_data(values=values)
 
     def search_changed(self, searchentry):
-        if searchentry.get_text() is "":
+        if searchentry.get_text() == "":
             self.populate_data(data.stadiums)
 
     def search_cleared(self, searchentry, icon, event):

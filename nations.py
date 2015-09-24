@@ -91,7 +91,7 @@ class Nations(Gtk.Grid):
     def search_activated(self, searchentry):
         criteria = searchentry.get_text()
 
-        if criteria is not "":
+        if criteria != "":
             values = {}
 
             for nationid, nation in data.nations.items():
@@ -106,7 +106,7 @@ class Nations(Gtk.Grid):
             self.populate_data(values=values)
 
     def search_changed(self, searchentry):
-        if searchentry.get_text() is "":
+        if searchentry.get_text() == "":
             self.populate_data(data.nations)
 
     def search_cleared(self, searchentry, icon, event):

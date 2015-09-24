@@ -236,13 +236,13 @@ class PlayerSelectionDialog(Gtk.Dialog):
         return player
 
     def changed_search(self, entry):
-        if entry.get_text() is "":
+        if entry.get_text() == "":
             self.populate(data.players)
 
     def activate_search(self, entry):
         criteria = entry.get_text()
 
-        if criteria is not "":
+        if criteria != "":
             items = {}
 
             for playerid, player in data.players.items():
@@ -324,13 +324,13 @@ class ClubSelectionDialog(Gtk.Dialog):
         self.response(Gtk.ResponseType.OK)
 
     def search_changed(self, entry):
-        if entry.get_text() is "":
+        if entry.get_text() == "":
             self.populate(data.clubs)
 
     def search_activated(self, entry):
         criteria = entry.get_text()
 
-        if criteria is not "":
+        if criteria != "":
             items = {}
 
             for clubid, club in data.clubs.items():
@@ -473,7 +473,7 @@ class NationSelectionDialog(Gtk.Dialog):
     def activate_search(self, entry):
         criteria = entry.get_text()
 
-        if criteria is not "":
+        if criteria != "":
             items = {}
 
             for nationid, nation in data.nations.items():
@@ -578,7 +578,7 @@ class StadiumSelectionDialog(Gtk.Dialog):
     def activate_search(self, entry):
         criteria = entry.get_text()
 
-        if criteria is not "":
+        if criteria != "":
             items = {}
 
             for stadiumid, stadium in data.stadiums.items():
