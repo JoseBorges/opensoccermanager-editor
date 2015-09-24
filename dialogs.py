@@ -295,7 +295,9 @@ class ClubSelectionDialog(Gtk.Dialog):
 
         cellrenderertext = Gtk.CellRendererText()
         self.liststore = Gtk.ListStore(int, str)
-        self.treemodelsort = Gtk.TreeModelSort(self.liststore)
+        self.treemodelfilter = self.liststore.filter_new()
+        self.treemodelfilter.set_visible_func(self.filter_visible, data.clubs)
+        self.treemodelsort = Gtk.TreeModelSort(self.treemodelfilter)
         self.treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
 
         treeview = Gtk.TreeView()
@@ -315,40 +317,41 @@ class ClubSelectionDialog(Gtk.Dialog):
         scrolledwindow.add(treeview)
 
         self.entrySearch = Gtk.SearchEntry()
-        self.entrySearch.connect("changed", self.search_changed)
-        self.entrySearch.connect("activate", self.search_activated)
-        self.entrySearch.connect("icon-press", self.search_cleared)
+        self.entrySearch.connect("changed", self.on_search_changed)
+        self.entrySearch.connect("activate", self.on_search_activated)
+        self.entrySearch.connect("icon-press", self.on_search_cleared)
         grid.attach(self.entrySearch, 0, 1, 1, 1)
 
     def on_treeview_double_click(self, *args):
         self.response(Gtk.ResponseType.OK)
 
-    def search_changed(self, entry):
+    def filter_visible(self, model, treeiter, data):
+        visible = True
+
+        criteria = self.entrySearch.get_text()
+
+        for search in (model[treeiter][1],):
+            search = "".join((c for c in unicodedata.normalize("NFD", search) if unicodedata.category(c) != "Mn"))
+
+            if not re.findall(criteria, search, re.IGNORECASE):
+                visible = False
+
+                break
+
+        return visible
+
+    def on_search_changed(self, entry):
         if entry.get_text() == "":
-            self.populate(data.clubs)
+            self.treemodelfilter.refilter()
 
-    def search_activated(self, entry):
-        criteria = entry.get_text()
+    def on_search_activated(self, entry):
+        self.treemodelfilter.refilter()
 
-        if criteria != "":
-            items = {}
-
-            for clubid, club in data.clubs.items():
-                for search in (club.name,):
-                    search = "".join((c for c in unicodedata.normalize("NFD", search) if unicodedata.category(c) != "Mn"))
-
-                    if re.findall(criteria, search, re.IGNORECASE):
-                        items[clubid] = club
-
-                        break
-
-            self.populate(items)
-
-    def search_cleared(self, entry, icon, event):
-        self.populate(data.clubs)
+    def on_search_cleared(self, entry, icon, event):
+        self.treemodelfilter.refilter()
 
     def treeselection_changed(self, treeselection):
-        state = not treeselection.count_selected_rows() == 0
+        state = treeselection.count_selected_rows() != 0
         self.set_response_sensitive(Gtk.ResponseType.OK, state)
 
         model, treeiter = treeselection.get_selected()
@@ -410,7 +413,9 @@ class NationSelectionDialog(Gtk.Dialog):
 
         cellrenderertext = Gtk.CellRendererText()
         self.liststore = Gtk.ListStore(int, str)
-        self.treemodelsort = Gtk.TreeModelSort(self.liststore)
+        self.treemodelfilter = self.liststore.filter_new()
+        self.treemodelfilter.set_visible_func(self.filter_visible, data.nations)
+        self.treemodelsort = Gtk.TreeModelSort(self.treemodelfilter)
         self.treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
 
         treeview = Gtk.TreeView()
@@ -428,12 +433,38 @@ class NationSelectionDialog(Gtk.Dialog):
         scrolledwindow.add(treeview)
 
         self.entrySearch = Gtk.SearchEntry()
-        self.entrySearch.connect("activate", self.activate_search)
-        self.entrySearch.connect("icon-press", self.clear_search)
+        self.entrySearch.connect("changed", self.on_search_changed)
+        self.entrySearch.connect("activate", self.on_search_activated)
+        self.entrySearch.connect("icon-press", self.on_search_cleared)
         grid.attach(self.entrySearch, 0, 1, 1, 1)
 
     def on_treeview_double_click(self, *args):
         self.response(Gtk.ResponseType.OK)
+
+    def filter_visible(self, model, treeiter, data):
+        visible = True
+
+        criteria = self.entrySearch.get_text()
+
+        for search in (model[treeiter][1],):
+            search = "".join((c for c in unicodedata.normalize("NFD", search) if unicodedata.category(c) != "Mn"))
+
+            if not re.findall(criteria, search, re.IGNORECASE):
+                visible = False
+
+                break
+
+        return visible
+
+    def on_search_changed(self, entry):
+        if entry.get_text() == "":
+            self.treemodelfilter.refilter()
+
+    def on_search_activated(self, entry):
+        self.treemodelfilter.refilter()
+
+    def on_search_cleared(self, entry, icon, event):
+        self.treemodelfilter.refilter()
 
     def treeselection_changed(self, treeselection):
         state = not treeselection.count_selected_rows() == 0
@@ -453,6 +484,7 @@ class NationSelectionDialog(Gtk.Dialog):
             if item[0] == nationid:
                 self.treeselection.select_iter(item.iter)
 
+        self.entrySearch.set_text("")
         self.set_focus(self.entrySearch)
         self.show_all()
 
@@ -469,28 +501,6 @@ class NationSelectionDialog(Gtk.Dialog):
         self.hide()
 
         return state
-
-    def activate_search(self, entry):
-        criteria = entry.get_text()
-
-        if criteria != "":
-            items = {}
-
-            for nationid, nation in data.nations.items():
-                for search in (nation.name,):
-                    search = "".join((c for c in unicodedata.normalize("NFD", search) if unicodedata.category(c) != "Mn"))
-
-                    if re.findall(criteria, search, re.IGNORECASE):
-                        items[nationid] = nation
-
-                        break
-
-            self.populate(items)
-
-    def clear_search(self, entry, icon, event):
-        entry.set_text("")
-
-        self.populate(data.nations)
 
     def populate(self, data):
         self.liststore.clear()
@@ -521,7 +531,9 @@ class StadiumSelectionDialog(Gtk.Dialog):
 
         cellrenderertext = Gtk.CellRendererText()
         self.liststore = Gtk.ListStore(int, str)
-        self.treemodelsort = Gtk.TreeModelSort(self.liststore)
+        self.treemodelfilter = self.liststore.filter_new()
+        self.treemodelfilter.set_visible_func(self.filter_visible, data.stadiums)
+        self.treemodelsort = Gtk.TreeModelSort(self.treemodelfilter)
         self.treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
 
         treeview = Gtk.TreeView()
@@ -539,8 +551,9 @@ class StadiumSelectionDialog(Gtk.Dialog):
         scrolledwindow.add(treeview)
 
         self.entrySearch = Gtk.SearchEntry()
-        self.entrySearch.connect("activate", self.activate_search)
-        self.entrySearch.connect("icon-press", self.clear_search)
+        self.entrySearch.connect("changed", self.on_search_changed)
+        self.entrySearch.connect("activate", self.on_search_activated)
+        self.entrySearch.connect("icon-press", self.on_search_cleared)
         grid.attach(self.entrySearch, 0, 1, 1, 1)
 
     def on_treeview_double_click(self, *args):
@@ -557,6 +570,31 @@ class StadiumSelectionDialog(Gtk.Dialog):
             treepath = model.get_path(treeiter)
             treeview.scroll_to_cell(treepath)
 
+    def filter_visible(self, model, treeiter, data):
+        visible = True
+
+        criteria = self.entrySearch.get_text()
+
+        for search in (model[treeiter][1],):
+            search = "".join((c for c in unicodedata.normalize("NFD", search) if unicodedata.category(c) != "Mn"))
+
+            if not re.findall(criteria, search, re.IGNORECASE):
+                visible = False
+
+                break
+
+        return visible
+
+    def on_search_changed(self, entry):
+        if entry.get_text() == "":
+            self.treemodelfilter.refilter()
+
+    def on_search_activated(self, entry):
+        self.treemodelfilter.refilter()
+
+    def on_search_cleared(self, entry, icon, event):
+        self.treemodelfilter.refilter()
+
     def display(self, stadiumid, year):
         self.populate(data.stadiums)
 
@@ -564,6 +602,7 @@ class StadiumSelectionDialog(Gtk.Dialog):
             if item[0] == stadiumid:
                 self.treeselection.select_iter(item.iter)
 
+        self.entrySearch.set_text("")
         self.set_focus(self.entrySearch)
         self.show_all()
 
@@ -574,28 +613,6 @@ class StadiumSelectionDialog(Gtk.Dialog):
         self.destroy()
 
         return stadiumid
-
-    def activate_search(self, entry):
-        criteria = entry.get_text()
-
-        if criteria != "":
-            items = {}
-
-            for stadiumid, stadium in data.stadiums.items():
-                for search in (stadium.name,):
-                    search = "".join((c for c in unicodedata.normalize("NFD", search) if unicodedata.category(c) != "Mn"))
-
-                    if re.findall(criteria, search, re.IGNORECASE):
-                        items[stadiumid] = stadium
-
-                        break
-
-            self.populate(items)
-
-    def clear_search(self, entry, icon, event):
-        entry.set_text("")
-
-        self.populate(data.stadiums)
 
     def populate(self, data):
         self.liststore.clear()
