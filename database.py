@@ -106,7 +106,10 @@ class Database:
     def save(self):
         # Year
         for year in data.years:
-            self.cursor.execute("INSERT INTO year VALUES (?)", (year,))
+            try:
+                self.cursor.execute("INSERT INTO year VALUES (?)", (year,))
+            except sqlite3.IntegrityError:
+                pass
 
         # Nation
         results = self.cursor.execute("SELECT * FROM nation")

@@ -200,7 +200,7 @@ class Window(Gtk.Window):
             clubs.add_club()
         elif page == 2:
             stadiums.add_stadium()
-        elif page == 3:
+        elif page == 4:
             nations.add_nation()
 
     def remove_data(self, toolbutton):
@@ -239,14 +239,8 @@ class Window(Gtk.Window):
                 else:
                     del data.stadiums[stadiums.selected]
                     stadiums.populate_data(values=data.stadiums)
-            elif page == 3:
-                keys = [player.nationality for player in data.players.values()]
-
-                if nations.selected in keys:
-                    dialogs.error(2)
-                else:
-                    del data.nations[nations.selected]
-                    nations.populate_data(values=data.nations)
+            elif page == 4:
+                nations.remove_nation()
 
             data.unsaved = True
 

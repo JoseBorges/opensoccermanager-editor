@@ -58,15 +58,27 @@ class Nations(Gtk.Grid):
         nationid = data.idnumbers.request_nationid()
         data.nations[nationid] = nation
 
-        child_treeiter = self.search.liststore.append([nationid, ""])
-        treeiter = self.search.treemodelsort.convert_child_iter_to_iter(child_treeiter)
-        treepath = self.search.treemodelsort.get_path(treeiter[1])
+        treeiter = self.search.liststore.append([nationid, ""])
+        treeiter1 = self.search.treemodelfilter.convert_child_iter_to_iter(treeiter)
+        treeiter2 = self.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
+        treepath = self.search.treemodelsort.get_path(treeiter2[1])
 
         self.search.treeview.scroll_to_cell(treepath)
         self.search.treeview.set_cursor_on_cell(treepath, None, None, False)
 
         self.attributes.clear_fields()
         self.attributes.entryName.grab_focus()
+
+    def remove_nation(self):
+        model, treeiter = self.search.treeselection.get_selected()
+
+        keys = [player.nationality for player in data.players.values()]
+
+        if self.selected in keys:
+            dialogs.error(2)
+        else:
+            del data.nations[self.selected]
+            self.populate_data(values=data.nations)
 
     def save_data(self, button):
         name = self.attributes.entryName.get_text()
@@ -218,6 +230,10 @@ class Attributes(Gtk.Grid):
         buttonbox.add(self.buttonSave)
 
     def save_fields(self):
+        if self.nationid is None:
+            self.nationid = data.idnumbers.request_nationid()
+            data.nations[self.nationid] = data.Nation()
+
         nation = data.nations[self.nationid]
 
         nation.name = self.entryName.get_text()
