@@ -46,7 +46,6 @@ class Stadiums(Gtk.Grid):
         self.attach(self.search, 0, 0, 1, 1)
 
         self.attributes = Attributes()
-        self.attributes.entryName.connect("focus-out-event", self.name_changed)
         self.attach(self.attributes, 1, 0, 1, 1)
 
     def add_stadium(self):
@@ -196,6 +195,8 @@ class Attributes(Gtk.Grid):
         self.attach(commonframe, 0, 1, 3, 1)
 
         grid2 = Gtk.Grid()
+        grid2.set_vexpand(True)
+        grid2.set_hexpand(True)
         grid2.set_row_spacing(5)
         grid2.set_column_spacing(5)
         commonframe.insert(grid2)
@@ -241,6 +242,9 @@ class Attributes(Gtk.Grid):
         #self.buttonRemove.connect("clicked", self.remove_attribute)
         buttonbox.add(self.buttonRemove)
         grid2.attach(buttonbox, 1, 0, 1, 1)
+
+        buttonbox = interface.SaveReset()
+        self.attach(buttonbox, 2, 2, 1, 1)
 
     def populate_attributes(self):
         '''

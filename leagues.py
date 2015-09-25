@@ -114,6 +114,9 @@ class Attributes(Gtk.Grid):
         self.set_column_spacing(5)
 
         grid = Gtk.Grid()
+        grid.set_hexpand(True)
+        grid.set_vexpand(True)
+        grid.set_row_spacing(5)
         grid.set_column_spacing(5)
         self.attach(grid, 0, 0, 1, 1)
 
@@ -124,6 +127,9 @@ class Attributes(Gtk.Grid):
 
         self.notebook = Gtk.Notebook()
         self.attach(self.notebook, 0, 1, 1, 1)
+
+        buttonbox = interface.SaveReset()
+        self.attach(buttonbox, 0, 1, 1, 1)
 
     def clear_fields(self):
         self.entryName.set_text("")

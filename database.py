@@ -38,9 +38,11 @@ class Database:
 
             self.cursor.execute("CREATE TABLE year (year INTEGER PRIMARY KEY)")
 
-            self.cursor.execute("CREATE TABLE league (leagueid INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)")
-
             self.cursor.execute("CREATE TABLE nation (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, denonym TEXT)")
+
+            self.cursor.execute("CREATE TABLE league (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)")
+
+            self.cursor.execute("CREATE TABLE leagueattr (id INTEGER PRIMARY KEY AUTOINCREMENT, league INTEGER NOT NULL, year INTEGER NOT NULL, FOREIGN KEY(league) REFERENCES league(id), FOREIGN KEY(year) REFERENCES year(year))")
 
             self.cursor.execute("CREATE TABLE stadium (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)")
 
@@ -102,6 +104,10 @@ class Database:
             data.stadium(item)
 
     def save(self):
+        # Year
+        for year in data.years:
+            self.cursor.execute("INSERT INTO year VALUES (?)", (year,))
+
         # Nation
         results = self.cursor.execute("SELECT * FROM nation")
         content = results.fetchall()

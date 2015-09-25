@@ -318,16 +318,10 @@ class Attributes(Gtk.Grid):
         buttonbox.add(self.buttonRemove)
         grid2.attach(buttonbox, 1, 0, 1, 1)
 
-        buttonbox = Gtk.ButtonBox()
-        buttonbox.set_spacing(5)
-        buttonbox.set_layout(Gtk.ButtonBoxStyle.END)
+        buttonbox = interface.SaveReset()
+        self.buttonReset = buttonbox.buttonReset
+        self.buttonSave = buttonbox.buttonSave
         self.attach(buttonbox, 0, 2, 1, 1)
-        self.buttonReset = widgets.Button("_Reset")
-        self.buttonReset.set_tooltip_text("Reset unsaved data which has been changed.")
-        buttonbox.add(self.buttonReset)
-        self.buttonSave = widgets.Button("_Save")
-        self.buttonSave.set_tooltip_text("Update data records with new information.")
-        buttonbox.add(self.buttonSave)
 
     def attribute_changed(self, treeselection):
         model, treeiter = treeselection.get_selected()

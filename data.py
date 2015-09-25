@@ -50,6 +50,7 @@ class Club:
 class League:
     def __init__(self):
         self.name = ""
+        self.attributes = {}
 
 
 class Stadium:

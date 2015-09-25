@@ -61,3 +61,17 @@ class Search(Gtk.Grid):
 
     def clear_data(self):
         self.liststore.clear()
+
+
+class SaveReset(Gtk.ButtonBox):
+    def __init__(self):
+        Gtk.ButtonBox.__init__(self)
+        self.set_spacing(5)
+        self.set_layout(Gtk.ButtonBoxStyle.END)
+
+        self.buttonReset = widgets.Button("_Reset")
+        self.buttonReset.set_tooltip_text("Reset changed fields which have not been saved.")
+        self.add(self.buttonReset)
+        self.buttonSave = widgets.Button("_Save")
+        self.buttonSave.set_tooltip_text("Save changed fields to current working data.")
+        self.add(self.buttonSave)
