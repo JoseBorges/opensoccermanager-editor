@@ -47,12 +47,12 @@ class Nations(Gtk.Grid):
 
         self.attributes = Attributes()
         self.attributes.buttonSave.connect("clicked", self.save_data)
-        self.attributes.buttonReset.connect("clicked", self.reset_data)
+        self.attributes.buttonReset.connect("clicked", self.attributes.load_fields)
         self.attach(self.attributes, 1, 0, 1, 1)
 
     def add_nation(self):
         '''
-        Add the nation to the date structure, and append to search interface.
+        Add the nation to the data structure, and append to search interface.
         '''
         nation = data.Nation()
         nationid = data.idnumbers.request_nationid()
@@ -69,7 +69,12 @@ class Nations(Gtk.Grid):
         self.attributes.clear_fields()
         self.attributes.entryName.grab_focus()
 
+        self.attributes.nationid = nationid
+
     def remove_nation(self):
+        '''
+        Remove the selected nation from the database.
+        '''
         model, treeiter = self.search.treeselection.get_selected()
 
         keys = [player.nationality for player in data.players.values()]
@@ -94,12 +99,6 @@ class Nations(Gtk.Grid):
         treepath = model.get_path(treeiter)
         self.search.treeview.scroll_to_cell(treepath)
 
-    def reset_data(self, button):
-        nation = data.nations[self.selected]
-
-        self.attributes.entryName.set_text(nation.name)
-        self.attributes.entryDenonym.set_text(nation.denonym)
-
     def search_activated(self, searchentry):
         criteria = searchentry.get_text()
 
@@ -119,7 +118,7 @@ class Nations(Gtk.Grid):
 
     def search_changed(self, searchentry):
         if searchentry.get_text() == "":
-            self.populate_data(data.nations)
+            self.populate_data(values=data.nations)
 
     def search_cleared(self, searchentry, icon, event):
         if icon == Gtk.EntryIconPosition.SECONDARY:
@@ -157,24 +156,26 @@ class Nations(Gtk.Grid):
         model = treeview.get_model()
         self.nationid = model[treepath][0]
 
-        nation = data.nations[self.nationid]
         self.attributes.nationid = self.nationid
-
-        self.attributes.entryName.set_text(nation.name)
-        self.attributes.entryDenonym.set_text(nation.denonym)
+        self.attributes.load_fields()
 
     def nation_changed(self, treeselection):
         model, treeiter = treeselection.get_selected()
 
         if treeiter:
             self.selected = model[treeiter][0]
+            self.attributes.nationid = self.selected
             self.attributes.set_sensitive(True)
         else:
             self.selected = None
+            self.attributes.nationid = self.selected
             self.attributes.clear_fields()
             self.attributes.set_sensitive(False)
 
     def populate_data(self, values):
+        '''
+        Load list of nations into search interface.
+        '''
         self.search.clear_data()
 
         for nationid, nation in values.items():
@@ -230,15 +231,26 @@ class Attributes(Gtk.Grid):
         buttonbox.add(self.buttonSave)
 
     def save_fields(self):
-        if self.nationid is None:
-            self.nationid = data.idnumbers.request_nationid()
-            data.nations[self.nationid] = data.Nation()
-
+        '''
+        Add information into working data set.
+        '''
         nation = data.nations[self.nationid]
 
         nation.name = self.entryName.get_text()
         nation.denonym = self.entryDenonym.get_text()
 
+    def load_fields(self, *args):
+        '''
+        Reset changed fields to initial value.
+        '''
+        nation = data.nations[self.nationid]
+
+        self.entryName.set_text(nation.name)
+        self.entryDenonym.set_text(nation.denonym)
+
     def clear_fields(self):
+        '''
+        Empty attribute fields.
+        '''
         self.entryName.set_text("")
         self.entryDenonym.set_text("")

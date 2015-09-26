@@ -192,6 +192,9 @@ class Window(Gtk.Window):
         self.set_title("Editor - %s" % (filename))
 
     def add_data(self, toolbutton):
+        '''
+        Get current page and launch add function.
+        '''
         page = maineditor.get_current_page()
 
         if page == 0:
