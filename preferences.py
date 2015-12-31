@@ -2,69 +2,79 @@
 
 #  This file is part of OpenSoccerManager-Editor.
 #
-#  OpenSoccerManager-Editor is free software: you can redistribute it and/or
-#  modify it under the terms of the GNU General Public License as published by
-#  the Free Software Foundation, either version 3 of the License, or (at your
+#  OpenSoccerManager is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by the
+#  Free Software Foundation, either version 3 of the License, or (at your
 #  option) any later version.
 #
-#  OpenSoccerManager-Editor is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
-#  Public License for more details.
+#  OpenSoccerManager is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+#  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+#  more details.
 #
 #  You should have received a copy of the GNU General Public License along with
-#  OpenSoccerManager-Editor.  If not, see <http://www.gnu.org/licenses/>.
+#  OpenSoccerManager.  If not, see <http://www.gnu.org/licenses/>.
 
 
 from configparser import ConfigParser
 import os
 
 
-class Preferences(ConfigParser):
+class Preferences:
     def __init__(self):
-        ConfigParser.__init__(self)
-
-        self.window_maximize = True
-        self.window_width = 0
-        self.window_height = 0
-        self.window_xposition = 0
-        self.window_yposition = 0
-        self.show_toolbar = True
-        self.confirm_quit = True
-        self.confirm_remove = True
-        self.show_age = False
-        self.show_value_wage = False
-
-        self["INTERFACE"] = {"Maximized": True,
-                             "Width": 0,
-                             "Height": 0,
-                             "XPosition": 0,
-                             "YPosition": 0,
-                             "ShowToolbar": True,
-                             "ConfirmQuit": True,
-                             "ConfirmRemove": True,
-                             "ShowAge": False,
-                             "ShowValueWage": False,
-                            }
-
         home = os.path.expanduser("~")
-        data = os.path.join(home, ".config", "opensoccermanager")
-        self.filename = os.path.join(data, "editor.ini")
+        self.data_path = os.path.join(home, ".config", "opensoccermanager")
+        self.preferences_path = os.path.join(self.data_path, "editor.ini")
 
-    def read_file(self):
-        self.read(self.filename)
+        self.maximized = False
+        self.window_size = [832, 534]
+        self.window_position = [0, 0]
+        self.show_toolbar = True
+        self.confirm_remove = True
+        self.confirm_quit = True
 
-        self.window_maximize = self["INTERFACE"].getboolean("Maximized")
-        self.window_width = int(self["INTERFACE"].get("Width"))
-        self.window_height = int(self["INTERFACE"].get("Height"))
-        self.window_xposition = int(self["INTERFACE"].get("XPosition"))
-        self.window_yposition = int(self["INTERFACE"].get("YPosition"))
-        self.show_toolbar = self["INTERFACE"].getboolean("ShowToolbar")
-        self.confirm_quit = self["INTERFACE"].getboolean("ConfirmQuit")
-        self.confirm_remove = self["INTERFACE"].getboolean("ConfirmRemove")
-        self.show_age = self["INTERFACE"].getboolean("ShowAge")
-        self.show_value_wage = self["INTERFACE"].getboolean("ShowValueWage")
+        self.confighandler = ConfigParser()
 
-    def write_file(self):
-        with open(self.filename, "w") as configfile:
-            self.write(configfile)
+        if not os.path.exists(self.preferences_path):
+            self.create_initial_config()
+
+    def create_initial_config(self):
+        '''
+        Create the initial config when it doesn't exist.
+        '''
+        self.confighandler["INTERFACE"] = {"Maximized": False}
+
+    def read_from_config(self):
+        '''
+        Read preference settings from file.
+        '''
+        self.confighandler.read(self.preferences_path)
+
+        self.maximized = self.confighandler["INTERFACE"].getboolean("Maximized")
+
+        width = int(self.confighandler["INTERFACE"]["Width"])
+        height = int(self.confighandler["INTERFACE"]["Height"])
+        self.window_size = [width, height]
+
+        xposition = int(self.confighandler["INTERFACE"]["XPosition"])
+        yposition = int(self.confighandler["INTERFACE"]["YPosition"])
+        self.window_position = [xposition, yposition]
+
+        self.confirm_quit = self.confighandler["INTERFACE"].getboolean("ConfirmQuit")
+        self.confirm_remove = self.confighandler["INTERFACE"].getboolean("ConfirmRemove")
+        self.show_toolbar = self.confighandler["INTERFACE"].getboolean("ShowToolbar")
+
+    def write_to_config(self):
+        '''
+        Write preference settings to file.
+        '''
+        self.confighandler["INTERFACE"]["ConfirmQuit"] = str(self.confirm_quit)
+        self.confighandler["INTERFACE"]["ConfirmRemove"] = str(self.confirm_remove)
+        self.confighandler["INTERFACE"]["ShowToolbar"] = str(self.show_toolbar)
+        self.confighandler["INTERFACE"]["Width"] = str(self.window_size[0])
+        self.confighandler["INTERFACE"]["Height"] = str(self.window_size[1])
+        self.confighandler["INTERFACE"]["XPosition"] = str(self.window_position[0])
+        self.confighandler["INTERFACE"]["YPosition"] = str(self.window_position[1])
+
+        with open(self.preferences_path, "w") as config:
+            self.confighandler.write(config)

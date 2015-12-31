@@ -16,19 +16,34 @@
 #  OpenSoccerManager.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import preferences
+import data
 
-window = None
-preferences = preferences.Preferences()
+class Years:
+    def __init__(self):
+        self.years = set()
 
-welcome = True
-unsaved = False
+        self.populate_data()
 
-years = None
-players = None
-clubs = None
-stadiums = None
-referees = None
-nations = None
+    def add_year(self, year):
+        '''
+        Add passed year to list.
+        '''
+        self.years.add(year)
 
-pages = ()
+    def remove_year(self, year):
+        '''
+        Remove specified year from list.
+        '''
+        self.years.remove(year)
+
+    def get_years(self):
+        '''
+        Return list of years in game.
+        '''
+        return self.years
+
+    def populate_data(self):
+        data.database.cursor.execute("SELECT * FROM year")
+
+        for item in data.database.cursor.fetchall():
+            self.years.add(item[0])

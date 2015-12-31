@@ -16,19 +16,29 @@
 #  OpenSoccerManager.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import preferences
+import data
 
-window = None
-preferences = preferences.Preferences()
+class Referees:
+    class Referee:
+        def __init__(self):
+            name = ""
 
-welcome = True
-unsaved = False
+    def __init__(self):
+        self.referees = {}
 
-years = None
-players = None
-clubs = None
-stadiums = None
-referees = None
-nations = None
+        self.populate_data()
 
-pages = ()
+    def get_referees(self):
+        return self.referees.items()
+
+    def get_referee_by_id(self, refereeid):
+        return self.referees[refereeid]
+
+    def populate_data(self):
+        data.database.cursor.execute("SELECT * FROM referee")
+
+        for item in data.database.cursor.fetchall():
+            referee = self.Referee()
+            refereeid = item[0]
+            referee.name = item[1]
+            self.referees[refereeid] = referee

@@ -16,19 +16,27 @@
 #  OpenSoccerManager.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import preferences
+from gi.repository import Gtk
+from gi.repository import GdkPixbuf
 
-window = None
-preferences = preferences.Preferences()
+import data
 
-welcome = True
-unsaved = False
 
-years = None
-players = None
-clubs = None
-stadiums = None
-referees = None
-nations = None
+class AboutDialog(Gtk.AboutDialog):
+    def __init__(self, *args):
+        logo = data.window.logo.scale_simple(64, 64, GdkPixbuf.InterpType.BILINEAR)
 
-pages = ()
+        Gtk.AboutDialog.__init__(self)
+        self.set_transient_for(data.window)
+        self.set_program_name("Editor")
+        self.set_comments("Data Editor for OpenSoccerManager")
+        self.set_website("http://opensoccermanager.org/")
+        self.set_website_label("Website")
+        self.set_license_type(Gtk.License.GPL_3_0)
+        self.set_logo(logo)
+        self.connect("response", self.on_response)
+
+        self.show()
+
+    def on_response(self, *args):
+        self.destroy()

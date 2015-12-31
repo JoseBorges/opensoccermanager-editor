@@ -16,19 +16,13 @@
 #  OpenSoccerManager.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import preferences
+class Attribute:
+    def __init__(self):
+        self.attributeid = 0
 
-window = None
-preferences = preferences.Preferences()
+        self.year = 2000
 
-welcome = True
-unsaved = False
+    def get_attributeid(self):
+        self.attributeid += 1
 
-years = None
-players = None
-clubs = None
-stadiums = None
-referees = None
-nations = None
-
-pages = ()
+        return self.attributeid

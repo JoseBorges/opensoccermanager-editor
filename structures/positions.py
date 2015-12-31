@@ -16,19 +16,9 @@
 #  OpenSoccerManager.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import preferences
+class Positions:
+    def __init__(self):
+        self.positions = ("GK", "DL", "DC", "DR", "D", "ML", "MC", "MR", "M", "AF", "AS")
 
-window = None
-preferences = preferences.Preferences()
-
-welcome = True
-unsaved = False
-
-years = None
-players = None
-clubs = None
-stadiums = None
-referees = None
-nations = None
-
-pages = ()
+    def get_positions(self):
+        return self.positions
