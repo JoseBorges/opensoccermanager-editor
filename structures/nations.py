@@ -46,6 +46,9 @@ class Nations:
         '''
         return self.nations[nationid]
 
+    def get_nation_count(self):
+        return len(self.nations)
+
     def add_nation(self):
         nationid = self.get_nationid()
         self.nations[nationid] = Nation()

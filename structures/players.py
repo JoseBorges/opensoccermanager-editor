@@ -47,6 +47,9 @@ class Players:
         '''
         return self.players[playerid]
 
+    def get_player_count(self):
+        return len(self.players)
+
     def add_player(self):
         '''
         Add player to the data structure.

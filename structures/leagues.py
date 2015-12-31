@@ -40,6 +40,9 @@ class Leagues:
     def get_league_for_id(self, leagueid):
         return self.leagues[leagueid]
 
+    def get_league_count(self):
+        return len(self.leagues)
+
     def add_league(self):
         refereeid = self.get_refereeid()
         self.referees[refereeid] = Referee()

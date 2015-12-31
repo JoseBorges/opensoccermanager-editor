@@ -47,6 +47,9 @@ class Clubs:
         '''
         return self.clubs[clubid]
 
+    def get_club_count(self):
+        return len(self.clubs)
+
     def add_club(self):
         '''
         Add club to the data structure.

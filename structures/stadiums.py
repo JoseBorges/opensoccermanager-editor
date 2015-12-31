@@ -35,11 +35,14 @@ class Stadiums:
 
         return self.stadiumid
 
+    def get_stadiums(self):
+        return self.stadiums.items()
+
     def get_stadium_by_id(self, stadiumid):
         return self.stadiums[stadiumid]
 
-    def get_stadiums(self):
-        return self.stadiums.items()
+    def get_stadium_count(self):
+        return len(self.stadiums)
 
     def add_stadium(self):
         stadiumid = self.get_stadiumid()
