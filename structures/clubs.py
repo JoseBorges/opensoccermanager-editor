@@ -43,11 +43,14 @@ class Clubs:
 
     def get_club_by_id(self, clubid):
         '''
-        Return player for given club id.
+        Return club for given club id.
         '''
         return self.clubs[clubid]
 
     def get_club_count(self):
+        '''
+        Get number of clubs in data structure.
+        '''
         return len(self.clubs)
 
     def add_club(self):
@@ -55,8 +58,7 @@ class Clubs:
         Add club to the data structure.
         '''
         clubid = self.get_clubid()
-        club = structures.clubs.Club(clubid)
-        self.clubs[clubid] = club
+        self.clubs[clubid] = Club(clubid)
 
         data.unsaved = True
 
@@ -98,6 +100,7 @@ class Clubs:
 
             if clubid > self.clubid:
                 self.clubid = clubid
+
 
 class Club:
     def __init__(self, clubid):

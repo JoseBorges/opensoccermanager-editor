@@ -48,6 +48,9 @@ class Players:
         return self.players[playerid]
 
     def get_player_count(self):
+        '''
+        Get number of players in data structure.
+        '''
         return len(self.players)
 
     def add_player(self):

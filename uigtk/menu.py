@@ -156,7 +156,7 @@ class Menu(Gtk.MenuBar):
         menuitem.set_submenu(menu)
         self.menuitemDatabase = uigtk.widgets.MenuItem("_Database")
         self.menuitemDatabase.set_sensitive(False)
-        self.menuitemDatabase.connect("activate", uigtk.database.Dialog)
+        self.menuitemDatabase.connect("activate", uigtk.database.DatabaseCounts)
         menu.append(self.menuitemDatabase)
         menuitem = uigtk.widgets.MenuItem("_Versions")
         menuitem.connect("activate", uigtk.version.Dialog)

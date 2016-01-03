@@ -22,7 +22,7 @@ import data
 import uigtk.widgets
 
 
-class Dialog(Gtk.Dialog):
+class DatabaseCounts(Gtk.Dialog):
     def __init__(self, *args):
         Gtk.Dialog.__init__(self)
         self.set_transient_for(data.window)
@@ -32,9 +32,7 @@ class Dialog(Gtk.Dialog):
         self.connect("response", self.on_response)
         self.vbox.set_border_width(5)
 
-        grid = Gtk.Grid()
-        grid.set_row_spacing(5)
-        grid.set_column_spacing(5)
+        grid = uigtk.widgets.Grid()
         self.vbox.add(grid)
 
         label = uigtk.widgets.Label("Players", leftalign=True)
@@ -63,9 +61,9 @@ class Dialog(Gtk.Dialog):
 
         label = uigtk.widgets.Label("Referees", leftalign=True)
         grid.attach(label, 0, 4, 1, 1)
-        self.labelStadiumCount = uigtk.widgets.Label(leftalign=True)
-        self.labelStadiumCount.set_text("%i" % (data.stadiums.get_stadium_count()))
-        grid.attach(self.labelStadiumCount, 1, 4, 1, 1)
+        self.labelRefereeCount = uigtk.widgets.Label(leftalign=True)
+        self.labelRefereeCount.set_text("%i" % (data.referees.get_referee_count()))
+        grid.attach(self.labelRefereeCount, 1, 4, 1, 1)
 
         label = uigtk.widgets.Label("Nations", leftalign=True)
         grid.attach(label, 0, 5, 1, 1)

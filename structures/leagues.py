@@ -35,21 +35,36 @@ class Leagues:
         return self.leagueid
 
     def get_leagues(self):
+        '''
+        Return complete dictionary of leagues.
+        '''
         return self.leagues.items()
 
     def get_league_for_id(self, leagueid):
+        '''
+        Return league for given league id.
+        '''
         return self.leagues[leagueid]
 
     def get_league_count(self):
+        '''
+        Get number of leagues in data structure.
+        '''
         return len(self.leagues)
 
     def add_league(self):
+        '''
+        Add referee to the data structure.
+        '''
         refereeid = self.get_refereeid()
         self.referees[refereeid] = Referee()
 
         return refereeid
 
     def remove_league(self, leagueid):
+        '''
+        Remove league from data structure.
+        '''
         del self.leagues[leagueid]
 
         data.unsaved = True

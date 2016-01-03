@@ -36,21 +36,36 @@ class Stadiums:
         return self.stadiumid
 
     def get_stadiums(self):
+        '''
+        Return complete dictionary of stadiums.
+        '''
         return self.stadiums.items()
 
     def get_stadium_by_id(self, stadiumid):
+        '''
+        Return stadium object for given stadium id.
+        '''
         return self.stadiums[stadiumid]
 
     def get_stadium_count(self):
+        '''
+        Get number of stadiums in data structure.
+        '''
         return len(self.stadiums)
 
     def add_stadium(self):
+        '''
+        Add stadium to data structure.
+        '''
         stadiumid = self.get_stadiumid()
         self.stadiums[stadiumid] = Stadium()
 
         return stadiumid
 
     def remove_stadium(self, stadiumid):
+        '''
+        Remove stadium from data structure.
+        '''
         del self.stadiums[stadiumid]
 
         data.unsaved = True
@@ -77,6 +92,9 @@ class Stadiums:
                 attribute.main = value[3:7]
                 attribute.corner = value[7:11]
                 attribute.box = value[11:15]
+
+            if stadiumid > self.stadiumid:
+                self.stadiumid = stadiumid
 
 class Stadium:
     def __init__(self):

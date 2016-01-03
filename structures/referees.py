@@ -29,10 +29,34 @@ class Referees:
         self.populate_data()
 
     def get_referees(self):
+        '''
+        Return complete dictionary of referees.
+        '''
         return self.referees.items()
 
     def get_referee_by_id(self, refereeid):
+        '''
+        Return referee for given referee id.
+        '''
         return self.referees[refereeid]
+
+    def get_referee_count(self):
+        '''
+        Get number of referees in data structure.
+        '''
+        return len(self.referees)
+
+    def add_referee(self):
+        '''
+        Add referee to the data structure.
+        '''
+        pass
+
+    def remove_referee(self):
+        '''
+        Remove referee from data structure.
+        '''
+        pass
 
     def populate_data(self):
         data.database.cursor.execute("SELECT * FROM referee")

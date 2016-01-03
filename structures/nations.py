@@ -36,7 +36,7 @@ class Nations:
 
     def get_nations(self):
         '''
-        Get itemised dictionary of all nations.
+        Return complete dictionary of nations.
         '''
         return self.nations.items()
 
@@ -47,15 +47,26 @@ class Nations:
         return self.nations[nationid]
 
     def get_nation_count(self):
+        '''
+        Get number of nations in data structure.
+        '''
         return len(self.nations)
 
     def add_nation(self):
+        '''
+        Add nation to the data structure.
+        '''
         nationid = self.get_nationid()
         self.nations[nationid] = Nation()
+
+        data.unsaved = True
 
         return nationid
 
     def remove_nation(self, nationid):
+        '''
+        Remove nation from data structure.
+        '''
         del self.nations[nationid]
 
         data.unsaved = True
@@ -70,6 +81,9 @@ class Nations:
 
             nation.name = item[1]
             nation.denonym = item[2]
+
+            if nationid > self.nationid:
+                self.nationid = nationid
 
 
 class Nation:
