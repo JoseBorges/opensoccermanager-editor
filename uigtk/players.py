@@ -89,8 +89,10 @@ class Players(uigtk.widgets.Grid):
 
                 if dialog.show():
                     self.delete_player(playerid)
+                    self.populate_data()
             else:
                 self.delete_player(playerid)
+                self.populate_data()
 
     def delete_player(self, playerid):
         '''
@@ -247,6 +249,12 @@ class PlayerEdit(Players, uigtk.widgets.Grid):
         liststore = model.get_model()
         liststore[child_treeiter][1] = player.get_name()
 
+        model, treeiter = Players.search.treeselection.get_selected()
+        treepath = model.get_path(treeiter)
+        Players.search.treeview.scroll_to_cell(treepath)
+
+        data.unsaved = True
+
     def on_date_of_birth_clicked(self, *args):
         '''
         Display date of birth selection dialog.
@@ -272,7 +280,7 @@ class PlayerEdit(Players, uigtk.widgets.Grid):
         '''
         self.clear_details()
 
-        self.playerid = playerid
+        PlayerEdit.playerid = playerid
         self.player = data.players.get_player_by_id(playerid)
 
         self.entryFirstName.set_text(self.player.first_name)
@@ -367,8 +375,7 @@ class AttributeEdit(uigtk.widgets.Grid):
         '''
         Add new attribute for loaded player.
         '''
-        self.attributedialog.playerid = PlayerEdit.playerid
-        self.attributedialog.show()
+        self.attributedialog.show(PlayerEdit.playerid)
 
         self.populate_data()
 
@@ -459,14 +466,9 @@ class AttributeDialog(Gtk.Dialog):
 
         label = uigtk.widgets.Label("_Year", leftalign=True)
         grid.attach(label, 0, 0, 1, 1)
-        comboboxYear = Gtk.ComboBoxText()
-        label.set_mnemonic_widget(comboboxYear)
-        grid.attach(comboboxYear, 1, 0, 1, 1)
-
-        for year in data.years.get_years():
-            comboboxYear.append(str(year), str(year))
-
-        comboboxYear.set_active(0)
+        self.comboboxYear = Gtk.ComboBoxText()
+        label.set_mnemonic_widget(self.comboboxYear)
+        grid.attach(self.comboboxYear, 1, 0, 1, 1)
 
         label = uigtk.widgets.Label("_Club", leftalign=True)
         grid.attach(label, 0, 1, 1, 1)
@@ -522,12 +524,14 @@ class AttributeDialog(Gtk.Dialog):
         '''
         self.dialogClubSelect.show()
 
-    def load_attributes(self, playerid, attributeid):
+    def load_attributes(self):
         '''
         Load selected player and attribute data.
         '''
-        player = data.players.get_player_by_id(playerid)
-        attribute = player.attributes[attributeid]
+        player = data.players.get_player_by_id(self.playerid)
+        attribute = player.attributes[self.attributeid]
+
+        self.comboboxYear.set_active_id(str(attribute.year))
 
         club = data.clubs.get_club_by_id(attribute.club)
         self.buttonClub.set_label("%s" % (club.name))
@@ -539,17 +543,47 @@ class AttributeDialog(Gtk.Dialog):
 
         self.spinbuttonTraining.set_value(attribute.training)
 
-    def show(self, playerid=None, attributeid=None):
+    def populate_years(self, years=None):
+        '''
+        Customise available year values for add and edit actions.
+        '''
+        self.comboboxYear.remove_all()
+
+        if years:
+            added = False
+
+            for year in data.years.get_years():
+                if year not in years:
+                    self.comboboxYear.append(str(year), str(year))
+                    added = True
+
+            self.comboboxYear.set_sensitive(added)
+            self.comboboxYear.set_active(0)
+        else:
+            for year in data.years.get_years():
+                self.comboboxYear.append(str(year), str(year))
+
+    def show(self, playerid, attributeid=None):
+        self.playerid = playerid
+        self.attributeid = attributeid
+
         button = self.get_widget_for_response(Gtk.ResponseType.OK)
 
-        if playerid:
+        if attributeid:
             self.set_title("Edit Attribute")
             button.set_label("_Edit")
 
-            self.load_attributes(playerid, attributeid)
+            self.populate_years()
+
+            self.load_attributes()
         else:
             self.set_title("Add Attribute")
             button.set_label("_Add")
+
+            player = data.players.get_player_by_id(self.playerid)
+            years = [attribute.year for attribute in player.attributes.values()]
+
+            self.populate_years(years)
 
         self.show_all()
 

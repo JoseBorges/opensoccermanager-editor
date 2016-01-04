@@ -146,8 +146,10 @@ class Clubs(uigtk.widgets.Grid):
         model, treeiter = treeselection.get_selected()
 
         if treeiter:
+            data.window.menu.menuitemRemove.set_sensitive(True)
             data.window.toolbar.toolbuttonRemove.set_sensitive(True)
         else:
+            data.window.menu.menuitemRemove.set_sensitive(False)
             data.window.toolbar.toolbuttonRemove.set_sensitive(False)
             self.clubedit.clear_details()
             self.clubedit.set_sensitive(False)
@@ -397,7 +399,7 @@ class AttributeDialog(Gtk.Dialog):
         else:
             self.stadiumdialog.show()
 
-    def load_year_values(self, years=None):
+    def populate_years(self, years=None):
         '''
         Customise available year values for add and edit actions.
         '''
@@ -452,7 +454,7 @@ class AttributeDialog(Gtk.Dialog):
             self.set_title("Edit Attribute")
             button.set_label("_Edit")
 
-            self.load_year_values()
+            self.populate_years()
 
             self.load_attributes()
         else:
@@ -462,7 +464,7 @@ class AttributeDialog(Gtk.Dialog):
             club = data.clubs.get_club_by_id(clubid)
             years = [attribute.year for attribute in club.attributes.values()]
 
-            self.load_year_values(years)
+            self.populate_years(years)
 
         self.show_all()
 
