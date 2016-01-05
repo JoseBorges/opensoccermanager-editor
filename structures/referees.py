@@ -18,15 +18,26 @@
 
 import data
 
+
 class Referees:
     class Referee:
-        def __init__(self):
-            name = ""
+        def __init__(self, refereeid):
+            self.refereeid = refereeid
+            self.name = ""
 
     def __init__(self):
         self.referees = {}
+        self.refereeid = 0
 
         self.populate_data()
+
+    def get_refereeid(self):
+        '''
+        Return a new referee id.
+        '''
+        self.refereeid += 1
+
+        return self.refereeid
 
     def get_referees(self):
         '''
@@ -50,19 +61,27 @@ class Referees:
         '''
         Add referee to the data structure.
         '''
-        pass
+        refereeid = self.get_refereeid()
+        self.referees[refereeid] = self.Referee(refereeid)
 
-    def remove_referee(self):
+        return refereeid
+
+    def remove_referee(self, refereeid):
         '''
         Remove referee from data structure.
         '''
-        pass
+        del self.referees[refereeid]
+
+        data.unsaved = True
 
     def populate_data(self):
         data.database.cursor.execute("SELECT * FROM referee")
 
         for item in data.database.cursor.fetchall():
-            referee = self.Referee()
             refereeid = item[0]
+            referee = self.Referee(refereeid)
             referee.name = item[1]
             self.referees[refereeid] = referee
+
+            if refereeid > self.refereeid:
+                self.refereeid = refereeid

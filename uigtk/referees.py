@@ -48,10 +48,44 @@ class Referees(uigtk.widgets.Grid):
         self.populate_data()
 
     def add_item(self):
-        pass
+        '''
+        Add item into model and load attributes for editing.
+        '''
+        refereeid = data.referees.add_referee()
+
+        treeiter = self.search.liststore.insert(0, [refereeid, ""])
+        treeiter1 = self.search.treemodelfilter.convert_child_iter_to_iter(treeiter)
+        treeiter2 = self.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
+        treepath = self.search.treemodelsort.get_path(treeiter2[1])
+
+        self.search.treeview.scroll_to_cell(treepath)
+        self.search.treeview.set_cursor_on_cell(treepath, None, None, False)
+
+        self.refereeedit.clear_details()
+        self.refereeedit.refereeid = refereeid
+
+        self.refereeedit.entryName.grab_focus()
 
     def remove_item(self):
-        pass
+        '''
+        Query removal of selected referee if dialog enabled.
+        '''
+        model, treeiter = self.search.treeselection.get_selected()
+
+        if treeiter:
+            refereeid = model[treeiter][0]
+
+            if data.preferences.confirm_remove:
+                referee = data.referees.get_referee_by_id(refereeid)
+
+                dialog = uigtk.dialogs.RemoveItem("Referee", referee.name)
+
+                if dialog.show():
+                    data.referees.remove_referee(refereeid)
+                    self.populate_data()
+            else:
+                data.referees.remove_referee(refereeid)
+                self.populate_data()
 
     def filter_visible(self, model, treeiter, data):
         criteria = self.search.entrySearch.get_text()
@@ -90,15 +124,15 @@ class Referees(uigtk.widgets.Grid):
 
     def on_row_activated(self, treeview, treepath, treeviewcolumn):
         '''
-        Get player selected and initiate details loading.
+        Get referee selected and initiate details loading.
         '''
         treeselection = treeview.get_selection()
         model, treeiter = treeselection.get_selected()
 
         if treeiter:
-            nationid = model[treeiter][0]
+            refereeid = model[treeiter][0]
 
-            self.refereeedit.set_details(nationid)
+            self.refereeedit.set_details(refereeid)
             self.refereeedit.set_sensitive(True)
 
     def on_treeselection_changed(self, treeselection):
@@ -139,8 +173,9 @@ class RefereeEdit(Referees, uigtk.widgets.Grid):
         label.set_mnemonic_widget(self.entryName)
         grid.attach(self.entryName, 1, 0, 1, 1)
 
-        buttons = uigtk.interface.ActionButtons()
-        self.attach(buttons, 0, 1, 1, 1)
+        actions = uigtk.interface.ActionButtons()
+        actions.buttonSave.connect("clicked", self.on_save_clicked)
+        self.attach(actions, 0, 1, 1, 1)
 
     def on_save_clicked(self, *args):
         '''
@@ -150,19 +185,21 @@ class RefereeEdit(Referees, uigtk.widgets.Grid):
 
         referee.name = self.entryName.get_text()
 
-        model, treeiter = Players.search.treeselection.get_selected()
+        model, treeiter = Referees.search.treeselection.get_selected()
         child_treeiter = model.convert_iter_to_child_iter(treeiter)
 
         liststore = model.get_model()
         liststore[child_treeiter][1] = referee.name
 
-        model, treeiter = Nations.search.treeselection.get_selected()
+        model, treeiter = Referees.search.treeselection.get_selected()
         treepath = model.get_path(treeiter)
         Referees.search.treeview.scroll_to_cell(treepath)
 
+        data.unsaved = True
+
     def set_details(self, refereeid):
         '''
-        Update selected stadium with details to be displayed.
+        Update selected referee with details to be displayed.
         '''
         self.clear_details()
 
