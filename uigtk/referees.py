@@ -43,6 +43,7 @@ class Referees(uigtk.widgets.Grid):
         self.attach(self.search, 0, 0, 1, 1)
 
         self.refereeedit = RefereeEdit()
+        self.refereeedit.set_sensitive(False)
         self.attach(self.refereeedit, 1, 0, 1, 1)
 
         self.populate_data()
@@ -58,8 +59,7 @@ class Referees(uigtk.widgets.Grid):
         treeiter2 = self.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
         treepath = self.search.treemodelsort.get_path(treeiter2[1])
 
-        self.search.treeview.scroll_to_cell(treepath)
-        self.search.treeview.set_cursor_on_cell(treepath, None, None, False)
+        self.search.activate_row(treepath)
 
         self.refereeedit.clear_details()
         self.refereeedit.refereeid = refereeid
@@ -136,6 +136,9 @@ class Referees(uigtk.widgets.Grid):
             self.refereeedit.set_sensitive(True)
 
     def on_treeselection_changed(self, treeselection):
+        '''
+        Update visible details when selection is changed.
+        '''
         model, treeiter = treeselection.get_selected()
 
         if treeiter:
@@ -173,9 +176,9 @@ class RefereeEdit(Referees, uigtk.widgets.Grid):
         label.set_mnemonic_widget(self.entryName)
         grid.attach(self.entryName, 1, 0, 1, 1)
 
-        actions = uigtk.interface.ActionButtons()
-        actions.buttonSave.connect("clicked", self.on_save_clicked)
-        self.attach(actions, 0, 1, 1, 1)
+        self.actionbuttons = uigtk.interface.ActionButtons()
+        self.actionbuttons.buttonSave.connect("clicked", self.on_save_clicked)
+        self.attach(self.actionbuttons, 0, 1, 1, 1)
 
     def on_save_clicked(self, *args):
         '''

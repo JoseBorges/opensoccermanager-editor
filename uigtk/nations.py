@@ -44,6 +44,7 @@ class Nations(uigtk.widgets.Grid):
         self.attach(self.search, 0, 0, 1, 1)
 
         self.nationedit = NationEdit()
+        self.nationedit.set_sensitive(False)
         self.attach(self.nationedit, 1, 0, 1, 1)
 
         self.populate_data()
@@ -59,8 +60,7 @@ class Nations(uigtk.widgets.Grid):
         treeiter2 = self.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
         treepath = self.search.treemodelsort.get_path(treeiter2[1])
 
-        self.search.treeview.scroll_to_cell(treepath)
-        self.search.treeview.set_cursor_on_cell(treepath, None, None, False)
+        self.search.activate_row(treepath)
 
         self.nationedit.clear_details()
         self.nationedit.nationid = nationid
@@ -154,8 +154,10 @@ class Nations(uigtk.widgets.Grid):
         model, treeiter = treeselection.get_selected()
 
         if treeiter:
+            data.window.menu.menuitemRemove.set_sensitive(True)
             data.window.toolbar.toolbuttonRemove.set_sensitive(True)
         else:
+            data.window.menu.menuitemRemove.set_sensitive(False)
             data.window.toolbar.toolbuttonRemove.set_sensitive(False)
             self.nationedit.clear_details()
             self.nationedit.set_sensitive(False)
@@ -192,9 +194,9 @@ class NationEdit(Nations, uigtk.widgets.Grid):
         label.set_mnemonic_widget(self.entryDenonym)
         grid.attach(self.entryDenonym, 1, 1, 1, 1)
 
-        self.actions = uigtk.interface.ActionButtons()
-        self.actions.buttonSave.connect("clicked", self.on_save_clicked)
-        self.attach(self.actions, 0, 1, 1, 1)
+        self.actionbuttons = uigtk.interface.ActionButtons()
+        self.actionbuttons.buttonSave.connect("clicked", self.on_save_clicked)
+        self.attach(self.actionbuttons, 0, 1, 1, 1)
 
     def on_save_clicked(self, *args):
         '''

@@ -43,6 +43,7 @@ class Leagues(uigtk.widgets.Grid):
         self.attach(self.search, 0, 0, 1, 1)
 
         self.leagueedit = LeagueEdit()
+        self.leagueedit.set_sensitive(False)
         self.attach(self.leagueedit, 1, 0, 1, 1)
 
         self.populate_data()
@@ -58,8 +59,7 @@ class Leagues(uigtk.widgets.Grid):
         treeiter2 = self.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
         treepath = self.search.treemodelsort.get_path(treeiter2[1])
 
-        self.search.treeview.scroll_to_cell(treepath)
-        self.search.treeview.set_cursor_on_cell(treepath, None, None, False)
+        self.search.activate_row(treepath)
 
         self.leagueedit.clear_details()
         self.leagueedit.leagueid = leagueid
@@ -188,9 +188,9 @@ class LeagueEdit(Leagues, uigtk.widgets.Grid):
         self.attributes = AttributeEdit()
         grid.attach(self.attributes, 0, 2, 1, 1)
 
-        self.actions = uigtk.interface.ActionButtons()
-        self.actions.buttonSave.connect("clicked", self.on_save_clicked)
-        self.attach(self.actions, 0, 1, 1, 1)
+        self.actionbuttons = uigtk.interface.ActionButtons()
+        self.actionbuttons.buttonSave.connect("clicked", self.on_save_clicked)
+        self.attach(self.actionbuttons, 0, 1, 1, 1)
 
     def on_save_clicked(self, *args):
         '''
@@ -256,15 +256,46 @@ class AttributeEdit(LeagueEdit, uigtk.widgets.Grid):
         treeviewcolumn = uigtk.widgets.TreeViewColumn(title="Clubs", column=2)
         self.attributes.treeview.append_column(treeviewcolumn)
 
+        self.attributedialog = AttributeDialog()
+
     def on_add_clicked(self, *args):
-        dialog = AttributeDialog()
-        dialog.leagueid = LeagueEdit.leagueid
+        '''
+        Display add dialog for new attribute.
+        '''
+        self.attributedialog.show(LeagueEdit.leagueid)
+
+        self.populate_data()
 
     def on_edit_clicked(self, *args):
-        dialog = AttributeDialog()
+        '''
+        Display edit dialog for selected attribute.
+        '''
+        model, treeiter = self.attributes.treeselection.get_selected()
+        attributeid = model[treeiter][0]
+
+        self.attributedialog.show(LeagueEdit.leagueid, attributeid)
+
+        self.populate_data()
 
     def on_remove_clicked(self, *args):
-        pass
+        '''
+        Remove selected attribute for loaded league.
+        '''
+        dialog = uigtk.dialogs.RemoveAttribute(index=3)
+
+        if dialog.show():
+            model, treeiter = self.attributes.treeselection.get_selected()
+            attributeid = model[treeiter][0]
+
+            league = data.leagues.get_league_by_id(LeagueEdit.leagueid)
+            del league.attributes[attributeid]
+
+            data.unsaved = True
+
+            self.populate_data()
+
+    def on_row_activated(self, *args):
+        self.on_edit_clicked()
 
     def on_treeselection_changed(self, treeselection):
         model, treeiter = treeselection.get_selected()
@@ -276,9 +307,6 @@ class AttributeEdit(LeagueEdit, uigtk.widgets.Grid):
         else:
             self.attributes.buttonEdit.set_sensitive(False)
             self.attributes.buttonRemove.set_sensitive(False)
-
-    def on_row_activated(self, *args):
-        self.on_edit_clicked()
 
     def populate_data(self):
         league = data.leagues.get_league_by_id(self.leagueid)
@@ -299,7 +327,6 @@ class AttributeDialog(Gtk.Dialog):
         self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
         self.add_button("_Add", Gtk.ResponseType.OK)
         self.set_default_response(Gtk.ResponseType.OK)
-        self.connect("response", self.on_response)
         self.vbox.set_border_width(5)
 
         grid = uigtk.widgets.Grid()
@@ -317,7 +344,35 @@ class AttributeDialog(Gtk.Dialog):
 
         self.comboboxYear.set_active(0)
 
+    def load_attributes(self):
+        '''
+        Load attributes for given club and attribute.
+        '''
+        pass
+
+    def clear_attributes(self):
+        '''
+        Reset data entry fields on close of dialog.
+        '''
+        pass
+
+    def show(self, leagueid, attributeid=None):
+        self.leagueid = leagueid
+        self.attributeid = attributeid
+
+        button = self.get_widget_for_response(Gtk.ResponseType.OK)
+
+        if attributeid:
+            self.set_title("Edit Attribute")
+            button.set_label("_Edit")
+        else:
+            self.set_title("Add Attribute")
+            button.set_label("_Add")
+
         self.show_all()
 
-    def on_response(self, *args):
-        self.destroy()
+        if self.run() == Gtk.ResponseType.OK:
+            pass
+
+        self.clear_attributes()
+        self.hide()

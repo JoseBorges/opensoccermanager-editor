@@ -22,6 +22,8 @@ import unicodedata
 
 import data
 import structures.stadiums
+import uigtk.interface
+import uigtk.search
 import uigtk.widgets
 
 
@@ -43,6 +45,7 @@ class Stadiums(uigtk.widgets.Grid):
         self.attach(self.search, 0, 0, 1, 1)
 
         self.stadiumedit = StadiumEdit()
+        self.stadiumedit.set_sensitive(False)
         self.attach(self.stadiumedit, 1, 0, 1, 1)
 
         self.populate_data()
@@ -58,8 +61,7 @@ class Stadiums(uigtk.widgets.Grid):
         treeiter2 = self.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
         treepath = self.search.treemodelsort.get_path(treeiter2[1])
 
-        self.search.treeview.scroll_to_cell(treepath)
-        self.search.treeview.set_cursor_on_cell(treepath, None, None, False)
+        self.search.activate_row(treepath)
 
         self.stadiumedit.clear_details()
         self.stadiumedit.stadiumid = stadiumid
@@ -142,6 +144,9 @@ class Stadiums(uigtk.widgets.Grid):
             self.stadiumedit.set_sensitive(True)
 
     def on_treeselection_changed(self, treeselection):
+        '''
+        Update visible details when selection is changed.
+        '''
         model, treeiter = treeselection.get_selected()
 
         if treeiter:
@@ -185,9 +190,9 @@ class StadiumEdit(uigtk.widgets.Grid):
         self.attributes = AttributeEdit()
         grid.attach(self.attributes, 0, 1, 1, 1)
 
-        self.actions = uigtk.interface.ActionButtons()
-        self.actions.buttonSave.connect("clicked", self.on_save_clicked)
-        self.attach(self.actions, 0, 1, 1, 1)
+        self.actionbuttons = uigtk.interface.ActionButtons()
+        self.actionbuttons.buttonSave.connect("clicked", self.on_save_clicked)
+        self.attach(self.actionbuttons, 0, 1, 1, 1)
 
     def on_save_clicked(self, *args):
         '''

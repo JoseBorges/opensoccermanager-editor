@@ -23,8 +23,6 @@ import uigtk.widgets
 
 class Search(Gtk.Grid):
     def __init__(self):
-        self.liststore = Gtk.ListStore(int, str)
-
         Gtk.Grid.__init__(self)
         self.set_row_spacing(5)
 
@@ -33,6 +31,7 @@ class Search(Gtk.Grid):
         scrolledwindow.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         self.attach(scrolledwindow, 0, 0, 1, 1)
 
+        self.liststore = Gtk.ListStore(int, str)
         self.treemodelfilter = self.liststore.filter_new()
         self.treemodelsort = Gtk.TreeModelSort(self.treemodelfilter)
         self.treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
@@ -68,6 +67,14 @@ class Search(Gtk.Grid):
 
             treepath = self.treemodelsort.get_path(treeiter)
             self.treeview.row_activated(treepath, self.treeviewcolumn)
+
+    def activate_row(self, treepath):
+        '''
+        Scroll to provided treepath and activate row.
+        '''
+        self.treeview.scroll_to_cell(treepath)
+        self.treeview.set_cursor_on_cell(treepath, None, None, False)
+        self.treeview.row_activated(treepath, self.treeviewcolumn)
 
     def on_button_event(self, treeview, event):
         '''

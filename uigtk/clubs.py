@@ -60,8 +60,7 @@ class Clubs(uigtk.widgets.Grid):
         treeiter2 = self.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
         treepath = self.search.treemodelsort.get_path(treeiter2[1])
 
-        self.search.treeview.scroll_to_cell(treepath)
-        self.search.treeview.set_cursor_on_cell(treepath, None, None, False)
+        self.search.activate_row(treepath)
 
         self.clubedit.clear_details()
         self.clubedit.clubid = clubid
@@ -192,9 +191,9 @@ class ClubEdit(Clubs, uigtk.widgets.Grid):
         self.attributes = AttributeEdit()
         grid.attach(self.attributes, 0, 2, 1, 1)
 
-        self.actions = uigtk.interface.ActionButtons()
-        self.actions.buttonSave.connect("clicked", self.on_save_clicked)
-        self.attach(self.actions, 0, 1, 1, 1)
+        self.actionbuttons = uigtk.interface.ActionButtons()
+        self.actionbuttons.buttonSave.connect("clicked", self.on_save_clicked)
+        self.attach(self.actionbuttons, 0, 1, 1, 1)
 
     def on_save_clicked(self, *args):
         '''
@@ -246,9 +245,6 @@ class AttributeEdit(uigtk.widgets.Grid):
     def __init__(self):
         uigtk.widgets.Grid.__init__(self)
 
-        frame = uigtk.widgets.CommonFrame("Attributes")
-        self.attach(frame, 0, 0, 1, 1)
-
         self.liststore = Gtk.ListStore(int, int, str, str, str, int)
         treemodelsort = Gtk.TreeModelSort(self.liststore)
         treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
@@ -276,11 +272,17 @@ class AttributeEdit(uigtk.widgets.Grid):
         self.attributedialog = AttributeDialog()
 
     def on_add_clicked(self, *args):
+        '''
+        Display add dialog for new attribute.
+        '''
         self.attributedialog.show(ClubEdit.clubid)
 
         self.populate_data()
 
     def on_edit_clicked(self, *args):
+        '''
+        Display edit dialog for selected attribute.
+        '''
         model, treeiter = self.attributes.treeselection.get_selected()
         attributeid = model[treeiter][0]
 
@@ -305,6 +307,9 @@ class AttributeEdit(uigtk.widgets.Grid):
 
             self.populate_data()
 
+    def on_row_activated(self, *args):
+        self.on_edit_clicked()
+
     def on_treeselection_changed(self, treeselection):
         model, treeiter = treeselection.get_selected()
 
@@ -315,9 +320,6 @@ class AttributeEdit(uigtk.widgets.Grid):
         else:
             self.attributes.buttonEdit.set_sensitive(False)
             self.attributes.buttonRemove.set_sensitive(False)
-
-    def on_row_activated(self, treeview, treepath, treeviewcolumn):
-        self.on_edit_clicked()
 
     def populate_data(self):
         club = data.clubs.get_club_by_id(self.clubid)
