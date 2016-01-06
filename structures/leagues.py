@@ -40,7 +40,7 @@ class Leagues:
         '''
         return self.leagues.items()
 
-    def get_league_for_id(self, leagueid):
+    def get_league_by_id(self, leagueid):
         '''
         Return league for given league id.
         '''
@@ -56,10 +56,10 @@ class Leagues:
         '''
         Add referee to the data structure.
         '''
-        refereeid = self.get_refereeid()
-        self.referees[refereeid] = Referee()
+        leagueid = self.get_leagueid()
+        self.leagues[leagueid] = League()
 
-        return refereeid
+        return leagueid
 
     def remove_league(self, leagueid):
         '''

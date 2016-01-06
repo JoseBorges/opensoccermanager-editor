@@ -51,17 +51,43 @@ class Leagues(uigtk.widgets.Grid):
         '''
         Add item into model and load attributes for editing.
         '''
-        pass
+        leagueid = data.leagues.add_league()
+
+        treeiter = self.search.liststore.insert(0, [leagueid, ""])
+        treeiter1 = self.search.treemodelfilter.convert_child_iter_to_iter(treeiter)
+        treeiter2 = self.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
+        treepath = self.search.treemodelsort.get_path(treeiter2[1])
+
+        self.search.treeview.scroll_to_cell(treepath)
+        self.search.treeview.set_cursor_on_cell(treepath, None, None, False)
+
+        self.leagueedit.clear_details()
+        self.leagueedit.leagueid = leagueid
+
+        self.leagueedit.entryName.grab_focus()
 
     def remove_item(self):
         '''
         Query removal of selected player if dialog enabled.
         '''
-        pass
+        model, treeiter = self.search.treeselection.get_selected()
+
+        if treeiter:
+            leagueid = model[treeiter][0]
+
+            if data.preferences.confirm_remove:
+                league = data.leagues.get_league_by_id(leagueid)
+
+                dialog = uigtk.dialogs.RemoveItem("League", league.name)
+
+                if dialog.show():
+                    self.delete_league(leagueid)
+            else:
+                self.delete_league(leagueid)
 
     def delete_league(self, leagueid):
         '''
-        Remove league from working data and repopulate list.
+        Remove given league id from working data and repopulate list.
         '''
         data.leagues.remove_league(leagueid)
 
@@ -116,11 +142,16 @@ class Leagues(uigtk.widgets.Grid):
             self.leagueedit.set_sensitive(True)
 
     def on_treeselection_changed(self, treeselection):
+        '''
+        Update visible details when selection is changed.
+        '''
         model, treeiter = treeselection.get_selected()
 
         if treeiter:
+            data.window.menu.menuitemRemove.set_sensitive(True)
             data.window.toolbar.toolbuttonRemove.set_sensitive(True)
         else:
+            data.window.menu.menuitemRemove.set_sensitive(False)
             data.window.toolbar.toolbuttonRemove.set_sensitive(False)
             self.leagueedit.clear_details()
             self.leagueedit.set_sensitive(False)
@@ -162,7 +193,24 @@ class LeagueEdit(Leagues, uigtk.widgets.Grid):
         self.attach(self.actions, 0, 1, 1, 1)
 
     def on_save_clicked(self, *args):
-        pass
+        '''
+        Save current values into working data.
+        '''
+        league = data.leagues.get_league_by_id(self.leagueid)
+
+        league.name = self.entryName.get_text()
+
+        model, treeiter = Leagues.search.treeselection.get_selected()
+        child_treeiter = model.convert_iter_to_child_iter(treeiter)
+
+        liststore = model.get_model()
+        liststore[child_treeiter][1] = league.name
+
+        model, treeiter = Leagues.search.treeselection.get_selected()
+        treepath = model.get_path(treeiter)
+        Leagues.search.treeview.scroll_to_cell(treepath)
+
+        data.unsaved = True
 
     def set_details(self, leagueid):
         '''
@@ -171,12 +219,11 @@ class LeagueEdit(Leagues, uigtk.widgets.Grid):
         self.clear_details()
 
         LeagueEdit.leagueid = leagueid
-        league = data.leagues.get_league_for_id(leagueid)
+        league = data.leagues.get_league_by_id(leagueid)
 
         self.entryName.set_text(league.name)
 
         self.attributes.leagueid = leagueid
-
         self.attributes.populate_data()
 
     def clear_details(self):
@@ -190,11 +237,11 @@ class LeagueEdit(Leagues, uigtk.widgets.Grid):
 
 class AttributeEdit(LeagueEdit, uigtk.widgets.Grid):
     def __init__(self):
+        uigtk.widgets.Grid.__init__(self)
+
         self.liststore = Gtk.ListStore(int, int, int)
         treemodelsort = Gtk.TreeModelSort(self.liststore)
         treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
-
-        uigtk.widgets.Grid.__init__(self)
 
         self.attributes = uigtk.interface.Attributes()
         self.attributes.treeview.set_model(treemodelsort)
@@ -234,7 +281,7 @@ class AttributeEdit(LeagueEdit, uigtk.widgets.Grid):
         self.on_edit_clicked()
 
     def populate_data(self):
-        league = data.leagues.get_league_for_id(self.leagueid)
+        league = data.leagues.get_league_by_id(self.leagueid)
 
         self.liststore.clear()
 
