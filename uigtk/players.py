@@ -334,9 +334,12 @@ class AttributeEdit(uigtk.widgets.Grid):
 
         self.liststore = Gtk.ListStore(int, int, str, int, str, int, int, int,
                                        int, int, int, int, int, int, int)
+        self.treemodelsort = Gtk.TreeModelSort(self.liststore)
+        self.treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
 
         self.attributes = uigtk.interface.Attributes()
-        self.attributes.treeview.set_model(self.liststore)
+        self.attributes.treeview.set_model(self.treemodelsort)
+        self.attributes.treeview.connect("row-activated", self.on_row_activated)
         self.attributes.treeselection.connect("changed", self.on_treeselection_changed)
         self.attributes.buttonAdd.connect("clicked", self.on_add_clicked)
         self.attributes.buttonEdit.connect("clicked", self.on_edit_clicked)
@@ -402,8 +405,8 @@ class AttributeEdit(uigtk.widgets.Grid):
 
             self.populate_data()
 
-    def update_add_button(self, *args):
-        pass
+    def on_row_activated(self, *args):
+        self.on_edit_clicked()
 
     def on_treeselection_changed(self, treeselection):
         model, treeiter = treeselection.get_selected()

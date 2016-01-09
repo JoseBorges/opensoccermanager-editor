@@ -67,7 +67,7 @@ class Nations(uigtk.widgets.Grid):
 
         self.nationedit.entryName.grab_focus()
 
-    def remove_item(self):
+    def remove_item(self, *args):
         '''
         Query removal of selected nation if dialog enabled.
         '''

@@ -18,6 +18,7 @@
 
 from gi.repository import Gtk
 
+import data
 import uigtk.widgets
 
 
@@ -89,5 +90,13 @@ class ContextMenu(Gtk.Menu):
     def __init__(self):
         Gtk.Menu.__init__(self)
 
-        menuitem = uigtk.widgets.MenuItem("_Remove Item")
-        self.append(menuitem)
+        self.menuitemRemove = uigtk.widgets.MenuItem("_Remove Item")
+        self.menuitemRemove.connect("activate", self.on_remove_item)
+        self.append(self.menuitemRemove)
+
+    def on_remove_item(self, *args):
+        '''
+        Call remove item function of current page type.
+        '''
+        page = data.window.notebook.get_page_type()
+        page.remove_item()
