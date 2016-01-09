@@ -109,8 +109,8 @@ class Players:
                 attribute.set_pieces = value[13]
                 attribute.training = value[14]
 
-                if attributeid > attribute.attributeid:
-                    attribute.attributeid = attributeid
+                if attributeid > player.attributeid:
+                    player.attributeid = attributeid
 
             if playerid > self.playerid:
                 self.playerid = playerid
@@ -125,6 +125,7 @@ class Player:
         self.nationality = None
 
         self.attributes = {}
+        self.attributeid = 0
 
     def get_name(self, mode=0):
         '''
@@ -163,10 +164,39 @@ class Player:
         else:
             return None
 
+    def get_age(self, year):
+        '''
+        Return age of player calculated from passed year attribute value.
+        '''
+        age = year - self.date_of_birth[0]
+
+        if (self.date_of_birth[1], self.date_of_birth[2]) > (8, 1):
+            age -= 1
+
+        return age
+
+    def get_attributeid(self):
+        self.attributeid += 1
+
+        return self.attributeid
+
+    def add_attribute(self):
+        attributeid = self.get_attributeid()
+        self.attributes[attributeid] = Attribute()
+
+        data.unsaved = True
+
+        return attributeid
+
+    def remove_attribute(self, attributeid):
+        del self.attributes[attributeid]
+
+        data.unsaved = True
+
 
 class Attribute:
     def __init__(self):
-        self.attributeid = 0
+        pass
 
     def get_skills(self):
         skills = (self.keeping,

@@ -43,3 +43,9 @@ class Skills:
         skills = [skill[0] for skill in self.skills]
 
         return skills
+
+    def get_skill_by_index(self, index):
+        '''
+        Return skill tuple for given index.
+        '''
+        return self.skills[index]

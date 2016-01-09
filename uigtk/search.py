@@ -73,7 +73,7 @@ class Search(Gtk.Grid):
         Scroll to provided treepath and activate row.
         '''
         self.treeview.scroll_to_cell(treepath)
-        self.treeview.set_cursor_on_cell(treepath, None, None, False)
+        self.treeview.set_cursor(treepath, None, False)
         self.treeview.row_activated(treepath, self.treeviewcolumn)
 
     def on_button_event(self, treeview, event):

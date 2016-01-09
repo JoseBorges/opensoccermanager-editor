@@ -44,19 +44,19 @@ class SelectorDialog(Gtk.Dialog):
         self.treemodelsort = Gtk.TreeModelSort(self.treemodelfilter)
         self.treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
 
-        treeview = uigtk.widgets.TreeView()
-        treeview.set_hexpand(True)
-        treeview.set_vexpand(True)
-        treeview.set_model(self.treemodelsort)
-        treeview.set_headers_visible(False)
-        treeview.connect("row-activated", self.on_treeview_clicked)
-        scrolledwindow.add(treeview)
+        self.treeview = uigtk.widgets.TreeView()
+        self.treeview.set_hexpand(True)
+        self.treeview.set_vexpand(True)
+        self.treeview.set_model(self.treemodelsort)
+        self.treeview.set_headers_visible(False)
+        self.treeview.connect("row-activated", self.on_treeview_clicked)
+        scrolledwindow.add(self.treeview)
 
-        self.treeselection = treeview.get_selection()
+        self.treeselection = self.treeview.get_selection()
         self.treeselection.connect("changed", self.on_treeselection_changed)
 
-        treeviewcolumn = uigtk.widgets.TreeViewColumn(column=1)
-        treeview.append_column(treeviewcolumn)
+        self.treeviewcolumn = uigtk.widgets.TreeViewColumn(column=1)
+        self.treeview.append_column(self.treeviewcolumn)
 
         self.entrySearch = Gtk.SearchEntry()
         self.entrySearch.connect("changed", self.on_search_changed)
@@ -121,9 +121,15 @@ class SelectorDialog(Gtk.Dialog):
         Pre-select already selected item in treeview.
         '''
         if itemid:
-            for item in self.treemodelsort:
+            for item in self.liststore:
                 if item[0] == itemid:
-                    self.treeselection.select_iter(item.iter)
+                    treeiter1 = self.treemodelfilter.convert_child_iter_to_iter(item.iter)
+                    treeiter2 = self.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
+                    treepath = self.treemodelsort.get_path(treeiter2[1])
+
+                    self.treeview.scroll_to_cell(treepath)
+                    self.treeview.set_cursor(treepath, None, False)
+                    self.treeselection.select_path(treepath)
 
     def display(self):
         self.show_all()
@@ -167,13 +173,20 @@ class ClubSelectorDialog(SelectorDialog):
             self.liststore.append([clubid, club.name])
 
     def show(self, clubid=None):
+        self.clubid = clubid
+
         self.populate_data()
         self.select_item(clubid)
 
         self.display()
 
-        self.run()
+        if self.run() == Gtk.ResponseType.OK:
+            model, treeiter = self.treeselection.get_selected()
+            self.clubid = model[treeiter][0]
+
         self.hide()
+
+        return self.clubid
 
 
 class NationSelectorDialog(SelectorDialog):

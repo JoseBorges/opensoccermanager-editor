@@ -152,8 +152,6 @@ class Players(uigtk.widgets.Grid):
     def on_treeselection_changed(self, treeselection):
         '''
         Update visible details when selection is changed.
-        ''''''
-        Update visible details when selection is changed.
         '''
         model, treeiter = treeselection.get_selected()
 
@@ -360,9 +358,9 @@ class AttributeEdit(uigtk.widgets.Grid):
         for count, item in enumerate(skills.get_short_skills(), start=5):
             label = Gtk.Label("%s" % (item))
             label.set_tooltip_text(skills.get_skills()[count - 5])
+            label.show()
             treeviewcolumn = uigtk.widgets.TreeViewColumn(column=count)
             treeviewcolumn.set_widget(label)
-            label.show()
             self.attributes.treeview.append_column(treeviewcolumn)
 
         treeviewcolumn = uigtk.widgets.TreeViewColumn(title="Training", column=14)
@@ -400,9 +398,7 @@ class AttributeEdit(uigtk.widgets.Grid):
             attributeid = model[treeiter][0]
 
             player = data.players.get_player_by_id(self.playerid)
-            del player.attributes[attributeid]
-
-            data.unsaved = True
+            player.attributes.remove_attribute(attributeid)
 
             self.populate_data()
 
@@ -428,15 +424,10 @@ class AttributeEdit(uigtk.widgets.Grid):
         for attributeid, attribute in player.attributes.items():
             club = data.clubs.get_club_by_id(attribute.club)
 
-            age = attribute.year - player.date_of_birth[0]
-
-            if (player.date_of_birth[1], player.date_of_birth[2]) > (8, 1):
-                age -= 1
-
             self.liststore.append([attributeid,
                                    attribute.year,
                                    club.name,
-                                   age,
+                                   player.get_age(attribute.year),
                                    attribute.position,
                                    attribute.keeping,
                                    attribute.tackling,
@@ -466,6 +457,7 @@ class AttributeDialog(Gtk.Dialog):
         label = uigtk.widgets.Label("_Year", leftalign=True)
         grid.attach(label, 0, 0, 1, 1)
         self.comboboxYear = Gtk.ComboBoxText()
+        self.comboboxYear.set_tooltip_text("Year to add attribute data.")
         label.set_mnemonic_widget(self.comboboxYear)
         grid.attach(self.comboboxYear, 1, 0, 1, 1)
 
@@ -517,11 +509,18 @@ class AttributeDialog(Gtk.Dialog):
 
         self.dialogClubSelect = uigtk.selectors.ClubSelectorDialog()
 
-    def on_club_clicked(self, button):
+    def on_club_clicked(self, *args):
         '''
         Display club selection dialog.
         '''
-        self.dialogClubSelect.show()
+        player = data.players.get_player_by_id(self.playerid)
+        attribute = player.attributes[self.attributeid]
+
+        self.clubid = self.dialogClubSelect.show(self.clubid)
+
+        if self.clubid:
+            club = data.clubs.get_club_by_id(self.clubid)
+            self.buttonClub.set_label(club.name)
 
     def load_attributes(self):
         '''
@@ -532,6 +531,7 @@ class AttributeDialog(Gtk.Dialog):
 
         self.comboboxYear.set_active_id(str(attribute.year))
 
+        self.clubid = attribute.club
         club = data.clubs.get_club_by_id(attribute.club)
         self.buttonClub.set_label("%s" % (club.name))
 
@@ -584,11 +584,28 @@ class AttributeDialog(Gtk.Dialog):
 
             self.populate_years(years)
 
+            self.attributeid = player.add_attribute()
+
+            self.clubid = None
+
         self.show_all()
 
         if self.run() == Gtk.ResponseType.OK:
-            pass
+            player = data.players.get_player_by_id(self.playerid)
+            attribute = player.attributes[self.attributeid]
+
+            attribute.year = int(self.comboboxYear.get_active_id())
+            attribute.club = self.clubid
+            attribute.position = self.comboboxPosition.get_active_text()
+            attribute.keeping = self.spinbuttonSkills[0].get_value_as_int()
+            attribute.tackling = self.spinbuttonSkills[1].get_value_as_int()
+            attribute.passing = self.spinbuttonSkills[2].get_value_as_int()
+            attribute.shooting = self.spinbuttonSkills[3].get_value_as_int()
+            attribute.heading = self.spinbuttonSkills[4].get_value_as_int()
+            attribute.pace = self.spinbuttonSkills[5].get_value_as_int()
+            attribute.stamina = self.spinbuttonSkills[6].get_value_as_int()
+            attribute.ball_control = self.spinbuttonSkills[7].get_value_as_int()
+            attribute.set_pieces = self.spinbuttonSkills[8].get_value_as_int()
+            attribute.training = self.spinbuttonTraining.get_value_as_int()
 
         self.hide()
-
-        return
