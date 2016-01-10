@@ -16,8 +16,11 @@
 #  OpenSoccerManager.  If not, see <http://www.gnu.org/licenses/>.
 
 
-import sqlite3
 import os
+import sqlite3
+
+import data
+
 
 class Database:
     def __init__(self, filepath):
@@ -34,6 +37,14 @@ class Database:
         self.cursor.execute("CREATE TABLE IF NOT EXISTS player (id INTEGER PRIMARY KEY AUTOINCREMENT, firstname TEXT, secondname TEXT, commonname TEXT, dateofbirth TEXT, nation INTEGER, FOREIGN KEY(nation) REFERENCES nation(id))")
 
         self.connection.commit()
+
+    def save_database(self, *args):
+        data.years.save_data()
+        data.nations.save_data()
+
+        self.connection.commit()
+
+        data.unsaved = False
 
     def close(self):
         self.connection.close()

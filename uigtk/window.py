@@ -38,10 +38,8 @@ class Window(Gtk.Window):
         self.set_default_icon(self.logo)
         self.connect("delete-event", self.on_quit)
 
-        width, height = data.preferences.window_size
-        self.set_default_size(width, height)
-        xposition, yposition = data.preferences.window_position
-        self.move(xposition, yposition)
+        self.set_default_size(*data.preferences.window_size)
+        self.move(*data.preferences.window_position)
 
         if data.preferences.maximized:
             self.maximize()

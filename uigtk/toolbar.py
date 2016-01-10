@@ -30,13 +30,13 @@ class Toolbar(Gtk.Toolbar):
         toolbutton = uigtk.widgets.ToolButton("_Add")
         toolbutton.set_icon_name("gtk-add")
         toolbutton.set_tooltip_text("Add item to the database.")
-        toolbutton.connect("clicked", self.on_add_item)
+        toolbutton.connect("clicked", self.on_add_clicked)
         self.add(toolbutton)
 
         self.toolbuttonRemove = uigtk.widgets.ToolButton("_Remove")
         self.toolbuttonRemove.set_icon_name("gtk-remove")
         self.toolbuttonRemove.set_tooltip_text("Remove item from the database.")
-        self.toolbuttonRemove.connect("clicked", self.on_remove_item)
+        self.toolbuttonRemove.connect("clicked", self.on_remove_clicked)
         self.add(self.toolbuttonRemove)
 
         separator = Gtk.SeparatorToolItem()
@@ -45,18 +45,22 @@ class Toolbar(Gtk.Toolbar):
         toolbutton = uigtk.widgets.ToolButton("_Save")
         toolbutton.set_icon_name("gtk-save")
         toolbutton.set_tooltip_text("Save changes to database.")
+        toolbutton.connect("clicked", self.on_save_clicked)
         self.add(toolbutton)
 
-    def on_add_item(self, *args):
+    def on_add_clicked(self, *args):
         '''
         Call add item function of current page type.
         '''
         page = data.window.notebook.get_page_type()
         page.add_item()
 
-    def on_remove_item(self, *args):
+    def on_remove_clicked(self, *args):
         '''
         Call remove item function of current page type.
         '''
         page = data.window.notebook.get_page_type()
         page.remove_item()
+
+    def on_save_clicked(self, *args):
+        data.database.save_database()

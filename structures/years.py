@@ -47,3 +47,11 @@ class Years:
 
         for item in data.database.cursor.fetchall():
             self.years.add(item[0])
+
+    def save_data(self):
+        data.database.cursor.execute("SELECT * FROM year")
+        years = [year[0] for year in data.database.cursor.fetchall()]
+
+        for year in data.years.get_years():
+            if year not in years:
+                data.database.cursor.execute("INSERT INTO year VALUES (?)", (year,))

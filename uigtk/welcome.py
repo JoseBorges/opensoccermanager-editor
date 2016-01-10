@@ -71,8 +71,8 @@ class Welcome(Gtk.Grid):
         '''
         Display new database dialog and initialise editor window.
         '''
-        newdialog = uigtk.filedialog.NewDialog()
-        filename = newdialog.show()
+        dialog = uigtk.filedialog.NewDialog()
+        filename = dialog.show()
 
         self.initialise_editor(filename)
 
@@ -80,8 +80,8 @@ class Welcome(Gtk.Grid):
         '''
         Display open database dialog and initialise editor window.
         '''
-        opendialog = uigtk.filedialog.OpenDialog()
-        filename = opendialog.show()
+        dialog = uigtk.filedialog.OpenDialog()
+        filename = dialog.show()
 
         self.initialise_editor(filename)
 

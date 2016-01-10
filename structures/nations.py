@@ -85,6 +85,16 @@ class Nations:
             if nationid > self.nationid:
                 self.nationid = nationid
 
+    def save_data(self):
+        data.database.cursor.execute("SELECT * FROM nation")
+        nations = [nation[0] for nation in data.database.cursor.fetchall()]
+
+        for nationid, nation in self.get_nations():
+            if nationid in nations:
+                data.database.cursor.execute("UPDATE nation SET name=?, denonym=? WHERE id=?", (nation.name, nation.denonym, nationid))
+            else:
+                data.database.cursor.execute("INSERT INTO nation VALUES (null, ?, ?)", (nation.name, nation.denonym))
+
 
 class Nation:
     def __init__(self):
