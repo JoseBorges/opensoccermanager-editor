@@ -196,7 +196,7 @@ class Player:
 
 class Attribute:
     def __init__(self):
-        pass
+        self.year = 2000
 
     def get_skills(self):
         skills = (self.keeping,

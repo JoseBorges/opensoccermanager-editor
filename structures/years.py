@@ -18,6 +18,7 @@
 
 import data
 
+
 class Years:
     def __init__(self):
         self.years = set()

@@ -21,4 +21,7 @@ class Positions:
         self.positions = ("GK", "DL", "DC", "DR", "D", "ML", "MC", "MR", "M", "AF", "AS")
 
     def get_positions(self):
+        '''
+        Return full tuple of player positions.
+        '''
         return self.positions

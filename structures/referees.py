@@ -85,3 +85,24 @@ class Referees:
 
             if refereeid > self.refereeid:
                 self.refereeid = refereeid
+
+    def save_data(self):
+        data.database.cursor.execute("SELECT * FROM referee")
+        referees = [referee[0] for referee in data.database.cursor.fetchall()]
+
+        for refereeid, referee in self.get_referees():
+            if refereeid in referees:
+                data.database.cursor.execute("UPDATE referee SET name=? WHERE id=?", (referee.name, refereeid))
+            else:
+                data.database.cursor.execute("INSERT INTO referee VALUES (null, ?)", (referee.name,))
+
+            '''
+            data.database.cursor.execute("SELECT * FROM refereeattr WHERE referee=?", (refereeid,))
+            attributes = [attribute[0] for attribute in data.database.cursor.fetchall()]
+
+            for attributeid, attribute in referee.attributes.items():
+                if attributeid in attributes:
+                    data.database.cursor.execute("UPDATE refereeattr SET referee=?, year=?, league=? WHERE id=?", (refereeid, attribute.year, attribute.league, attributeid))
+                else:
+                    data.database.cursor.execute("INSERT INTO refereeattr VALUES (null, ?, ?, ?)", (attributeid, refereeid, attribute.year, attribute.league))
+            '''

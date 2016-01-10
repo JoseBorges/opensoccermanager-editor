@@ -39,14 +39,22 @@ class Database:
         self.connection.commit()
 
     def save_database(self, *args):
+        '''
+        Call save data method for each type of data.
+        '''
         data.years.save_data()
         data.nations.save_data()
+        data.referees.save_data()
+        data.clubs.save_data()
 
         self.connection.commit()
 
         data.unsaved = False
 
     def close(self):
+        '''
+        Close database connection and clear reference values.
+        '''
         self.connection.close()
 
         self.connection = None

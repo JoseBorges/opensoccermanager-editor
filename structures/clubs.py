@@ -101,6 +101,25 @@ class Clubs:
             if clubid > self.clubid:
                 self.clubid = clubid
 
+    def save_data(self):
+        data.database.cursor.execute("SELECT * FROM club")
+        clubs = [club[0] for club in data.database.cursor.fetchall()]
+
+        for clubid, club in self.get_clubs():
+            if clubid in clubs:
+                data.database.cursor.execute("UPDATE club SET name=?, nickname=? WHERE id=?", (club.name, club.nickname, clubid))
+            else:
+                data.database.cursor.execute("INSERT INTO club VALUES (null, ?, ?)", (club.name, club.nickname))
+
+            data.database.cursor.execute("SELECT * FROM clubattr WHERE club=?", (clubid,))
+            attributes = [attribute[0] for attribute in data.database.cursor.fetchall()]
+
+            for attributeid, attribute in club.attributes.items():
+                if attributeid in attributes:
+                    data.database.cursor.execute("UPDATE clubattr SET club=?, year=?, league=?, manager=?, chairman=?, stadium=?, reputation=? WHERE id=?", (clubid, attribute.year, attribute.league, attribute.manager, attribute.chairman, attribute.stadium, attribute.reputation, attributeid))
+                else:
+                    data.database.cursor.execute("INSERT INTO clubattr VALUES (null, ?, ?, ?, ?, ?, ?, ?)", (clubid, attribute.year, attribute.league, attribute.manager, attribute.chairman, attribute.stadium, attribute.reputation))
+
 
 class Club:
     def __init__(self, clubid):

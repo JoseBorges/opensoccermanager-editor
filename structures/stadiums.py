@@ -105,12 +105,15 @@ class Stadium:
 
 class Attribute:
     def __init__(self):
-        self.year = 0
+        self.year = 2000
 
         self.main = []
         self.corner = []
 
     def get_capacity(self):
+        '''
+        Return total stadium capacity.
+        '''
         capacity = 0
 
         for value in self.main:

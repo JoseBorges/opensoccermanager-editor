@@ -105,7 +105,7 @@ class League:
 
 class Attribute:
     def __init__(self):
-        self.year = 0
+        self.year = 2000
 
     def get_club_count(self):
         print(self.attributes.items())
