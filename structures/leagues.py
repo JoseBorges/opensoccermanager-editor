@@ -78,8 +78,8 @@ class Leagues:
         data.database.cursor.execute("SELECT * FROM league")
 
         for item in data.database.cursor.fetchall():
-            league = League()
             leagueid = item[0]
+            league = League(leagueid)
             league.name = item[1]
             self.leagues[leagueid] = league
 
@@ -113,10 +113,25 @@ class Leagues:
 
 
 class League:
-    def __init__(self):
+    def __init__(self, leagueid):
+        self.leagueid = leagueid
         self.name = ""
 
         self.attributes = {}
+
+    def can_remove(self):
+        '''
+        Get whether league is able to be deleted from database.
+        '''
+        state = False
+
+        for clubid, club in data.clubs.get_clubs():
+            for attributeid, attribute in club.attributes.items():
+                if attribute.league == self.leagueid:
+                    state = True
+                    break
+
+        return state
 
 
 class Attribute(structures.attributes.Attribute):

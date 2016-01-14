@@ -80,3 +80,18 @@ class ClubKeyError(Gtk.MessageDialog):
 
         self.run()
         self.destroy()
+
+
+class LeagueKeyError(Gtk.MessageDialog):
+    def __init__(self, item):
+        Gtk.MessageDialog.__init__(self)
+        self.set_transient_for(data.window)
+        self.set_modal(True)
+        self.set_title("Key Error")
+        self.set_markup("<span size='12000'><b>Unable to remove %s from the database.</b></span>" % (item))
+        self.format_secondary_markup("Remove all associated clubs from the league to delete.")
+        self.set_property("message-type", Gtk.MessageType.ERROR)
+        self.add_button("_Close", Gtk.ResponseType.CLOSE)
+
+        self.run()
+        self.destroy()

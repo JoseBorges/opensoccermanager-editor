@@ -102,7 +102,15 @@ class Stadiums:
                 self.stadiumid = stadiumid
 
     def save_data(self):
-        pass
+        data.database.cursor.execute("SELECT * FROM stadium")
+        stadiums = [stadium[0] for stadium in data.database.cursor.fetchall()]
+
+        for stadiumid in stadiums:
+            if stadiumid in self.deletions:
+                data.database.cursor.execute("DELETE FROM stadium WHERE id=?", (stadiumid,))
+
+        self.deletions.clear()
+
 
 class Stadium:
     def __init__(self):

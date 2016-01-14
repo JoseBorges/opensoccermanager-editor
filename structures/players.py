@@ -119,7 +119,14 @@ class Players:
                 self.playerid = playerid
 
     def save_data(self):
-        pass
+        data.database.cursor.execute("SELECT * FROM player")
+        players = [player[0] for player in data.database.cursor.fetchall()]
+
+        for playerid in players:
+            if playerid in self.deletions:
+                data.database.cursor.execute("DELETE FROM player WHERE id=?", (playerid,))
+
+        self.deletions.clear()
 
 
 class Player:

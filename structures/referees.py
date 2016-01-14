@@ -111,3 +111,9 @@ class Referees:
                 else:
                     data.database.cursor.execute("INSERT INTO refereeattr VALUES (null, ?, ?, ?)", (attributeid, refereeid, attribute.year, attribute.league))
             '''
+
+        for refereeid in referees:
+            if refereeid in self.deletions:
+                data.database.cursor.execute("DELETE FROM referee WHERE id=?", (refereeid,))
+
+        self.deletions.clear()

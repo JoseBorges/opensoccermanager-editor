@@ -74,16 +74,18 @@ class Leagues(uigtk.widgets.Grid):
 
         if treeiter:
             leagueid = model[treeiter][0]
+            league = data.leagues.get_league_by_id(leagueid)
 
-            if data.preferences.confirm_remove:
-                league = data.leagues.get_league_by_id(leagueid)
+            if not league.can_remove():
+                if data.preferences.confirm_remove:
+                    dialog = uigtk.dialogs.RemoveItem("League", league.name)
 
-                dialog = uigtk.dialogs.RemoveItem("League", league.name)
-
-                if dialog.show():
+                    if dialog.show():
+                        self.delete_league(leagueid)
+                else:
                     self.delete_league(leagueid)
             else:
-                self.delete_league(leagueid)
+                uigtk.dialogs.LeagueKeyError(league.name)
 
     def delete_league(self, leagueid):
         '''
