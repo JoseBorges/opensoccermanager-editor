@@ -107,6 +107,8 @@ class TreeView(Gtk.TreeView):
         self.set_enable_search(False)
         self.set_search_column(-1)
 
+        self.treeselection = self.get_selection()
+
 
 class TreeViewColumn(Gtk.TreeViewColumn):
     '''
@@ -121,3 +123,15 @@ class TreeViewColumn(Gtk.TreeViewColumn):
 
         if title:
             self.set_title(title)
+
+
+class ScrolledWindow(Gtk.ScrolledWindow):
+    def __init__(self):
+        Gtk.ScrolledWindow.__init__(self)
+        self.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+
+
+class ButtonBox(Gtk.ButtonBox):
+    def __init__(self):
+        Gtk.ButtonBox.__init__(self)
+        self.set_spacing(5)

@@ -341,14 +341,19 @@ class AttributeDialog(Gtk.Dialog):
     def __init__(self):
         Gtk.Dialog.__init__(self)
         self.set_transient_for(data.window)
+        self.set_default_size(-1, 300)
         self.set_title("Add Attribute")
         self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
         self.add_button("_Add", Gtk.ResponseType.OK)
         self.set_default_response(Gtk.ResponseType.OK)
         self.vbox.set_border_width(5)
 
+        notebook = Gtk.Notebook()
+        self.vbox.add(notebook)
+
         grid = uigtk.widgets.Grid()
-        self.vbox.add(grid)
+        grid.set_border_width(5)
+        notebook.append_page(grid, Gtk.Label("Details"))
 
         label = uigtk.widgets.Label("_Year", leftalign=True)
         grid.attach(label, 0, 0, 1, 1)
@@ -387,6 +392,10 @@ class AttributeDialog(Gtk.Dialog):
         self.spinbuttonReputation.set_tooltip_text("Reputation value of club (higher is better).")
         label.set_mnemonic_widget(self.spinbuttonReputation)
         grid.attach(self.spinbuttonReputation, 1, 4, 1, 1)
+
+        self.itemlist = uigtk.interface.ItemList()
+        self.itemlist.set_border_width(5)
+        notebook.append_page(self.itemlist, Gtk.Label("Players"))
 
         self.stadiumdialog = uigtk.selectors.StadiumSelectorDialog()
 
@@ -437,6 +446,13 @@ class AttributeDialog(Gtk.Dialog):
 
         self.spinbuttonReputation.set_value(self.attribute.reputation)
 
+        for playerid, player in data.players.get_players():
+            for attributeid, attribute in player.attributes.items():
+                if attribute.club == self.clubid:
+                    if attribute.year == self.attribute.year:
+                        self.itemlist.liststore.append([playerid,
+                                                        player.get_name()])
+
     def clear_attributes(self):
         '''
         Reset data entry fields on close of dialog.
@@ -445,6 +461,8 @@ class AttributeDialog(Gtk.Dialog):
         self.entryChairman.set_text("")
         self.buttonStadium.set_label("")
         self.spinbuttonReputation.set_value(1)
+
+        self.itemlist.liststore.clear()
 
     def show(self, clubid, attributeid=None):
         self.clubid = clubid

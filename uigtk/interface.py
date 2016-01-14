@@ -37,9 +37,8 @@ class Attributes(uigtk.widgets.CommonFrame):
 
         self.treeselection = self.treeview.get_selection()
 
-        buttonbox = Gtk.ButtonBox()
+        buttonbox = uigtk.widgets.ButtonBox()
         buttonbox.set_orientation(Gtk.Orientation.VERTICAL)
-        buttonbox.set_spacing(5)
         buttonbox.set_layout(Gtk.ButtonBoxStyle.START)
         self.grid.attach(buttonbox, 1, 0, 1, 1)
 
@@ -68,3 +67,53 @@ class ActionButtons(Gtk.ButtonBox):
         self.buttonSave = uigtk.widgets.Button("_Save")
         self.buttonSave.set_tooltip_text("Save updated values into working data.")
         self.add(self.buttonSave)
+
+
+class ItemList(Gtk.ScrolledWindow):
+    def __init__(self):
+        Gtk.ScrolledWindow.__init__(self)
+        self.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+
+        grid = uigtk.widgets.Grid()
+        self.add(grid)
+
+        scrolledwindow = uigtk.widgets.ScrolledWindow()
+        grid.attach(scrolledwindow, 0, 0, 1, 1)
+
+        self.liststore = Gtk.ListStore(int, str)
+        treemodelsort = Gtk.TreeModelSort(self.liststore)
+        treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
+
+        treeview = uigtk.widgets.TreeView()
+        treeview.set_hexpand(True)
+        treeview.set_vexpand(True)
+        treeview.set_model(treemodelsort)
+        treeview.set_headers_visible(False)
+        treeview.treeselection.connect("changed", self.on_treeselection_changed)
+        scrolledwindow.add(treeview)
+
+        treeviewcolumn = uigtk.widgets.TreeViewColumn(column=1)
+        treeview.append_column(treeviewcolumn)
+
+        buttonbox = uigtk.widgets.ButtonBox()
+        buttonbox.set_layout(Gtk.ButtonBoxStyle.END)
+        grid.attach(buttonbox, 0, 1, 1, 1)
+
+        self.buttonAdd = Gtk.Button.new_from_icon_name("gtk-add",
+                                                       Gtk.IconSize.BUTTON)
+        buttonbox.add(self.buttonAdd)
+        self.buttonRemove = Gtk.Button.new_from_icon_name("gtk-remove",
+                                                          Gtk.IconSize.BUTTON)
+        self.buttonRemove.set_sensitive(False)
+        buttonbox.add(self.buttonRemove)
+
+    def on_treeselection_changed(self, treeselection):
+        '''
+        Update remove button when selection is changed.
+        '''
+        model, treeiter = treeselection.get_selected()
+
+        if treeiter:
+            self.buttonRemove.set_sensitive(True)
+        else:
+            self.buttonRemove.set_sensitive(False)
