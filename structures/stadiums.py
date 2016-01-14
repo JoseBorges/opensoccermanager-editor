@@ -25,6 +25,8 @@ class Stadiums:
         self.stadiums = {}
         self.stadiumid = 0
 
+        self.deletions = []
+
         self.populate_data()
 
     def get_stadiumid(self):
@@ -60,6 +62,8 @@ class Stadiums:
         stadiumid = self.get_stadiumid()
         self.stadiums[stadiumid] = Stadium()
 
+        data.unsaved = True
+
         return stadiumid
 
     def remove_stadium(self, stadiumid):
@@ -67,6 +71,7 @@ class Stadiums:
         Remove stadium from data structure.
         '''
         del self.stadiums[stadiumid]
+        self.deletions.append(stadiumid)
 
         data.unsaved = True
 
@@ -96,6 +101,9 @@ class Stadiums:
             if stadiumid > self.stadiumid:
                 self.stadiumid = stadiumid
 
+    def save_data(self):
+        pass
+
 class Stadium:
     def __init__(self):
         self.name = ""
@@ -103,9 +111,9 @@ class Stadium:
         self.attributes = {}
 
 
-class Attribute:
+class Attribute(structures.attributes.Attribute):
     def __init__(self):
-        self.year = 2000
+        structures.attributes.Attribute.__init__(self)
 
         self.main = []
         self.corner = []

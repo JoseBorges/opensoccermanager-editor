@@ -31,15 +31,19 @@ class Years:
         '''
         self.years.add(year)
 
+        data.unsaved = True
+
     def remove_year(self, year):
         '''
         Remove specified year from list.
         '''
         self.years.remove(year)
 
+        data.unsaved = True
+
     def get_years(self):
         '''
-        Return list of years in game.
+        Return set data of years in game.
         '''
         return self.years
 
@@ -56,3 +60,7 @@ class Years:
         for year in data.years.get_years():
             if year not in years:
                 data.database.cursor.execute("INSERT INTO year VALUES (?)", (year,))
+
+        for year in years:
+            if year not in data.years.get_years():
+                data.database.cursor.execute("DELETE FROM year WHERE year=?", (year,))

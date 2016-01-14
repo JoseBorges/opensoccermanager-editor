@@ -24,6 +24,8 @@ class Leagues:
         self.leagues = {}
         self.leagueid = 0
 
+        self.deletions = []
+
         self.populate_data()
 
     def get_leagueid(self):
@@ -59,6 +61,8 @@ class Leagues:
         leagueid = self.get_leagueid()
         self.leagues[leagueid] = League()
 
+        data.unsaved = True
+
         return leagueid
 
     def remove_league(self, leagueid):
@@ -66,6 +70,7 @@ class Leagues:
         Remove league from data structure.
         '''
         del self.leagues[leagueid]
+        self.deletions.append(leagueid)
 
         data.unsaved = True
 
@@ -90,6 +95,22 @@ class Leagues:
             if leagueid > self.leagueid:
                 self.leagueid = leagueid
 
+    def save_data(self):
+        data.database.cursor.execute("SELECT * FROM league")
+        leagues = [league[0] for league in data.database.cursor.fetchall()]
+
+        for leagueid, league in self.get_leagues():
+            if leagueid in leagues:
+                data.database.cursor.execute("UPDATE league SET name=? WHERE id=?", (league.name, leagueid,))
+            else:
+                data.database.cursor.execute("INSERT INTO league VALUES (null, ?)", (league.name,))
+
+        for leagueid in leagues:
+            if leagueid in self.deletions:
+                data.database.cursor.execute("DELETE FROM league WHERE id=?", (leagueid,))
+
+        self.deletions.clear()
+
 
 class League:
     def __init__(self):
@@ -97,17 +118,20 @@ class League:
 
         self.attributes = {}
 
+
+class Attribute(structures.attributes.Attribute):
+    def __init__(self):
+        structures.attributes.Attribute.__init__(self)
+
     def get_clubs(self):
         '''
-        Return tuple of clubs associated with league.
+        Return tuple of clubs associated with attribute data.
         '''
 
-
-class Attribute:
-    def __init__(self):
-        self.year = 2000
-
     def get_club_count(self):
+        '''
+        Return number of clubs associated with attribute data.
+        '''
         print(self.attributes.items())
 
         return 0

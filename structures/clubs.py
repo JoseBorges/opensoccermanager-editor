@@ -25,6 +25,8 @@ class Clubs:
         self.clubs = {}
         self.clubid = 0
 
+        self.deletions = []
+
         self.populate_data()
 
     def get_clubid(self):
@@ -69,6 +71,7 @@ class Clubs:
         Remove club from data structure.
         '''
         del self.clubs[clubid]
+        self.deletions.append(clubid)
 
         data.unsaved = True
 
@@ -98,6 +101,9 @@ class Clubs:
                 attribute.stadium = value[6]
                 attribute.reputation = value[7]
 
+                if attributeid > club.attributeid:
+                    club.attributeid = attributeid
+
             if clubid > self.clubid:
                 self.clubid = clubid
 
@@ -120,9 +126,17 @@ class Clubs:
                 else:
                     data.database.cursor.execute("INSERT INTO clubattr VALUES (null, ?, ?, ?, ?, ?, ?, ?)", (clubid, attribute.year, attribute.league, attribute.manager, attribute.chairman, attribute.stadium, attribute.reputation))
 
+        for clubid in clubs:
+            if clubid in self.deletions:
+                data.database.cursor.execute("DELETE FROM club WHERE id=?", (nationid,))
 
-class Club:
+        self.deletions.clear()
+
+
+class Club(structures.attributes.Attribute):
     def __init__(self, clubid):
+        structures.attributes.Attribute.__init__(self)
+
         self.clubid = clubid
         self.name = ""
         self.nickname = ""

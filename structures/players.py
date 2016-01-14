@@ -25,6 +25,8 @@ class Players:
         self.players = {}
         self.playerid = 0
 
+        self.deletions = []
+
         self.populate_data()
 
     def get_playerid(self):
@@ -69,6 +71,7 @@ class Players:
         Remove player from data structure.
         '''
         del self.players[playerid]
+        self.deletions.append(playerid)
 
         data.unsaved = True
 
@@ -114,6 +117,9 @@ class Players:
 
             if playerid > self.playerid:
                 self.playerid = playerid
+
+    def save_data(self):
+        pass
 
 
 class Player:
@@ -194,11 +200,14 @@ class Player:
         data.unsaved = True
 
 
-class Attribute:
+class Attribute(structures.attributes.Attribute):
     def __init__(self):
-        self.year = 2000
+        structures.attributes.Attribute.__init__(self)
 
     def get_skills(self):
+        '''
+        Return tuple of player skill values.
+        '''
         skills = (self.keeping,
                   self.tackling,
                   self.passing,

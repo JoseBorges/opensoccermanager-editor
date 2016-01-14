@@ -24,6 +24,8 @@ class Nations:
         self.nations = {}
         self.nationid = 0
 
+        self.deletions = []
+
         self.populate_data()
 
     def get_nationid(self):
@@ -68,6 +70,7 @@ class Nations:
         Remove nation from data structure.
         '''
         del self.nations[nationid]
+        self.deletions.append(nationid)
 
         data.unsaved = True
 
@@ -94,6 +97,12 @@ class Nations:
                 data.database.cursor.execute("UPDATE nation SET name=?, denonym=? WHERE id=?", (nation.name, nation.denonym, nationid))
             else:
                 data.database.cursor.execute("INSERT INTO nation VALUES (null, ?, ?)", (nation.name, nation.denonym))
+
+        for nationid in nations:
+            if nationid in self.deletions:
+                data.database.cursor.execute("DELETE FROM nation WHERE id=?", (nationid,))
+
+        self.deletions.clear()
 
 
 class Nation:

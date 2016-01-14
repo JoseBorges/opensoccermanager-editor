@@ -29,6 +29,8 @@ class Referees:
         self.referees = {}
         self.refereeid = 0
 
+        self.deletions = []
+
         self.populate_data()
 
     def get_refereeid(self):
@@ -64,6 +66,8 @@ class Referees:
         refereeid = self.get_refereeid()
         self.referees[refereeid] = self.Referee(refereeid)
 
+        data.unsaved = True
+
         return refereeid
 
     def remove_referee(self, refereeid):
@@ -71,6 +75,7 @@ class Referees:
         Remove referee from data structure.
         '''
         del self.referees[refereeid]
+        self.deletions.append(refereeid)
 
         data.unsaved = True
 

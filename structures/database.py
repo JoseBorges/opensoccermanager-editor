@@ -44,8 +44,11 @@ class Database:
         '''
         data.years.save_data()
         data.nations.save_data()
+        data.leagues.save_data()
         data.referees.save_data()
+        data.stadiums.save_data()
         data.clubs.save_data()
+        data.players.save_data()
 
         self.connection.commit()
 
