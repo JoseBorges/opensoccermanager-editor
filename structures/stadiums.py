@@ -20,6 +20,24 @@ import data
 import structures.attributes
 
 
+class Names:
+    def __init__(self):
+        self.names = ("North",
+                      "East",
+                      "South",
+                      "West",
+                      "North East",
+                      "South East",
+                      "South West",
+                      "North West")
+
+    def get_names(self):
+        '''
+        Return tuple of stadium stand names.
+        '''
+        return self.names
+
+
 class Stadiums:
     def __init__(self):
         self.stadiums = {}

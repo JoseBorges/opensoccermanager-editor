@@ -257,15 +257,24 @@ class AttributeEdit(uigtk.widgets.Grid):
         #treeviewcolumn = uigtk.widgets.TreeViewColumn(title="Buildings", column=3)
         #self.attributes.treeview.append_column(treeviewcolumn)
 
-        self.stadiumdialog = AttributeDialog()
+        self.attributedialog = AttributeDialog()
 
     def on_add_clicked(self, *args):
-        self.stadiumdialog.show()
+        '''
+        Display add dialog for new attribute.
+        '''
+        self.attributedialog.show(StadiumEdit.stadiumid)
 
         self.populate_data()
 
     def on_edit_clicked(self, *args):
-        self.stadiumdialog.show()
+        '''
+        Display edit dialog for selected attribute.
+        '''
+        model, treeiter = self.attributes.treeselection.get_selected()
+        attributeid = model[treeiter][0]
+
+        self.attributedialog.show(StadiumEdit.stadiumid, attributeid)
 
         self.populate_data()
 
@@ -286,6 +295,9 @@ class AttributeEdit(uigtk.widgets.Grid):
 
             self.populate_data()
 
+    def on_row_activated(self, *args):
+        self.on_edit_clicked()
+
     def on_treeselection_changed(self, treeselection):
         model, treeiter = treeselection.get_selected()
 
@@ -295,9 +307,6 @@ class AttributeEdit(uigtk.widgets.Grid):
         else:
             self.attributes.buttonEdit.set_sensitive(False)
             self.attributes.buttonRemove.set_sensitive(False)
-
-    def on_row_activated(self, treeview, treepath, treeviewcolumn):
-        self.on_edit_clicked()
 
     def populate_data(self):
         stadium = data.stadiums.get_stadium_by_id(self.stadiumid)
@@ -320,47 +329,121 @@ class AttributeDialog(Gtk.Dialog):
         self.set_default_response(Gtk.ResponseType.OK)
         self.vbox.set_border_width(5)
 
-        grid = uigtk.widgets.Grid()
-        self.vbox.add(grid)
+        frame = uigtk.widgets.CommonFrame("Stands")
+        self.vbox.add(frame)
 
-        self.capacity = []
-        self.box = []
+        names = structures.stadiums.Names()
 
-        for count, name in enumerate(("North", "West", "South", "East"), start=1):
+        for count, name in enumerate(names.get_names()):
             label = uigtk.widgets.Label(name, leftalign=True)
-            grid.attach(label, 0, count, 1, 1)
+            frame.grid.attach(label, 0, count, 1, 1)
 
-            spinbutton = Gtk.SpinButton.new_with_range(0, 15000, 1000)
-            spinbutton.set_snap_to_ticks(True)
-            self.capacity.append(spinbutton)
-            grid.attach(spinbutton, 1, count, 1, 1)
+        self.main_stands = []
+        self.corner_stands = []
 
-            radiobuttonStanding = uigtk.widgets.RadioButton("_Standing")
-            grid.attach(radiobuttonStanding, 2, count, 1, 1)
+        for count in range(0, 4):
+            stand = MainStand()
+            self.main_stands.append(stand)
 
-            radiobuttonSeating = uigtk.widgets.RadioButton("_Seating")
-            radiobuttonSeating.join_group(radiobuttonStanding)
-            grid.attach(radiobuttonSeating, 3, count, 1, 1)
+            stand.capacity = Gtk.SpinButton()
+            stand.capacity.set_range(0, 15000)
+            stand.capacity.set_increments(1000, 1000)
+            stand.capacity.set_value(0)
+            stand.capacity.set_snap_to_ticks(True)
+            stand.capacity.set_numeric(True)
+            stand.capacity.connect("value-changed", stand.on_capacity_changed)
+            frame.grid.attach(stand.capacity, 1, count, 1, 1)
 
-            checkbuttonRoof = uigtk.widgets.CheckButton("_Roof")
-            grid.attach(checkbuttonRoof, 4, count, 1, 1)
+            stand.roof = Gtk.CheckButton("Roof")
+            stand.roof.set_sensitive(False)
+            stand.roof.connect("toggled", stand.on_roof_changed)
+            frame.grid.attach(stand.roof, 2, count, 1, 1)
 
-            label = uigtk.widgets.Label("_Executive Box", leftalign=True)
-            grid.attach(label, 5, count, 1, 1)
+            stand.standing = Gtk.RadioButton("Standing")
+            stand.standing.set_sensitive(False)
+            frame.grid.attach(stand.standing, 3, count, 1, 1)
+            stand.seating = Gtk.RadioButton("Seating")
+            stand.seating.set_sensitive(False)
+            stand.seating.join_group(stand.standing)
+            frame.grid.attach(stand.seating, 4, count, 1, 1)
 
-            spinbutton = Gtk.SpinButton.new_with_range(0, 500, 250)
-            spinbutton.set_snap_to_ticks(True)
-            self.box.append(spinbutton)
-            grid.attach(spinbutton, 6, count, 1, 1)
+            label = uigtk.widgets.Label("Box", leftalign=True)
+            frame.grid.attach(label, 5, count, 1, 1)
+            stand.box = Gtk.SpinButton()
+            stand.box.set_range(0, 500)
+            stand.box.set_increments(250, 250)
+            stand.box.set_value(0)
+            stand.box.set_snap_to_ticks(True)
+            stand.box.set_numeric(True)
+            stand.box.set_sensitive(False)
+            frame.grid.attach(stand.box, 6, count, 1, 1)
 
-        for count, name in enumerate(("North West", "North East", "South West", "South East"), start=5):
-            label = uigtk.widgets.Label(name, leftalign=True)
-            grid.attach(label, 0, count, 1, 1)
+        for count in range(0, 4):
+            stand = CornerStand()
+            self.corner_stands.append(stand)
 
-            spinbutton = Gtk.SpinButton.new_with_range(0, 3000, 1000)
-            spinbutton.set_snap_to_ticks(True)
-            self.capacity.append(spinbutton)
-            grid.attach(spinbutton, 1, count, 1, 1)
+            stand.main.append(self.main_stands[count])
+
+            if count + 1 == len(self.main_stands):
+                stand.main.append(self.main_stands[0])
+            else:
+                stand.main.append(self.main_stands[count + 1])
+
+            stand.capacity = Gtk.SpinButton()
+            stand.capacity.set_range(0, 3000)
+            stand.capacity.set_increments(1000, 1000)
+            stand.capacity.set_value(0)
+            stand.capacity.set_snap_to_ticks(True)
+            stand.capacity.set_numeric(True)
+            stand.capacity.set_sensitive(False)
+            stand.capacity.connect("value-changed", stand.on_capacity_changed)
+            frame.grid.attach(stand.capacity, 1, count + 4, 1, 1)
+
+            stand.roof = Gtk.CheckButton("Roof")
+            stand.roof.set_sensitive(False)
+            frame.grid.attach(stand.roof, 2, count + 4, 1, 1)
+
+            stand.standing = Gtk.RadioButton("Standing")
+            stand.standing.set_sensitive(False)
+            frame.grid.attach(stand.standing, 3, count + 4, 1, 1)
+            stand.seating = Gtk.RadioButton("Seating")
+            stand.seating.set_sensitive(False)
+            stand.seating.join_group(stand.standing)
+            frame.grid.attach(stand.seating, 4, count + 4, 1, 1)
+
+        for count, stand in enumerate(self.main_stands):
+            stand.corners.append(self.corner_stands[count])
+            stand.corners.append(self.corner_stands[count - 1 % len(self.corner_stands)])
+
+    def populate_years(self, years=None):
+        '''
+        Customise available year values for add and edit actions.
+        '''
+        self.comboboxYear.remove_all()
+
+        if years:
+            added = False
+
+            for year in data.years.get_years():
+                if year not in years:
+                    self.comboboxYear.append(str(year), str(year))
+                    added = True
+
+            self.comboboxYear.set_sensitive(added)
+            self.comboboxYear.set_active(0)
+        else:
+            for year in data.years.get_years():
+                self.comboboxYear.append(str(year), str(year))
+
+    def load_attributes(self):
+        '''
+        Load attributes for given club and attribute.
+        '''
+
+    def clear_attributes(self):
+        '''
+        Reset data entry fields on close of dialog.
+        '''
 
     def show(self, stadiumid, attributeid=None):
         self.stadiumid = stadiumid
@@ -372,7 +455,7 @@ class AttributeDialog(Gtk.Dialog):
             self.set_title("Edit Attribute")
             button.set_label("_Edit")
 
-            self.load_year_values()
+            #self.populate_years()
 
             self.load_attributes()
         else:
@@ -382,13 +465,99 @@ class AttributeDialog(Gtk.Dialog):
             stadium = data.stadiums.get_stadium_by_id(stadiumid)
             years = [attribute.year for attribute in stadium.attributes.values()]
 
-            self.load_year_values(years)
+            #self.populate_years(years)
 
         self.show_all()
 
         if self.run() == Gtk.ResponseType.OK:
             pass
 
+        self.clear_attributes()
         self.hide()
 
         return
+
+
+class MainStand:
+    def __init__(self):
+        self.corners = []
+
+    def add_adjacent_corner(self, stand):
+        '''
+        Add passed stand to corners list.
+        '''
+        self.corners.append(stand)
+
+    def on_capacity_changed(self, spinbutton):
+        '''
+        Update widgets on change of capacity.
+        '''
+        sensitive = spinbutton.get_value_as_int() > 0
+
+        if not self.roof.get_active():
+            self.roof.set_sensitive(True)
+
+        if not self.seating.get_active():
+            self.standing.set_sensitive(True)
+            self.seating.set_sensitive(True)
+
+        if not sensitive:
+            self.roof.set_active(False)
+            self.standing.set_active(True)
+
+        self.update_box_status()
+        self.update_adjacent_status()
+
+    def update_adjacent_status(self):
+        '''
+        Update adjacent stand status for capacity change.
+        '''
+        for stand in self.corners:
+            stand.check_adjacent_capacity()
+
+    def on_roof_changed(self, *args):
+        '''
+        Update box status when roof widget is toggled.
+        '''
+        self.update_box_status()
+
+    def update_box_status(self):
+        '''
+        Update box widget based on capacity and roof status.
+        '''
+        sensitive = self.capacity.get_value_as_int() >= 4000 and self.roof.get_active()
+
+        if not self.roof.get_active():
+            self.box.set_value(0)
+
+        if self.capacity.get_value_as_int() < 4000:
+            self.box.set_value(0)
+
+        self.box.set_sensitive(sensitive)
+
+
+class CornerStand:
+    def __init__(self):
+        self.main = []
+
+    def check_adjacent_capacity(self):
+        '''
+        Determine whether adjacent main stand capacities are enough.
+        '''
+        if self.main[0].capacity.get_value_as_int() < 8000 and self.main[1].capacity.get_value_as_int() < 8000:
+            self.capacity.set_sensitive(False)
+        else:
+            self.capacity.set_sensitive(True)
+
+    def on_capacity_changed(self, spinbutton):
+        '''
+        Update sensitivity of widgets and roof/standing values.
+        '''
+        sensitive = spinbutton.get_value_as_int() > 0
+        self.roof.set_sensitive(sensitive)
+        self.standing.set_sensitive(sensitive)
+        self.seating.set_sensitive(sensitive)
+
+        if not sensitive:
+            self.roof.set_active(False)
+            self.standing.set_active(True)
