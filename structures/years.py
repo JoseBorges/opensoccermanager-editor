@@ -27,7 +27,7 @@ class Years:
 
     def add_year(self, year):
         '''
-        Add passed year to list.
+        Add passed year to set.
         '''
         self.years.add(year)
 
@@ -35,17 +35,55 @@ class Years:
 
     def remove_year(self, year):
         '''
-        Remove specified year from list.
+        Remove specified year from set.
         '''
-        self.years.remove(year)
+        if data.years.get_year_in_years(year):
+            self.years.remove(year)
 
-        data.unsaved = True
+            data.unsaved = True
+
+    def get_year_removable(self, year):
+        '''
+        Check whether year data is removable from data set.
+        '''
+        for playerid, player in data.players.get_players():
+            for attribute in player.attributes.values():
+                if year == attribute.year:
+                    return False
+
+        for clubid, club in data.clubs.get_clubs():
+            for attribute in club.attributes.values():
+                if year == attribute.year:
+                    return False
+
+        for stadiumid, stadium in data.stadiums.get_stadiums():
+            for attribute in stadium.attributes.values():
+                if year == attribute.year:
+                    return False
+
+        for refereeid, referee in data.referees.get_referees():
+            for attribute in referee.attributes.values():
+                if year == attribute.year:
+                    return False
+
+        for leagueid, league in data.leagues.get_leagues():
+            for attribute in league.attributes.values():
+                if year == attribute.year:
+                    return False
+
+        return True
 
     def get_years(self):
         '''
         Return set data of years in game.
         '''
         return self.years
+
+    def get_year_in_years(self, year):
+        '''
+        Return whether specified year is in years set.
+        '''
+        return year in self.years
 
     def populate_data(self):
         data.database.cursor.execute("SELECT * FROM year")
