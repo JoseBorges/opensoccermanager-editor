@@ -325,11 +325,14 @@ class AttributeDialog(Gtk.Dialog):
     def __init__(self, clubid=None, attributeid=None):
         Gtk.Dialog.__init__(self)
         self.set_transient_for(data.window)
+        self.set_default_size(-1, 350)
+        self.set_modal(True)
         self.set_title("Add Attribute")
         self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
         self.add_button("_Add", Gtk.ResponseType.OK)
         self.set_default_response(Gtk.ResponseType.OK)
         self.vbox.set_border_width(5)
+        self.vbox.set_spacing(5)
 
         grid = uigtk.widgets.Grid()
         self.vbox.add(grid)
@@ -346,17 +349,36 @@ class AttributeDialog(Gtk.Dialog):
 
         self.comboboxYear.set_active(0)
 
+        notebook = Gtk.Notebook()
+        self.vbox.add(notebook)
+
+        self.clublist = uigtk.interface.ItemList()
+        self.clublist.set_border_width(5)
+        notebook.append_page(self.clublist, uigtk.widgets.Label("_Clubs"))
+
+        self.refereelist = uigtk.interface.ItemList()
+        self.refereelist.set_border_width(5)
+        notebook.append_page(self.refereelist, uigtk.widgets.Label("_Referees"))
+
     def load_attributes(self):
         '''
         Load attributes for given club and attribute.
         '''
-        pass
+        self.league = data.leagues.get_league_by_id(self.leagueid)
+        self.attribute = self.league.attributes[self.attributeid]
+
+        for clubid, club in data.clubs.get_clubs():
+            for attributeid, attribute in club.attributes.items():
+                if attribute.league == self.leagueid:
+                    if attribute.year == self.attribute.year:
+                        self.clublist.liststore.append([clubid, club.name])
 
     def clear_attributes(self):
         '''
         Reset data entry fields on close of dialog.
         '''
-        pass
+        self.clublist.liststore.clear()
+        self.refereelist.liststore.clear()
 
     def show(self, leagueid, attributeid=None):
         self.leagueid = leagueid
@@ -367,6 +389,8 @@ class AttributeDialog(Gtk.Dialog):
         if attributeid:
             self.set_title("Edit Attribute")
             button.set_label("_Edit")
+
+            self.load_attributes()
         else:
             self.set_title("Add Attribute")
             button.set_label("_Add")

@@ -342,6 +342,7 @@ class AttributeDialog(Gtk.Dialog):
         Gtk.Dialog.__init__(self)
         self.set_transient_for(data.window)
         self.set_default_size(-1, 300)
+        self.set_modal(True)
         self.set_title("Add Attribute")
         self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
         self.add_button("_Add", Gtk.ResponseType.OK)
@@ -353,7 +354,7 @@ class AttributeDialog(Gtk.Dialog):
 
         grid = uigtk.widgets.Grid()
         grid.set_border_width(5)
-        notebook.append_page(grid, Gtk.Label("Details"))
+        notebook.append_page(grid, uigtk.widgets.Label("_Details"))
 
         label = uigtk.widgets.Label("_Year", leftalign=True)
         grid.attach(label, 0, 0, 1, 1)
@@ -395,7 +396,7 @@ class AttributeDialog(Gtk.Dialog):
 
         self.itemlist = uigtk.interface.ItemList()
         self.itemlist.set_border_width(5)
-        notebook.append_page(self.itemlist, Gtk.Label("Players"))
+        notebook.append_page(self.itemlist, uigtk.widgets.Label("_Squad"))
 
         self.stadiumdialog = uigtk.selectors.StadiumSelectorDialog()
 

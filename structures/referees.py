@@ -17,6 +17,7 @@
 
 
 import data
+import structures.attributes
 
 
 class Referees:
@@ -24,6 +25,8 @@ class Referees:
         def __init__(self, refereeid):
             self.refereeid = refereeid
             self.name = ""
+
+            self.attributes = {}
 
     def __init__(self):
         self.referees = {}
@@ -85,8 +88,19 @@ class Referees:
         for item in data.database.cursor.fetchall():
             refereeid = item[0]
             referee = self.Referee(refereeid)
-            referee.name = item[1]
             self.referees[refereeid] = referee
+
+            referee.name = item[1]
+
+            data.database.cursor.execute("SELECT * FROM refereeattr WHERE referee=?", (refereeid,))
+            refereeattrs = data.database.cursor.fetchall()
+
+            for value in refereeattrs:
+                attribute = structures.attributes.Attribute()
+                attributeid = value[0]
+                attribute.year = value[2]
+                attribute.league = value[3]
+                referee.attributes[attributeid] = attribute
 
             if refereeid > self.refereeid:
                 self.refereeid = refereeid
