@@ -26,6 +26,9 @@ class RemoveItem(Gtk.MessageDialog):
     Message dialog displayed to confirm removal of item.
     '''
     def __init__(self, item, value):
+        if value == "":
+            value = "item"
+
         Gtk.MessageDialog.__init__(self)
         self.set_transient_for(data.window)
         self.set_modal(True)

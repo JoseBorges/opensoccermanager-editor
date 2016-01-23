@@ -46,7 +46,7 @@ class Menu(Gtk.MenuBar):
                                          Gtk.AccelFlags.VISIBLE)
         self.menuitemNew.connect("activate", data.window.welcome.on_new_clicked)
         menu.append(self.menuitemNew)
-        self.menuitemOpen = uigtk.widgets.MenuItem("_Open")
+        self.menuitemOpen = uigtk.widgets.MenuItem("_Open...")
         key, mod = Gtk.accelerator_parse("<Control>O")
         self.menuitemOpen.add_accelerator("activate",
                                          data.window.accelgroup,
@@ -63,8 +63,9 @@ class Menu(Gtk.MenuBar):
                                           key,
                                           mod,
                                           Gtk.AccelFlags.VISIBLE)
+        self.menuitemSave.connect("activate", self.on_save_clicked)
         menu.append(self.menuitemSave)
-        self.menuitemSaveAs = uigtk.widgets.MenuItem("_Save As")
+        self.menuitemSaveAs = uigtk.widgets.MenuItem("_Save As...")
         self.menuitemSaveAs.set_sensitive(False)
         key, mod = Gtk.accelerator_parse("<Control><Shift>S")
         self.menuitemSaveAs.add_accelerator("activate",
@@ -72,6 +73,7 @@ class Menu(Gtk.MenuBar):
                                             key,
                                             mod,
                                             Gtk.AccelFlags.VISIBLE)
+        self.menuitemSaveAs.connect("activate", self.on_save_as_clicked)
         menu.append(self.menuitemSaveAs)
         separator = Gtk.SeparatorMenuItem()
         menu.append(separator)
@@ -97,7 +99,7 @@ class Menu(Gtk.MenuBar):
                                          key,
                                          mod,
                                          Gtk.AccelFlags.VISIBLE)
-        self.menuitemAdd.connect("activate", self.on_add_item)
+        self.menuitemAdd.connect("activate", self.on_add_clicked)
         menu.append(self.menuitemAdd)
         self.menuitemRemove = uigtk.widgets.MenuItem("_Remove Item")
         self.menuitemRemove.set_sensitive(False)
@@ -107,7 +109,7 @@ class Menu(Gtk.MenuBar):
                                             key,
                                             mod,
                                             Gtk.AccelFlags.VISIBLE)
-        self.menuitemRemove.connect("activate", self.on_remove_item)
+        self.menuitemRemove.connect("activate", self.on_remove_clicked)
         menu.append(self.menuitemRemove)
         separator = Gtk.SeparatorMenuItem()
         menu.append(separator)
@@ -165,6 +167,41 @@ class Menu(Gtk.MenuBar):
         self.menuitemAbout.connect("activate", uigtk.about.AboutDialog)
         menu.append(self.menuitemAbout)
 
+    def on_save_clicked(self, *args):
+        '''
+        Call save functions for each data set.
+        '''
+        data.database.save_database()
+
+    def on_save_as_clicked(self, *args):
+        print("Save As")
+
+    def on_add_clicked(self, *args):
+        '''
+        Call add item function of current page type.
+        '''
+        page = data.window.notebook.get_page_type()
+        page.add_item()
+
+    def on_remove_clicked(self, *args):
+        '''
+        Call remove item function of current page type.
+        '''
+        page = data.window.notebook.get_page_type()
+        page.remove_item()
+
+    def on_previous_clicked(self, *args):
+        '''
+        Move to previous tab page.
+        '''
+        data.window.notebook.prev_page()
+
+    def on_next_clicked(self, *args):
+        '''
+        Move to next tab page.
+        '''
+        data.window.notebook.next_page()
+
     def add_view_items(self):
         '''
         Add pages in notebook interface to view menu.
@@ -183,32 +220,6 @@ class Menu(Gtk.MenuBar):
         self.menuView.show_all()
 
         self.set_menu_enabled()
-
-    def on_add_item(self, *args):
-        '''
-        Call add item function of current page type.
-        '''
-        page = data.window.notebook.get_page_type()
-        page.add_item()
-
-    def on_remove_item(self, *args):
-        '''
-        Call remove item function of current page type.
-        '''
-        page = data.window.notebook.get_page_type()
-        page.remove_item()
-
-    def on_previous_clicked(self, *args):
-        '''
-        Move to previous tab page.
-        '''
-        data.window.notebook.prev_page()
-
-    def on_next_clicked(self, *args):
-        '''
-        Move to next tab page.
-        '''
-        data.window.notebook.next_page()
 
     def set_menu_enabled(self):
         '''

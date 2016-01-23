@@ -47,6 +47,11 @@ class Toolbar(Gtk.Toolbar):
         toolbutton.set_tooltip_text("Save changes to database.")
         toolbutton.connect("clicked", self.on_save_clicked)
         self.add(toolbutton)
+        toolbutton = uigtk.widgets.ToolButton("_Save As")
+        toolbutton.set_icon_name("gtk-save-as")
+        toolbutton.set_tooltip_text("Save changes into new database file.")
+        toolbutton.connect("clicked", self.on_save_as_clicked)
+        self.add(toolbutton)
 
     def on_add_clicked(self, *args):
         '''
@@ -63,4 +68,10 @@ class Toolbar(Gtk.Toolbar):
         page.remove_item()
 
     def on_save_clicked(self, *args):
+        '''
+        Call save functions for each data set.
+        '''
         data.database.save_database()
+
+    def on_save_as_clicked(self, *args):
+        print("Save As")

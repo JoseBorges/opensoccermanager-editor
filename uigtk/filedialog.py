@@ -53,6 +53,11 @@ class OpenDialog(Gtk.FileChooserDialog):
         self.add_button("_Open", Gtk.ResponseType.OK)
         self.set_default_response(Gtk.ResponseType.OK)
 
+        filefilter = Gtk.FileFilter()
+        filefilter.set_name("OpenSoccerManager Databases")
+        filefilter.add_pattern("*.db")
+        self.add_filter(filefilter)
+
     def show(self):
         filename = None
 

@@ -84,6 +84,8 @@ class Players(uigtk.widgets.Grid):
             if data.preferences.confirm_remove:
                 player = data.players.get_player_by_id(playerid)
 
+                print(player.get_name(mode=1))
+
                 dialog = uigtk.dialogs.RemoveItem("Player", player.get_name(mode=1))
 
                 if dialog.show():
@@ -212,7 +214,7 @@ class PlayerEdit(Players, uigtk.widgets.Grid):
 
         label = uigtk.widgets.Label("_Nationality", leftalign=True)
         frame.grid.attach(label, 0, 4, 1, 1)
-        self.buttonNationality = uigtk.selectors.Button()
+        self.buttonNationality = Gtk.Button("")
         self.buttonNationality.connect("clicked", self.on_nationality_clicked)
         label.set_mnemonic_widget(self.buttonNationality)
         frame.grid.attach(self.buttonNationality, 1, 4, 1, 1)

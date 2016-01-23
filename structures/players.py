@@ -152,6 +152,9 @@ class Player:
             elif mode == 1:
                 name = "%s %s" % (self.first_name, self.second_name)
 
+        if self.first_name == "" and self.second_name == "":
+            name = ""
+
         return name
 
     def get_date_of_birth(self):

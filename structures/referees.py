@@ -60,7 +60,7 @@ class Referees:
         Add referee to the data structure.
         '''
         refereeid = self.get_refereeid()
-        self.referees[refereeid] = self.Referee(refereeid)
+        self.referees[refereeid] = Referee(refereeid)
 
         data.unsaved = True
 
