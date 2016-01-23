@@ -31,7 +31,7 @@ class Players:
 
     def get_playerid(self):
         '''
-        Return a new player ID.
+        Return a new player id.
         '''
         self.playerid += 1
 

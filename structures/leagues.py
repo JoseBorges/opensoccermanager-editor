@@ -19,6 +19,7 @@
 import data
 import structures.attributes
 
+
 class Leagues:
     def __init__(self):
         self.leagues = {}
@@ -59,7 +60,7 @@ class Leagues:
         Add referee to the data structure.
         '''
         leagueid = self.get_leagueid()
-        self.leagues[leagueid] = League()
+        self.leagues[leagueid] = League(leagueid)
 
         data.unsaved = True
 
@@ -87,10 +88,13 @@ class Leagues:
             leagueattrs = data.database.cursor.fetchall()
 
             for value in leagueattrs:
-                attribute = Attribute()
+                attribute = Attribute(leagueid)
                 attributeid = value[0]
                 attribute.year = value[2]
                 league.attributes[attributeid] = attribute
+
+                if attributeid > league.attributeid:
+                    league.attributeid = attributeid
 
             if leagueid > self.leagueid:
                 self.leagueid = leagueid
@@ -118,35 +122,49 @@ class League:
         self.name = ""
 
         self.attributes = {}
+        self.attributeid = 0
+
+    def get_attributeid(self):
+        self.attributeid += 1
+
+        return self.attributeid
+
+    def add_attribute(self):
+        attributeid = self.get_attributeid()
+        self.attributes[attributeid] = Attribute(self.leagueid)
+
+        data.unsaved = True
+
+        return attributeid
+
+    def remove_attribute(self, attributeid):
+        del self.attributes[attributeid]
+
+        data.unsaved = True
 
     def can_remove(self):
         '''
-        Get whether league is able to be deleted from database.
+        Return whether league can be removed from data set.
         '''
-        state = False
-
-        for clubid, club in data.clubs.get_clubs():
-            for attributeid, attribute in club.attributes.items():
-                if attribute.league == self.leagueid:
-                    state = True
-                    break
-
-        return state
+        return self.attributes == {}
 
 
 class Attribute(structures.attributes.Attribute):
-    def __init__(self):
-        structures.attributes.Attribute.__init__(self)
+    def __init__(self, leagueid):
+        self.leagueid = leagueid
 
-    def get_clubs(self):
-        '''
-        Return tuple of clubs associated with attribute data.
-        '''
+        structures.attributes.Attribute.__init__(self)
 
     def get_club_count(self):
         '''
         Return number of clubs associated with attribute data.
         '''
-        print(self.attributes.items())
+        count = 0
 
-        return 0
+        for clubid, club in data.clubs.get_clubs():
+            for attributeid, attribute in club.attributes.items():
+                if attribute.year == self.year:
+                    if attribute.league == self.leagueid:
+                        count += 1
+
+        return count

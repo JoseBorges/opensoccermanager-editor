@@ -79,7 +79,7 @@ class Clubs(uigtk.widgets.Grid):
             if data.preferences.confirm_remove:
                 club = data.clubs.get_club_by_id(clubid)
 
-                if club.get_players_associated():
+                if not club.can_remove():
                     uigtk.dialogs.ClubKeyError(club.name)
                 else:
                     dialog = uigtk.dialogs.RemoveItem("Club", club.name)
@@ -245,7 +245,7 @@ class AttributeEdit(uigtk.widgets.Grid):
     def __init__(self):
         uigtk.widgets.Grid.__init__(self)
 
-        self.liststore = Gtk.ListStore(int, int, str, str, str, int)
+        self.liststore = Gtk.ListStore(int, int, str, str, str, int, int)
         treemodelsort = Gtk.TreeModelSort(self.liststore)
         treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
 
@@ -267,6 +267,8 @@ class AttributeEdit(uigtk.widgets.Grid):
         treeviewcolumn = uigtk.widgets.TreeViewColumn(title="Stadium", column=4)
         self.attributes.treeview.append_column(treeviewcolumn)
         treeviewcolumn = uigtk.widgets.TreeViewColumn(title="Reputation", column=5)
+        self.attributes.treeview.append_column(treeviewcolumn)
+        treeviewcolumn = uigtk.widgets.TreeViewColumn(title="Players", column=6)
         self.attributes.treeview.append_column(treeviewcolumn)
 
         self.attributedialog = AttributeDialog()
@@ -308,6 +310,9 @@ class AttributeEdit(uigtk.widgets.Grid):
             self.populate_data()
 
     def on_row_activated(self, *args):
+        '''
+        Display edit dialog on activation of row.
+        '''
         self.on_edit_clicked()
 
     def on_treeselection_changed(self, treeselection):
@@ -334,7 +339,8 @@ class AttributeEdit(uigtk.widgets.Grid):
                                    attribute.manager,
                                    attribute.chairman,
                                    stadium.name,
-                                   attribute.reputation])
+                                   attribute.reputation,
+                                   attribute.get_player_count()])
 
 
 class AttributeDialog(Gtk.Dialog):

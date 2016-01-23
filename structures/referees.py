@@ -21,13 +21,6 @@ import structures.attributes
 
 
 class Referees:
-    class Referee:
-        def __init__(self, refereeid):
-            self.refereeid = refereeid
-            self.name = ""
-
-            self.attributes = {}
-
     def __init__(self):
         self.referees = {}
         self.refereeid = 0
@@ -87,7 +80,7 @@ class Referees:
 
         for item in data.database.cursor.fetchall():
             refereeid = item[0]
-            referee = self.Referee(refereeid)
+            referee = Referee(refereeid)
             self.referees[refereeid] = referee
 
             referee.name = item[1]
@@ -131,3 +124,11 @@ class Referees:
                 data.database.cursor.execute("DELETE FROM referee WHERE id=?", (refereeid,))
 
         self.deletions.clear()
+
+
+class Referee:
+    def __init__(self, refereeid):
+        self.refereeid = refereeid
+        self.name = ""
+
+        self.attributes = {}

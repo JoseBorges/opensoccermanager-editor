@@ -318,7 +318,7 @@ class AttributeEdit(LeagueEdit, uigtk.widgets.Grid):
         for attributeid, attribute in league.attributes.items():
             self.liststore.append([attributeid,
                                    attribute.year,
-                                   0])
+                                   attribute.get_club_count()])
 
 
 class AttributeDialog(Gtk.Dialog):

@@ -31,7 +31,7 @@ class Clubs:
 
     def get_clubid(self):
         '''
-        Return a new club ID.
+        Return a new club id.
         '''
         self.clubid += 1
 
@@ -90,7 +90,7 @@ class Clubs:
             clubattrs = data.database.cursor.fetchall()
 
             for value in clubattrs:
-                attribute = structures.attributes.Attribute()
+                attribute = Attribute(clubid)
                 attributeid = value[0]
                 club.attributes[attributeid] = attribute
 
@@ -133,26 +133,56 @@ class Clubs:
         self.deletions.clear()
 
 
-class Club(structures.attributes.Attribute):
+class Club:
     def __init__(self, clubid):
-        structures.attributes.Attribute.__init__(self)
-
         self.clubid = clubid
         self.name = ""
         self.nickname = ""
 
         self.attributes = {}
+        self.attributeid = 0
 
-    def get_players_associated(self):
+    def get_attributeid(self):
+        self.attributeid += 1
+
+        return self.attributeid
+
+    def add_attribute(self):
+        attributeid = self.get_attributeid()
+        self.attributes[attributeid] = Attribute()
+
+        data.unsaved = True
+
+        return attributeid
+
+    def remove_attribute(self, attributeid):
+        del self.attributes[attributeid]
+
+        data.unsaved = True
+
+    def can_remove(self):
         '''
         Return whether club has any associated players.
         '''
-        state = False
+        return self.attributes == {}
+
+
+class Attribute(structures.attributes.Attribute):
+    def __init__(self, clubid):
+        self.clubid = clubid
+
+        structures.attributes.Attribute.__init__(self)
+
+    def get_player_count(self):
+        '''
+        Return number of players associated with attribute data.
+        '''
+        count = 0
 
         for playerid, player in data.players.get_players():
             for attributeid, attribute in player.attributes.items():
-                if attribute.club == self.clubid:
-                    state = True
-                    break
+                if attribute.year == self.year:
+                    if attribute.club == self.clubid:
+                        count += 1
 
-        return state
+        return count
