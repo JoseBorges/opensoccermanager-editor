@@ -123,6 +123,12 @@ class Stadiums:
         data.database.cursor.execute("SELECT * FROM stadium")
         stadiums = [stadium[0] for stadium in data.database.cursor.fetchall()]
 
+        for stadiumid, stadium in self.stadiums.items():
+            if stadiumid in stadiums:
+                data.database.cursor.execute("UPDATE stadium SET name=? WHERE id=?", (stadium.name, stadiumid))
+            else:
+                data.database.cursor.execute("INSERT INTO stadium VALUES (null, ?)", (stadium.name))
+
         for stadiumid in stadiums:
             if stadiumid in self.deletions:
                 data.database.cursor.execute("DELETE FROM stadium WHERE id=?", (stadiumid,))

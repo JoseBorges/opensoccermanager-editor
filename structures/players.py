@@ -122,6 +122,23 @@ class Players:
         data.database.cursor.execute("SELECT * FROM player")
         players = [player[0] for player in data.database.cursor.fetchall()]
 
+        for playerid, player in self.players.items():
+            date_of_birth = "%i-%i-%i" % (player.date_of_birth)
+
+            if playerid in players:
+                data.database.cursor.execute("UPDATE player SET firstname=?, secondname=?, commonname=?, dateofbirth=?, nation=? WHERE id=?", (player.first_name, player.second_name, player.common_name, date_of_birth, player.nationality, playerid))
+            else:
+                data.database.cursor.execute("INSERT INTO player VALUES (null, ?, ?, ?, ?, ?)", (player.first_name, player.second_name, player.common_name, date_of_birth, player.nationality))
+
+            data.database.cursor.execute("SELECT * FROM playerattr WHERE player=?", (playerid,))
+            attributes = [attribute[0] for attribute in data.database.cursor.fetchall()]
+
+            for attributeid, attribute in player.attributes.items():
+                if attributeid in attributes:
+                    data.database.cursor.execute("UPDATE playerattr SET player=?, year=?, club=?, position=?, keeping=?, tackling=?, passing=?, shooting=?, heading=?, pace=?, stamina=?, ballcontrol=?, setpieces=?, training=? WHERE id=?", (playerid, attribute.year, attribute.club, attribute.position, attribute.keeping, attribute.tackling, attribute.passing, attribute.shooting, attribute.heading, attribute.pace, attribute.stamina, attribute.ball_control, attribute.set_pieces, attribute.training, attributeid))
+                else:
+                    data.database.cursor.execute("INSERT INTO playerattr VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (playerid, attribute.year, attribute.club, attribute.position, attribute.keeping, attribute.tackling, attribute.passing, attribute.shooting, attribute.heading, attribute.pace, attribute.stamina, attribute.ball_control, attribute.set_pieces, attribute.training))
+
         for playerid in players:
             if playerid in self.deletions:
                 data.database.cursor.execute("DELETE FROM player WHERE id=?", (playerid,))

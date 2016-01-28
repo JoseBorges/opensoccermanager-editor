@@ -111,7 +111,7 @@ class Clubs:
         data.database.cursor.execute("SELECT * FROM club")
         clubs = [club[0] for club in data.database.cursor.fetchall()]
 
-        for clubid, club in self.get_clubs():
+        for clubid, club in self.clubs.items():
             if clubid in clubs:
                 data.database.cursor.execute("UPDATE club SET name=?, nickname=? WHERE id=?", (club.name, club.nickname, clubid))
             else:

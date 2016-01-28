@@ -103,11 +103,20 @@ class Leagues:
         data.database.cursor.execute("SELECT * FROM league")
         leagues = [league[0] for league in data.database.cursor.fetchall()]
 
-        for leagueid, league in self.get_leagues():
+        for leagueid, league in self.leagues.items():
             if leagueid in leagues:
                 data.database.cursor.execute("UPDATE league SET name=? WHERE id=?", (league.name, leagueid,))
             else:
                 data.database.cursor.execute("INSERT INTO league VALUES (null, ?)", (league.name,))
+
+            data.database.cursor.execute("SELECT * FROM leagueattr WHERE league=?", (leagueid,))
+            attributes = [attribute[0] for attribute in data.database.cursor.fetchall()]
+
+            for attributeid, attribute in league.attributes.items():
+                if attributeid in attributes:
+                    data.database.cursor.execute("UPDATE leagueattr SET league=?, year=? WHERE id=?", (leagueid, attribute.year, attributeid))
+                else:
+                    data.database.cursor.execute("INSERT INTO leagueattr VALUES (null, ?, ?)", (leagueid, attribute.year))
 
         for leagueid in leagues:
             if leagueid in self.deletions:

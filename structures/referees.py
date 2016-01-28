@@ -102,7 +102,7 @@ class Referees:
         data.database.cursor.execute("SELECT * FROM referee")
         referees = [referee[0] for referee in data.database.cursor.fetchall()]
 
-        for refereeid, referee in self.get_referees():
+        for refereeid, referee in self.referees.items():
             if refereeid in referees:
                 data.database.cursor.execute("UPDATE referee SET name=? WHERE id=?", (referee.name, refereeid))
             else:

@@ -92,7 +92,7 @@ class Nations:
         data.database.cursor.execute("SELECT * FROM nation")
         nations = [nation[0] for nation in data.database.cursor.fetchall()]
 
-        for nationid, nation in self.get_nations():
+        for nationid, nation in self.nations.items():
             if nationid in nations:
                 data.database.cursor.execute("UPDATE nation SET name=?, denonym=? WHERE id=?", (nation.name, nation.denonym, nationid))
             else:
