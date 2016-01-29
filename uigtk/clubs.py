@@ -412,8 +412,6 @@ class AttributeDialog(Gtk.Dialog):
         '''
         if self.attributeid:
             stadiumid = self.stadiumdialog.show(stadiumid=self.attribute.stadium)
-
-            print(stadiumid)
         else:
             self.stadiumdialog.show()
 

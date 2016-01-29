@@ -71,6 +71,9 @@ class RemoveAttribute(Gtk.MessageDialog):
 
 
 class ClubKeyError(Gtk.MessageDialog):
+    '''
+    Message dialog for key errors when removing club with associated data.
+    '''
     def __init__(self, item):
         Gtk.MessageDialog.__init__(self)
         self.set_transient_for(data.window)
@@ -86,6 +89,9 @@ class ClubKeyError(Gtk.MessageDialog):
 
 
 class LeagueKeyError(Gtk.MessageDialog):
+    '''
+    Message dialog for key errors when removing league with associated data.
+    '''
     def __init__(self, item):
         Gtk.MessageDialog.__init__(self)
         self.set_transient_for(data.window)

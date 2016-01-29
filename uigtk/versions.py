@@ -25,18 +25,17 @@ import data
 import uigtk.widgets
 
 
-class Dialog(Gtk.Dialog):
+class Versions(Gtk.Dialog):
     def __init__(self, *args):
         Gtk.Dialog.__init__(self)
         self.set_transient_for(data.window)
+        self.set_modal(True)
         self.set_resizable(False)
         self.set_title("Versions")
         self.add_button("_Close", Gtk.ResponseType.CLOSE)
         self.vbox.set_border_width(5)
 
-        grid = Gtk.Grid()
-        grid.set_row_spacing(5)
-        grid.set_column_spacing(5)
+        grid = uigtk.widgets.Grid()
         self.vbox.add(grid)
 
         label = uigtk.widgets.Label("Python Version", leftalign=True)

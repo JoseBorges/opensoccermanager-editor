@@ -19,11 +19,12 @@
 from gi.repository import Gtk
 
 import data
+import structures.database
 import uigtk.about
 import uigtk.database
 import uigtk.filedialog
 import uigtk.preferences
-import uigtk.version
+import uigtk.versions
 import uigtk.widgets
 import uigtk.year
 
@@ -161,7 +162,7 @@ class Menu(Gtk.MenuBar):
         self.menuitemDatabase.connect("activate", uigtk.database.DatabaseCounts)
         menu.append(self.menuitemDatabase)
         menuitem = uigtk.widgets.MenuItem("_Versions")
-        menuitem.connect("activate", uigtk.version.Dialog)
+        menuitem.connect("activate", uigtk.versions.Versions)
         menu.append(menuitem)
         self.menuitemAbout = uigtk.widgets.MenuItem("_About")
         self.menuitemAbout.connect("activate", uigtk.about.AboutDialog)
@@ -174,7 +175,17 @@ class Menu(Gtk.MenuBar):
         data.database.save_database()
 
     def on_save_as_clicked(self, *args):
-        print("Save As")
+        '''
+        Display dialog to select location of new save file.
+        '''
+        dialog = uigtk.filedialog.SaveAsDialog()
+        filename = dialog.show()
+
+        if filename:
+            data.window.set_title("Editor - %s" % (filename))
+
+            data.database = structures.database.Database(filename)
+            data.database.save_database()
 
     def on_add_clicked(self, *args):
         '''

@@ -32,7 +32,6 @@ class Toolbar(Gtk.Toolbar):
         toolbutton.set_tooltip_text("Add item to the database.")
         toolbutton.connect("clicked", self.on_add_clicked)
         self.add(toolbutton)
-
         self.toolbuttonRemove = uigtk.widgets.ToolButton("_Remove")
         self.toolbuttonRemove.set_icon_name("gtk-remove")
         self.toolbuttonRemove.set_tooltip_text("Remove item from the database.")
@@ -74,4 +73,14 @@ class Toolbar(Gtk.Toolbar):
         data.database.save_database()
 
     def on_save_as_clicked(self, *args):
-        print("Save As")
+        '''
+        Display dialog to select location of new save file.
+        '''
+        dialog = uigtk.filedialog.SaveAsDialog()
+        filename = dialog.show()
+
+        if filename:
+            data.window.set_title("Editor - %s" % (filename))
+
+            data.database = structures.database.Database(filename)
+            data.database.save_database()

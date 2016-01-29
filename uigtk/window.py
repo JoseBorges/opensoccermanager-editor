@@ -119,7 +119,7 @@ class UnsavedDialog(Gtk.MessageDialog):
         if response == Gtk.ResponseType.CLOSE:
             state = 0
         elif response == Gtk.ResponseType.OK:
-            print("Save dialog here")
+            data.database.save_database()
             state = 0
 
         self.destroy()

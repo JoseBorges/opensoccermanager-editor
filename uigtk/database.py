@@ -26,6 +26,7 @@ class DatabaseCounts(Gtk.Dialog):
     def __init__(self, *args):
         Gtk.Dialog.__init__(self)
         self.set_transient_for(data.window)
+        self.set_modal(True)
         self.set_resizable(False)
         self.set_title("Database Information")
         self.add_button("_Close", Gtk.ResponseType.CLOSE)

@@ -84,8 +84,6 @@ class Players(uigtk.widgets.Grid):
             if data.preferences.confirm_remove:
                 player = data.players.get_player_by_id(playerid)
 
-                print(player.get_name(mode=1))
-
                 dialog = uigtk.dialogs.RemoveItem("Player", player.get_name(mode=1))
 
                 if dialog.show():

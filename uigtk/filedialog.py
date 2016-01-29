@@ -25,6 +25,7 @@ class NewDialog(Gtk.FileChooserDialog):
     def __init__(self):
         Gtk.FileChooserDialog.__init__(self)
         self.set_transient_for(data.window)
+        self.set_modal(True)
         self.set_title("New Database")
         self.set_do_overwrite_confirmation(True)
         self.set_action(Gtk.FileChooserAction.SAVE)
@@ -48,6 +49,7 @@ class OpenDialog(Gtk.FileChooserDialog):
     def __init__(self):
         Gtk.FileChooserDialog.__init__(self)
         self.set_transient_for(data.window)
+        self.set_modal(True)
         self.set_title("Open Database")
         self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
         self.add_button("_Open", Gtk.ResponseType.OK)
@@ -73,13 +75,43 @@ class SaveDialog(Gtk.FileChooserDialog):
     def __init__(self):
         Gtk.FileChooserDialog.__init__(self)
         self.set_transient_for(data.window)
+        self.set_modal(True)
         self.set_title("Save Database")
         self.set_do_overwrite_confirmation(True)
         self.set_action(Gtk.FileChooserAction.SAVE)
         self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
         self.add_button("_Save", Gtk.ResponseType.OK)
         self.set_default_response(Gtk.ResponseType.OK)
-        self.connect("response", self.on_response)
 
-    def on_response(self, dialog, response):
+    def show(self, *args):
+        state = 0
+
+        if self.run() == Gtk.ResponseType.OK:
+            state = 1
+
         self.destroy()
+
+        return state
+
+
+class SaveAsDialog(Gtk.FileChooserDialog):
+    def __init__(self):
+        Gtk.FileChooserDialog.__init__(self)
+        self.set_transient_for(data.window)
+        self.set_modal(True)
+        self.set_title("Save As")
+        self.set_do_overwrite_confirmation(True)
+        self.set_action(Gtk.FileChooserAction.SAVE)
+        self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
+        self.add_button("_Save", Gtk.ResponseType.OK)
+        self.set_default_response(Gtk.ResponseType.OK)
+
+    def show(self, *args):
+        filename = None
+
+        if self.run() == Gtk.ResponseType.OK:
+            filename = self.get_filename()
+
+        self.destroy()
+
+        return filename

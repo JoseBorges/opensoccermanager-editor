@@ -34,6 +34,7 @@ class AboutDialog(Gtk.AboutDialog):
         self.set_website_label("Website")
         self.set_license_type(Gtk.License.GPL_3_0)
         self.set_logo(logo)
+        self.set_authors(["Andrew Steele"])
         self.connect("response", self.on_response)
 
         self.show()
