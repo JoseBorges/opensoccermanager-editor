@@ -16,7 +16,7 @@
 #  OpenSoccerManager.  If not, see <http://www.gnu.org/licenses/>.
 
 
-from gi.repository import Gtk
+from gi.repository import Gtk, Gdk
 
 import data
 import uigtk.widgets
@@ -45,6 +45,7 @@ class Search(Gtk.Grid):
         self.treeview.set_model(self.treemodelsort)
         self.treeview.set_activate_on_single_click(True)
         self.treeview.connect("button-press-event", self.on_button_event)
+        self.treeview.connect("key-press-event", self.on_key_press_event)
         scrolledwindow.add(self.treeview)
 
         self.treeselection = self.treeview.get_selection()
@@ -84,6 +85,16 @@ class Search(Gtk.Grid):
         if event.button == 3:
             self.contextmenu.show_all()
             self.contextmenu.popup(None, None, None, None, event.button, event.time)
+
+    def on_key_press_event(self, treeview, event):
+        '''
+        Handle use of Delete key on search list items.
+        '''
+        key = Gdk.keyval_name(event.keyval)
+
+        if key == "Delete":
+            page = data.window.notebook.get_page_type()
+            page.remove_item()
 
 
 class ContextMenu(Gtk.Menu):

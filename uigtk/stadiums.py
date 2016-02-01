@@ -191,7 +191,7 @@ class StadiumEdit(uigtk.widgets.Grid):
         grid.attach(self.attributes, 0, 1, 1, 1)
 
         self.actionbuttons = uigtk.interface.ActionButtons()
-        self.actionbuttons.buttonSave.connect("clicked", self.on_save_clicked)
+        self.actionbuttons.buttonUpdate.connect("clicked", self.on_save_clicked)
         self.attach(self.actionbuttons, 0, 1, 1, 1)
 
     def on_save_clicked(self, *args):
@@ -244,6 +244,7 @@ class AttributeEdit(uigtk.widgets.Grid):
 
         self.attributes = uigtk.interface.Attributes()
         self.attributes.treeview.set_model(treemodelsort)
+        self.attributes.treeview.connect("row-activated", self.on_row_activated)
         self.attributes.treeselection.connect("changed", self.on_treeselection_changed)
         self.attributes.buttonAdd.connect("clicked", self.on_add_clicked)
         self.attributes.buttonEdit.connect("clicked", self.on_edit_clicked)

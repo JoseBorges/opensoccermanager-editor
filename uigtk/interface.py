@@ -18,6 +18,7 @@
 
 from gi.repository import Gtk
 
+import data
 import uigtk.widgets
 
 
@@ -64,9 +65,15 @@ class ActionButtons(Gtk.ButtonBox):
         self.set_spacing(5)
         self.set_layout(Gtk.ButtonBoxStyle.END)
 
-        self.buttonSave = uigtk.widgets.Button("_Save")
-        self.buttonSave.set_tooltip_text("Save updated values into working data.")
-        self.add(self.buttonSave)
+        self.buttonUpdate = uigtk.widgets.Button("_Update")
+        self.buttonUpdate.set_tooltip_text("Update values into current working data.")
+        key, mod = Gtk.accelerator_parse("<Control>U")
+        self.buttonUpdate.add_accelerator("activate",
+                                          data.window.accelgroup,
+                                          key,
+                                          mod,
+                                          Gtk.AccelFlags.VISIBLE)
+        self.add(self.buttonUpdate)
 
 
 class ItemList(Gtk.ScrolledWindow):
