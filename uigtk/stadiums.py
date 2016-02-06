@@ -21,6 +21,7 @@ import re
 import unicodedata
 
 import data
+import structures.buildings
 import structures.stadiums
 import uigtk.interface
 import uigtk.search
@@ -324,20 +325,26 @@ class AttributeDialog(Gtk.Dialog):
     def __init__(self):
         Gtk.Dialog.__init__(self)
         self.set_transient_for(data.window)
+        self.set_modal(True)
         self.set_title("Add Attribute")
         self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
         self.add_button("_Add", Gtk.ResponseType.OK)
         self.set_default_response(Gtk.ResponseType.OK)
         self.vbox.set_border_width(5)
 
-        frame = uigtk.widgets.CommonFrame("Stands")
-        self.vbox.add(frame)
+        notebook = Gtk.Notebook()
+        self.vbox.add(notebook)
 
-        names = structures.stadiums.Names()
+        grid = uigtk.widgets.Grid()
+        grid.set_border_width(5)
+        label = uigtk.widgets.Label("_Stands")
+        notebook.append_page(grid, label)
+
+        names = structures.stadiums.StandNames()
 
         for count, name in enumerate(names.get_names()):
             label = uigtk.widgets.Label(name, leftalign=True)
-            frame.grid.attach(label, 0, count, 1, 1)
+            grid.attach(label, 0, count, 1, 1)
 
         self.main_stands = []
         self.corner_stands = []
@@ -353,23 +360,23 @@ class AttributeDialog(Gtk.Dialog):
             stand.capacity.set_snap_to_ticks(True)
             stand.capacity.set_numeric(True)
             stand.capacity.connect("value-changed", stand.on_capacity_changed)
-            frame.grid.attach(stand.capacity, 1, count, 1, 1)
+            grid.attach(stand.capacity, 1, count, 1, 1)
 
             stand.roof = Gtk.CheckButton("Roof")
             stand.roof.set_sensitive(False)
             stand.roof.connect("toggled", stand.on_roof_changed)
-            frame.grid.attach(stand.roof, 2, count, 1, 1)
+            grid.attach(stand.roof, 2, count, 1, 1)
 
             stand.standing = Gtk.RadioButton("Standing")
             stand.standing.set_sensitive(False)
-            frame.grid.attach(stand.standing, 3, count, 1, 1)
+            grid.attach(stand.standing, 3, count, 1, 1)
             stand.seating = Gtk.RadioButton("Seating")
             stand.seating.set_sensitive(False)
             stand.seating.join_group(stand.standing)
-            frame.grid.attach(stand.seating, 4, count, 1, 1)
+            grid.attach(stand.seating, 4, count, 1, 1)
 
             label = uigtk.widgets.Label("Box", leftalign=True)
-            frame.grid.attach(label, 5, count, 1, 1)
+            grid.attach(label, 5, count, 1, 1)
             stand.box = Gtk.SpinButton()
             stand.box.set_range(0, 500)
             stand.box.set_increments(250, 250)
@@ -377,7 +384,7 @@ class AttributeDialog(Gtk.Dialog):
             stand.box.set_snap_to_ticks(True)
             stand.box.set_numeric(True)
             stand.box.set_sensitive(False)
-            frame.grid.attach(stand.box, 6, count, 1, 1)
+            grid.attach(stand.box, 6, count, 1, 1)
 
         for count in range(0, 4):
             stand = CornerStand()
@@ -398,23 +405,37 @@ class AttributeDialog(Gtk.Dialog):
             stand.capacity.set_numeric(True)
             stand.capacity.set_sensitive(False)
             stand.capacity.connect("value-changed", stand.on_capacity_changed)
-            frame.grid.attach(stand.capacity, 1, count + 4, 1, 1)
+            grid.attach(stand.capacity, 1, count + 4, 1, 1)
 
             stand.roof = Gtk.CheckButton("Roof")
             stand.roof.set_sensitive(False)
-            frame.grid.attach(stand.roof, 2, count + 4, 1, 1)
+            grid.attach(stand.roof, 2, count + 4, 1, 1)
 
             stand.standing = Gtk.RadioButton("Standing")
             stand.standing.set_sensitive(False)
-            frame.grid.attach(stand.standing, 3, count + 4, 1, 1)
+            grid.attach(stand.standing, 3, count + 4, 1, 1)
             stand.seating = Gtk.RadioButton("Seating")
             stand.seating.set_sensitive(False)
             stand.seating.join_group(stand.standing)
-            frame.grid.attach(stand.seating, 4, count + 4, 1, 1)
+            grid.attach(stand.seating, 4, count + 4, 1, 1)
 
         for count, stand in enumerate(self.main_stands):
             stand.corners.append(self.corner_stands[count])
             stand.corners.append(self.corner_stands[count - 1 % len(self.corner_stands)])
+
+        grid = uigtk.widgets.Grid()
+        grid.set_border_width(5)
+        label = uigtk.widgets.Label("_Buildings")
+        notebook.append_page(grid, label)
+
+        names = structures.buildings.BuildingNames()
+
+        for count, name in enumerate(names.get_names()):
+            label = uigtk.widgets.Label(name, leftalign=True)
+            grid.attach(label, 0, count, 1, 1)
+            spinbutton = Gtk.SpinButton.new_with_range(0, 10, 1)
+            label.set_mnemonic_widget(spinbutton)
+            grid.attach(spinbutton, 1, count, 1, 1)
 
     def populate_years(self, years=None):
         '''

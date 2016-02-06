@@ -162,7 +162,7 @@ class Clubs(uigtk.widgets.Grid):
         self.search.activate_first_item()
 
 
-class ClubEdit(Clubs, uigtk.widgets.Grid):
+class ClubEdit(uigtk.widgets.Grid):
     clubid = None
 
     def __init__(self):

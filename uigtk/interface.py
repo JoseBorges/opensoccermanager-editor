@@ -45,17 +45,17 @@ class Attributes(uigtk.widgets.CommonFrame):
 
         self.buttonAdd = Gtk.Button.new_from_icon_name("gtk-add",
                                                        Gtk.IconSize.BUTTON)
-        self.buttonAdd.set_tooltip_text("Add new attribute for player.")
+        self.buttonAdd.set_tooltip_text("Add new attribute data.")
         buttonbox.add(self.buttonAdd)
         self.buttonEdit = Gtk.Button.new_from_icon_name("gtk-edit",
                                                         Gtk.IconSize.BUTTON)
         self.buttonEdit.set_sensitive(False)
-        self.buttonEdit.set_tooltip_text("Edit selected attribute for player.")
+        self.buttonEdit.set_tooltip_text("Edit selected attribute data.")
         buttonbox.add(self.buttonEdit)
         self.buttonRemove = Gtk.Button.new_from_icon_name("gtk-remove",
                                                           Gtk.IconSize.BUTTON)
         self.buttonRemove.set_sensitive(False)
-        self.buttonRemove.set_tooltip_text("Remove selected attribute for player.")
+        self.buttonRemove.set_tooltip_text("Remove selected attribute data.")
         buttonbox.add(self.buttonRemove)
 
 

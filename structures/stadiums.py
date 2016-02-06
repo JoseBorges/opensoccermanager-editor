@@ -20,7 +20,7 @@ import data
 import structures.attributes
 
 
-class Names:
+class StandNames:
     def __init__(self):
         self.names = ("North",
                       "East",
@@ -115,6 +115,7 @@ class Stadiums:
                 attribute.main = value[3:7]
                 attribute.corner = value[7:11]
                 attribute.box = value[11:15]
+                attribute.buildings = value[31:39]
 
             if stadiumid > self.stadiumid:
                 self.stadiumid = stadiumid

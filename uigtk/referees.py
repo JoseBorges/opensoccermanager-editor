@@ -159,7 +159,7 @@ class Referees(uigtk.widgets.Grid):
         self.search.activate_first_item()
 
 
-class RefereeEdit(Referees, uigtk.widgets.Grid):
+class RefereeEdit(uigtk.widgets.Grid):
     refereeid = None
 
     def __init__(self):
@@ -170,11 +170,17 @@ class RefereeEdit(Referees, uigtk.widgets.Grid):
         grid.set_vexpand(True)
         self.attach(grid, 0, 0, 1, 1)
 
+        grid2 = uigtk.widgets.Grid()
+        grid.attach(grid2, 0, 0, 1, 1)
+
         label = uigtk.widgets.Label("_Name", leftalign=True)
-        grid.attach(label, 0, 0, 1, 1)
+        grid2.attach(label, 0, 0, 1, 1)
         self.entryName = Gtk.Entry()
         label.set_mnemonic_widget(self.entryName)
-        grid.attach(self.entryName, 1, 0, 1, 1)
+        grid2.attach(self.entryName, 1, 0, 1, 1)
+
+        self.attributes = AttributeEdit()
+        grid.attach(self.attributes, 0, 1, 1, 1)
 
         self.actionbuttons = uigtk.interface.ActionButtons()
         self.actionbuttons.buttonUpdate.connect("clicked", self.on_save_clicked)
@@ -216,3 +222,21 @@ class RefereeEdit(Referees, uigtk.widgets.Grid):
         Clear visible attributes.
         '''
         self.entryName.set_text("")
+
+
+class AttributeEdit(uigtk.widgets.Grid):
+    def __init__(self):
+        uigtk.widgets.Grid.__init__(self)
+
+        self.liststore = Gtk.ListStore(int, int, str)
+        treemodelsort = Gtk.TreeModelSort(self.liststore)
+        treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
+
+        self.attributes = uigtk.interface.Attributes()
+        self.attributes.treeview.set_model(treemodelsort)
+        self.attach(self.attributes, 0, 0, 1, 1)
+
+        treeviewcolumn = uigtk.widgets.TreeViewColumn(title="Year", column=1)
+        self.attributes.treeview.append_column(treeviewcolumn)
+        treeviewcolumn = uigtk.widgets.TreeViewColumn(title="League", column=2)
+        self.attributes.treeview.append_column(treeviewcolumn)

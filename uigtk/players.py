@@ -173,7 +173,7 @@ class Players(uigtk.widgets.Grid):
         self.search.activate_first_item()
 
 
-class PlayerEdit(Players, uigtk.widgets.Grid):
+class PlayerEdit(uigtk.widgets.Grid):
     playerid = None
 
     def __init__(self):
@@ -448,6 +448,7 @@ class AttributeDialog(Gtk.Dialog):
     def __init__(self):
         Gtk.Dialog.__init__(self)
         self.set_transient_for(data.window)
+        self.set_modal(True)
         self.set_title("Add Attribute")
         self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
         self.add_button("_Add", Gtk.ResponseType.OK)
