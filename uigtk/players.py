@@ -406,13 +406,15 @@ class AttributeEdit(uigtk.widgets.Grid):
             self.populate_data()
 
     def on_row_activated(self, *args):
+        '''
+        Display edit dialog on activation of row.
+        '''
         self.on_edit_clicked()
 
     def on_treeselection_changed(self, treeselection):
         model, treeiter = treeselection.get_selected()
 
         if treeiter:
-            attributeid = model[treeiter][0]
             self.attributes.buttonEdit.set_sensitive(True)
             self.attributes.buttonRemove.set_sensitive(True)
         else:

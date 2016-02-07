@@ -250,6 +250,7 @@ class AttributeEdit(LeagueEdit, uigtk.widgets.Grid):
         self.attributes.treeview.connect("row-activated", self.on_row_activated)
         self.attributes.treeselection.connect("changed", self.on_treeselection_changed)
         self.attributes.buttonAdd.connect("clicked", self.on_add_clicked)
+        self.attributes.buttonEdit.connect("clicked", self.on_edit_clicked)
         self.attributes.buttonRemove.connect("clicked", self.on_remove_clicked)
         self.attach(self.attributes, 0, 0, 1, 1)
 
@@ -297,13 +298,15 @@ class AttributeEdit(LeagueEdit, uigtk.widgets.Grid):
             self.populate_data()
 
     def on_row_activated(self, *args):
+        '''
+        Display edit dialog on activation of row.
+        '''
         self.on_edit_clicked()
 
     def on_treeselection_changed(self, treeselection):
         model, treeiter = treeselection.get_selected()
 
         if treeiter:
-            attributeid = model[treeiter][0]
             self.attributes.buttonEdit.set_sensitive(True)
             self.attributes.buttonRemove.set_sensitive(True)
         else:
@@ -322,7 +325,7 @@ class AttributeEdit(LeagueEdit, uigtk.widgets.Grid):
 
 
 class AttributeDialog(Gtk.Dialog):
-    def __init__(self, clubid=None, attributeid=None):
+    def __init__(self):
         Gtk.Dialog.__init__(self)
         self.set_transient_for(data.window)
         self.set_default_size(-1, 350)
@@ -353,16 +356,14 @@ class AttributeDialog(Gtk.Dialog):
         self.vbox.add(notebook)
 
         self.clublist = uigtk.interface.ItemList()
-        self.clublist.set_border_width(5)
         notebook.append_page(self.clublist, uigtk.widgets.Label("_Clubs"))
 
         self.refereelist = uigtk.interface.ItemList()
-        self.refereelist.set_border_width(5)
         notebook.append_page(self.refereelist, uigtk.widgets.Label("_Referees"))
 
     def load_attributes(self):
         '''
-        Load attributes for given club and attribute.
+        Load attributes for given league and attribute.
         '''
         self.league = data.leagues.get_league_by_id(self.leagueid)
         self.attribute = self.league.attributes[self.attributeid]
@@ -372,6 +373,12 @@ class AttributeDialog(Gtk.Dialog):
                 if attribute.league == self.leagueid:
                     if attribute.year == self.attribute.year:
                         self.clublist.liststore.append([clubid, club.name])
+
+        for refereeid, referee in data.referees.get_referees():
+            for attributeid, attribute in referee.attributes.items():
+                if attribute.league == self.leagueid:
+                    if attribute.year == self.attribute.year:
+                        self.refereelist.liststore.append([refereeid, referee.name])
 
     def clear_attributes(self):
         '''

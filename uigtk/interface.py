@@ -80,6 +80,7 @@ class ItemList(Gtk.ScrolledWindow):
     def __init__(self):
         Gtk.ScrolledWindow.__init__(self)
         self.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        self.set_border_width(5)
 
         grid = uigtk.widgets.Grid()
         self.add(grid)

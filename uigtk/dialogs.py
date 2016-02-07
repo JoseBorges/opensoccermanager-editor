@@ -51,7 +51,7 @@ class RemoveAttribute(Gtk.MessageDialog):
     Message dialog displayed to confirm removal of attribute.
     '''
     def __init__(self, index=0):
-        item = ("player", "club", "stadium", "league")[index]
+        item = ("player", "club", "stadium", "league", "referee")[index]
 
         Gtk.MessageDialog.__init__(self)
         self.set_transient_for(data.window)
@@ -81,6 +81,24 @@ class ClubKeyError(Gtk.MessageDialog):
         self.set_title("Key Error")
         self.set_markup("<span size='12000'><b>Unable to remove %s from the database.</b></span>" % (item))
         self.format_secondary_markup("Remove all associated players from the club to delete.")
+        self.set_property("message-type", Gtk.MessageType.ERROR)
+        self.add_button("_Close", Gtk.ResponseType.CLOSE)
+
+        self.run()
+        self.destroy()
+
+
+class StadiumKeyError(Gtk.MessageDialog):
+    '''
+    Message dialog for key errors when removing stadium with associated data.
+    '''
+    def __init__(self, item):
+        Gtk.MessageDialog.__init__(self)
+        self.set_transient_for(data.window)
+        self.set_modal(True)
+        self.set_title("Key Error")
+        self.set_markup("<span size='12000'><b>Unable to remove %s from the database.</b></span>" % (item))
+        self.format_secondary_markup("Remove all associated clubs from the stadium to delete.")
         self.set_property("message-type", Gtk.MessageType.ERROR)
         self.add_button("_Close", Gtk.ResponseType.CLOSE)
 

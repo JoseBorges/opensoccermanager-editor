@@ -238,8 +238,7 @@ class AttributeEdit(uigtk.widgets.Grid):
     def __init__(self):
         uigtk.widgets.Grid.__init__(self)
 
-        self.liststore = Gtk.ListStore(int, int, int)
-
+        self.liststore = Gtk.ListStore(int, int, int, int)
         treemodelsort = Gtk.TreeModelSort(self.liststore)
         treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
 
@@ -256,8 +255,8 @@ class AttributeEdit(uigtk.widgets.Grid):
         self.attributes.treeview.append_column(treeviewcolumn)
         treeviewcolumn = uigtk.widgets.TreeViewColumn(title="Capacity", column=2)
         self.attributes.treeview.append_column(treeviewcolumn)
-        #treeviewcolumn = uigtk.widgets.TreeViewColumn(title="Buildings", column=3)
-        #self.attributes.treeview.append_column(treeviewcolumn)
+        treeviewcolumn = uigtk.widgets.TreeViewColumn(title="Buildings", column=3)
+        self.attributes.treeview.append_column(treeviewcolumn)
 
         self.attributedialog = AttributeDialog()
 
@@ -284,7 +283,7 @@ class AttributeEdit(uigtk.widgets.Grid):
         '''
         Remove selected attribute for loaded stadium.
         '''
-        dialog = uigtk.dialogs.RemoveAttribute()
+        dialog = uigtk.dialogs.RemoveAttribute(index=2)
 
         if dialog.show():
             model, treeiter = self.attributes.treeselection.get_selected()
@@ -298,6 +297,9 @@ class AttributeEdit(uigtk.widgets.Grid):
             self.populate_data()
 
     def on_row_activated(self, *args):
+        '''
+        Display edit dialog on activation of row.
+        '''
         self.on_edit_clicked()
 
     def on_treeselection_changed(self, treeselection):
@@ -318,7 +320,8 @@ class AttributeEdit(uigtk.widgets.Grid):
         for attributeid, attribute in stadium.attributes.items():
             self.liststore.append([attributeid,
                                    attribute.year,
-                                   attribute.get_capacity()])
+                                   attribute.get_capacity(),
+                                   attribute.get_building_count()])
 
 
 class AttributeDialog(Gtk.Dialog):
@@ -431,7 +434,7 @@ class AttributeDialog(Gtk.Dialog):
         names = structures.buildings.BuildingNames()
 
         for count, name in enumerate(names.get_names()):
-            label = uigtk.widgets.Label(name, leftalign=True)
+            label = uigtk.widgets.Label("_%s" % (name), leftalign=True)
             grid.attach(label, 0, count, 1, 1)
             spinbutton = Gtk.SpinButton.new_with_range(0, 10, 1)
             label.set_mnemonic_widget(spinbutton)

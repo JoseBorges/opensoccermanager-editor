@@ -274,7 +274,7 @@ class AttributeEdit(uigtk.widgets.Grid):
         '''
         Remove selected attribute for loaded club.
         '''
-        dialog = uigtk.dialogs.RemoveAttribute(index=1)
+        dialog = uigtk.dialogs.RemoveAttribute(index=4)
 
         if dialog.show():
             model, treeiter = self.attributes.treeselection.get_selected()

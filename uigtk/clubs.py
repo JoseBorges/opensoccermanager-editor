@@ -319,7 +319,6 @@ class AttributeEdit(uigtk.widgets.Grid):
         model, treeiter = treeselection.get_selected()
 
         if treeiter:
-            attributeid = model[treeiter][0]
             self.attributes.buttonEdit.set_sensitive(True)
             self.attributes.buttonRemove.set_sensitive(True)
         else:

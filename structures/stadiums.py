@@ -197,6 +197,6 @@ class Attribute(structures.attributes.Attribute):
         '''
         Return number of buildings assigned.
         '''
-        buildings = 0
+        buildings = sum(self.buildings)
 
         return buildings
