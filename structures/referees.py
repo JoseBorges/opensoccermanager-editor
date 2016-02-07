@@ -95,6 +95,9 @@ class Referees:
                 attribute.league = value[3]
                 referee.attributes[attributeid] = attribute
 
+                if attributeid > referee.attributeid:
+                    referee.attributeid = attributeid
+
             if refereeid > self.refereeid:
                 self.refereeid = refereeid
 
@@ -132,3 +135,27 @@ class Referee:
         self.name = ""
 
         self.attributes = {}
+        self.attributeid = 0
+
+    def get_attributeid(self):
+        self.attributeid += 1
+
+        return self.attributeid
+
+    def add_attribute(self):
+        attributeid = self.get_attributeid()
+        self.attributes[attributeid] = Attribute()
+
+        data.unsaved = True
+
+        return attributeid
+
+    def remove_attribute(self, attributeid):
+        del self.attributes[attributeid]
+
+
+class Attribute(structures.attributes.Attribute):
+    def __init__(self, refereeid):
+        self.refereeid = refereeid
+
+        structures.attributes.Attribute.__init__(self)

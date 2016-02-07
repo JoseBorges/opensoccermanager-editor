@@ -212,10 +212,13 @@ class RefereeEdit(uigtk.widgets.Grid):
         '''
         self.clear_details()
 
-        self.refereeid = refereeid
+        RefereeEdit.refereeid = refereeid
         referee = data.referees.get_referee_by_id(refereeid)
 
         self.entryName.set_text(referee.name)
+
+        self.attributes.refereeid = refereeid
+        self.attributes.populate_data()
 
     def clear_details(self):
         '''
@@ -234,9 +237,174 @@ class AttributeEdit(uigtk.widgets.Grid):
 
         self.attributes = uigtk.interface.Attributes()
         self.attributes.treeview.set_model(treemodelsort)
+        self.attributes.treeview.connect("row-activated", self.on_row_activated)
+        self.attributes.treeselection.connect("changed", self.on_treeselection_changed)
+        self.attributes.buttonAdd.connect("clicked", self.on_add_clicked)
+        self.attributes.buttonEdit.connect("clicked", self.on_edit_clicked)
+        self.attributes.buttonRemove.connect("clicked", self.on_remove_clicked)
         self.attach(self.attributes, 0, 0, 1, 1)
 
         treeviewcolumn = uigtk.widgets.TreeViewColumn(title="Year", column=1)
         self.attributes.treeview.append_column(treeviewcolumn)
         treeviewcolumn = uigtk.widgets.TreeViewColumn(title="League", column=2)
         self.attributes.treeview.append_column(treeviewcolumn)
+
+        self.attributedialog = AttributeDialog()
+
+    def on_add_clicked(self, *args):
+        '''
+        Display add dialog for new attribute.
+        '''
+        self.attributedialog.show(RefereeEdit.refereeid)
+
+        self.populate_data()
+
+    def on_edit_clicked(self, *args):
+        '''
+        Display edit dialog for selected attribute.
+        '''
+        model, treeiter = self.attributes.treeselection.get_selected()
+        attributeid = model[treeiter][0]
+
+        self.attributedialog.show(RefereeEdit.refereeid, attributeid)
+
+        self.populate_data()
+
+    def on_remove_clicked(self, *args):
+        '''
+        Remove selected attribute for loaded club.
+        '''
+        dialog = uigtk.dialogs.RemoveAttribute(index=1)
+
+        if dialog.show():
+            model, treeiter = self.attributes.treeselection.get_selected()
+            attributeid = model[treeiter][0]
+
+            referee = data.referees.get_referee_by_id(RefereeEdit.refereeid)
+            del referee.attributes[attributeid]
+
+            data.unsaved = True
+
+            self.populate_data()
+
+    def on_row_activated(self, *args):
+        '''
+        Display edit dialog on activation of row.
+        '''
+        self.on_edit_clicked()
+
+    def on_treeselection_changed(self, treeselection):
+        model, treeiter = treeselection.get_selected()
+
+        if treeiter:
+            self.attributes.buttonEdit.set_sensitive(True)
+            self.attributes.buttonRemove.set_sensitive(True)
+        else:
+            self.attributes.buttonEdit.set_sensitive(False)
+            self.attributes.buttonRemove.set_sensitive(False)
+
+    def populate_data(self):
+        referee = data.referees.get_referee_by_id(self.refereeid)
+
+        self.liststore.clear()
+
+        for attributeid, attribute in referee.attributes.items():
+            league = data.leagues.get_league_by_id(attribute.league)
+
+            self.liststore.append([attributeid,
+                                   attribute.year,
+                                   league.name])
+
+
+class AttributeDialog(Gtk.Dialog):
+    def __init__(self):
+        Gtk.Dialog.__init__(self)
+        self.set_transient_for(data.window)
+        self.set_modal(True)
+        self.set_title("Add Attribute")
+        self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
+        self.add_button("_Add", Gtk.ResponseType.OK)
+        self.set_default_response(Gtk.ResponseType.OK)
+        self.vbox.set_border_width(5)
+
+        grid = uigtk.widgets.Grid()
+        grid.set_border_width(5)
+        self.vbox.add(grid)
+
+        label = uigtk.widgets.Label("_Year", leftalign=True)
+        grid.attach(label, 0, 0, 1, 1)
+        self.comboboxYear = Gtk.ComboBoxText()
+        self.comboboxYear.set_tooltip_text("Year to add attribute data.")
+        label.set_mnemonic_widget(self.comboboxYear)
+        grid.attach(self.comboboxYear, 1, 0, 1, 1)
+
+        label = uigtk.widgets.Label("_League", leftalign=True)
+        grid.attach(label, 0, 1, 1, 1)
+        self.comboboxLeague = Gtk.ComboBoxText()
+        self.comboboxLeague.set_tooltip_text("League selection for this referee.")
+        label.set_mnemonic_widget(self.comboboxLeague)
+        grid.attach(self.comboboxLeague, 1, 1, 1, 1)
+
+    def populate_years(self, years=None):
+        '''
+        Customise available year values for add and edit actions.
+        '''
+        self.comboboxYear.remove_all()
+
+        if years:
+            added = False
+
+            for year in data.years.get_years():
+                if year not in years:
+                    self.comboboxYear.append(str(year), str(year))
+                    added = True
+
+            self.comboboxYear.set_sensitive(added)
+            self.comboboxYear.set_active(0)
+        else:
+            for year in data.years.get_years():
+                self.comboboxYear.append(str(year), str(year))
+
+    def load_attributes(self):
+        '''
+        Load attributes for given club and attribute.
+        '''
+        self.referee = data.referees.get_referee_by_id(self.refereeid)
+        self.attribute = self.referee.attributes[self.attributeid]
+
+        self.comboboxYear.set_active_id(str(self.attribute.year))
+
+    def clear_attributes(self):
+        '''
+        Reset data entry fields on close of dialog.
+        '''
+
+    def show(self, refereeid, attributeid=None):
+        self.refereeid = refereeid
+        self.attributeid = attributeid
+
+        button = self.get_widget_for_response(Gtk.ResponseType.OK)
+
+        if attributeid:
+            self.set_title("Edit Attribute")
+            button.set_label("_Edit")
+
+            self.populate_years()
+
+            self.load_attributes()
+        else:
+            self.set_title("Add Attribute")
+            button.set_label("_Add")
+
+            referee = data.referees.get_referee_by_id(refereeid)
+            years = [attribute.year for attribute in referee.attributes.values()]
+
+            self.populate_years(years)
+
+        self.show_all()
+
+        if self.run() == Gtk.ResponseType.OK:
+            pass
+
+        self.clear_attributes()
+        self.hide()
