@@ -129,6 +129,10 @@ class Clubs:
                 else:
                     data.database.cursor.execute("INSERT INTO clubattr VALUES (null, ?, ?, ?, ?, ?, ?, ?)", (clubid, attribute.year, attribute.league, attribute.manager, attribute.chairman, attribute.stadium, attribute.reputation))
 
+            for attributeid in attributes:
+                if attributeid not in club.attributes.keys():
+                    data.database.cursor.execute("DELETE FROM clubattr WHERE id=?", (attributeid,))
+
         for clubid in clubs:
             if clubid in self.deletions:
                 data.database.cursor.execute("DELETE FROM club WHERE id=?", (nationid,))

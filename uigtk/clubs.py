@@ -309,14 +309,11 @@ class AttributeEdit(uigtk.widgets.Grid):
 
         if dialog.show():
             model, treeiter = self.attributes.treeselection.get_selected()
-            attributeid = model[treeiter][0]
+            treeiter1 = model.convert_iter_to_child_iter(treeiter)
 
-            club = data.clubs.get_club_by_id(ClubEdit.clubid)
-            del club.attributes[attributeid]
+            self.liststore.remove(treeiter1)
 
             data.unsaved = True
-
-            self.populate_data()
 
     def on_row_activated(self, *args):
         '''
