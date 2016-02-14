@@ -47,7 +47,10 @@ class Clubs:
         '''
         Return club for given club id.
         '''
-        return self.clubs[clubid]
+        if clubid:
+            return self.clubs[clubid]
+        else:
+            return None
 
     def get_club_count(self):
         '''
@@ -143,19 +146,28 @@ class Club:
         self.attributeid = 0
 
     def get_attributeid(self):
+        '''
+        Return a new club attribute id.
+        '''
         self.attributeid += 1
 
         return self.attributeid
 
     def add_attribute(self):
+        '''
+        Add club attribute to data structure.
+        '''
         attributeid = self.get_attributeid()
-        self.attributes[attributeid] = Attribute()
+        self.attributes[attributeid] = Attribute(self.clubid)
 
         data.unsaved = True
 
         return attributeid
 
     def remove_attribute(self, attributeid):
+        '''
+        Remove club attribute from data structure.
+        '''
         del self.attributes[attributeid]
 
         data.unsaved = True
@@ -170,6 +182,11 @@ class Club:
 class Attribute(structures.attributes.Attribute):
     def __init__(self, clubid):
         self.clubid = clubid
+        self.league = None
+        self.manager = ""
+        self.chairman = ""
+        self.stadium = None
+        self.reputation = 1
 
         structures.attributes.Attribute.__init__(self)
 
