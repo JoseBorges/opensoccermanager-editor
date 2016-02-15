@@ -29,12 +29,17 @@ class Database:
         self.cursor.execute("PRAGMA foreign_keys = on")
 
         self.cursor.execute("CREATE TABLE IF NOT EXISTS year (year INTEGER PRIMARY KEY)")
-        self.cursor.execute("CREATE TABLE IF NOT EXISTS referee (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)")
         self.cursor.execute("CREATE TABLE IF NOT EXISTS nation (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, denonym TEXT)")
+        self.cursor.execute("CREATE TABLE IF NOT EXISTS referee (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)")
+        self.cursor.execute("CREATE TABLE IF NOT EXISTS refereeattr (id INTEGER PRIMARY KEY AUTOINCREMENT, referee INTEGER, year INTEGER, league INTEGER, FOREIGN KEY(referee) REFERENCES referee(id), FOREIGN KEY(year) REFERENCES year(year), FOREIGN KEY(league) REFERENCES league(id))")
         self.cursor.execute("CREATE TABLE IF NOT EXISTS league (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)")
+        self.cursor.execute("CREATE TABLE IF NOT EXISTS leagueattr (id INTEGER PRIMARY KEY AUTOINCREMENT, league INTEGER, year INTEGER, FOREIGN KEY(league) REFERENCES league(id), FOREIGN KEY(year) REFERENCES year(year))")
         self.cursor.execute("CREATE TABLE IF NOT EXISTS stadium (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)")
+        self.cursor.execute("CREATE TABLE IF NOT EXISTS stadiumattr (id, stadium INTEGER, year INTEGER, north INTEGER, east INTEGER, south INTEGER, west INTEGER, northeast INTEGER, northwest INTEGER, southeast INTEGER, southwest INTEGER, northbox INTEGER, eastbox INTEGER, southbox INTEGER, westbox INTEGER, northroof BOOLEAN, eastroof BOOLEAN, southroof BOOLEAN, westroof BOOLEAN, northeastroof BOOLEAN, northwestroof BOOLEAN, southeastroof BOOLEAN, southwestroof BOOLEAN, northseating BOOLEAN, eastseating BOOLEAN, southseating BOOLEAN, westseating BOOLEAN, northeastseating BOOLEAN, northwestseating BOOLEAN, southeastseating BOOLEAN, southwestseating BOOLEAN, stall INTEGER, programme INTEGER, smallshop INTEGER, largeshop INTEGER, bar INTEGER, burgerbar INTEGER, cafe INTEGER, restaurant INTEGER, FOREIGN KEY(stadium) REFERENCES stadium(id), FOREIGN KEY(year) REFERENCES year(year))")
         self.cursor.execute("CREATE TABLE IF NOT EXISTS club (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, nickname TEXT)")
+        self.cursor.execute("CREATE TABLE IF NOT EXISTS clubattr (id INTEGER PRIMARY KEY AUTOINCREMENT, club INTEGER, year INTEGER, league INTEGER, manager TEXT, chairman TEXT, stadium INTEGER, reputation INTEGER, FOREIGN KEY(club) REFERENCES club(id), FOREIGN KEY(league) REFERENCES league(id), FOREIGN KEY(stadium) REFERENCES stadium(id), FOREIGN KEY(year) REFERENCES year(year))")
         self.cursor.execute("CREATE TABLE IF NOT EXISTS player (id INTEGER PRIMARY KEY AUTOINCREMENT, firstname TEXT, secondname TEXT, commonname TEXT, dateofbirth TEXT, nation INTEGER, FOREIGN KEY(nation) REFERENCES nation(id))")
+        self.cursor.execute("CREATE TABLE IF NOT EXISTS playerattr (id INTEGER PRIMARY KEY AUTOINCREMENT, player INTEGER, year INTEGER, club INTEGER, position TEXT, keeping INTEGER, tackling INTEGER, passing INTEGER, shooting INTEGER, heading INTEGER, pace INTEGER, stamina INTEGER, ballcontrol INTEGER, setpieces INTEGER, training INTEGER, FOREIGN KEY(player) REFERENCES player(id), FOREIGN KEY(club) REFERENCES club(id), FOREIGN KEY(year) REFERENCES year(year))")
 
         self.connection.commit()
 
