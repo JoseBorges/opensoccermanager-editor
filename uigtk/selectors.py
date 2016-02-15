@@ -29,6 +29,7 @@ class SelectorDialog(Gtk.Dialog):
         Gtk.Dialog.__init__(self)
         self.set_transient_for(data.window)
         self.set_default_size(-1, 250)
+        self.set_modal(True)
         self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
         self.add_button("_Select", Gtk.ResponseType.OK)
         self.set_default_response(Gtk.ResponseType.OK)
@@ -155,8 +156,13 @@ class PlayerSelectorDialog(SelectorDialog):
 
         self.display()
 
-        self.run()
+        if self.run() == Gtk.ResponseType.OK:
+            model, treeiter = self.treeselection.get_selected()
+            self.playerid = model[treeiter][0]
+
         self.hide()
+
+        return self.playerid
 
 
 class ClubSelectorDialog(SelectorDialog):

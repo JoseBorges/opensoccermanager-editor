@@ -138,11 +138,17 @@ class Referee:
         self.attributeid = 0
 
     def get_attributeid(self):
+        '''
+        Return a new referee attribute id.
+        '''
         self.attributeid += 1
 
         return self.attributeid
 
     def add_attribute(self):
+        '''
+        Add referee attribute to data structure.
+        '''
         attributeid = self.get_attributeid()
         self.attributes[attributeid] = Attribute()
 
@@ -151,7 +157,12 @@ class Referee:
         return attributeid
 
     def remove_attribute(self, attributeid):
+        '''
+        Remove referee attribute from data structure.
+        '''
         del self.attributes[attributeid]
+
+        data.unsaved = True
 
 
 class Attribute(structures.attributes.Attribute):

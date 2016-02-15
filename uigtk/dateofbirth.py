@@ -17,6 +17,7 @@
 
 
 from gi.repository import Gtk
+import datetime
 
 import data
 
@@ -57,6 +58,9 @@ class DateOfBirth(Gtk.Dialog):
         if self.date_of_birth:
             self.calendar.select_month(self.date_of_birth[1] - 1, self.date_of_birth[0])
             self.calendar.select_day(self.date_of_birth[2])
+        else:
+            self.calendar.select_month(0, datetime.datetime.now().year - 27)
+            self.calendar.select_day(1)
 
         self.show_all()
 

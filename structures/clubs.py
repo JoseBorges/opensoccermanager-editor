@@ -194,6 +194,17 @@ class Attribute(structures.attributes.Attribute):
 
         structures.attributes.Attribute.__init__(self)
 
+    def get_stadium_name(self):
+        '''
+        Return name of stadium associated with attribute.
+        '''
+        if self.stadium:
+            stadium = data.stadiums.get_stadium_by_id(self.stadium)
+
+            return stadium.name
+        else:
+            return ""
+
     def get_player_count(self):
         '''
         Return number of players associated with attribute data.

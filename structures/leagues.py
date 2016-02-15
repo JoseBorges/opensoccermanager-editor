@@ -134,11 +134,17 @@ class League:
         self.attributeid = 0
 
     def get_attributeid(self):
+        '''
+        Return a new league attribute id.
+        '''
         self.attributeid += 1
 
         return self.attributeid
 
     def add_attribute(self):
+        '''
+        Add league attribute to data structure.
+        '''
         attributeid = self.get_attributeid()
         self.attributes[attributeid] = Attribute(self.leagueid)
 
@@ -147,6 +153,9 @@ class League:
         return attributeid
 
     def remove_attribute(self, attributeid):
+        '''
+        Remove league attribute from data structure.
+        '''
         del self.attributes[attributeid]
 
         data.unsaved = True

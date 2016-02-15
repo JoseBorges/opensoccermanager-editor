@@ -65,7 +65,10 @@ class Stadiums:
         '''
         Return stadium object for given stadium id.
         '''
-        return self.stadiums[stadiumid]
+        if stadiumid:
+            return self.stadiums[stadiumid]
+        else:
+            return None
 
     def get_stadium_count(self):
         '''
@@ -145,11 +148,17 @@ class Stadium:
         self.attributeid = 0
 
     def get_attributeid(self):
+        '''
+        Return a new stadium attribute id.
+        '''
         self.attributeid += 1
 
         return self.attributeid
 
     def add_attribute(self):
+        '''
+        Add stadium attribute to data structure.
+        '''
         attributeid = self.get_attributeid()
         self.attributes[attributeid] = Attribute()
 
@@ -158,6 +167,9 @@ class Stadium:
         return attributeid
 
     def remove_attribute(self, attributeid):
+        '''
+        Remove stadium attribute from data structure.
+        '''
         del self.attributes[attributeid]
 
         data.unsaved = True

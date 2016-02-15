@@ -209,11 +209,17 @@ class Player:
         return age
 
     def get_attributeid(self):
+        '''
+        Return a new player attribute id.
+        '''
         self.attributeid += 1
 
         return self.attributeid
 
     def add_attribute(self):
+        '''
+        Add player attribute to data structure.
+        '''
         attributeid = self.get_attributeid()
         self.attributes[attributeid] = Attribute()
 
@@ -222,6 +228,9 @@ class Player:
         return attributeid
 
     def remove_attribute(self, attributeid):
+        '''
+        Remove player attribute from data structure.
+        '''
         del self.attributes[attributeid]
 
         data.unsaved = True
@@ -230,6 +239,17 @@ class Player:
 class Attribute(structures.attributes.Attribute):
     def __init__(self):
         structures.attributes.Attribute.__init__(self)
+
+    def get_club_name(self):
+        '''
+        Return name of club associated with attribute.
+        '''
+        if self.club:
+            club = data.clubs.get_club_by_id(self.club)
+
+            return club.name
+        else:
+            return ""
 
     def get_skills(self):
         '''

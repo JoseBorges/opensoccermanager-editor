@@ -427,11 +427,9 @@ class AttributeEdit(uigtk.widgets.Grid):
         self.liststore.clear()
 
         for attributeid, attribute in player.attributes.items():
-            club = data.clubs.get_club_by_id(attribute.club)
-
             self.liststore.append([attributeid,
                                    attribute.year,
-                                   club.name,
+                                   attribute.get_club_name(),
                                    player.get_age(attribute.year),
                                    attribute.position,
                                    attribute.keeping,
@@ -513,7 +511,7 @@ class AttributeDialog(Gtk.Dialog):
         label.set_mnemonic_widget(self.spinbuttonTraining)
         grid.attach(self.spinbuttonTraining, 1, 13, 1, 1)
 
-        self.dialogClubSelect = uigtk.selectors.ClubSelectorDialog()
+        self.clubdialog = uigtk.selectors.ClubSelectorDialog()
 
     def on_club_clicked(self, *args):
         '''
@@ -522,7 +520,7 @@ class AttributeDialog(Gtk.Dialog):
         player = data.players.get_player_by_id(self.playerid)
         attribute = player.attributes[self.attributeid]
 
-        self.clubid = self.dialogClubSelect.show(self.clubid)
+        self.clubid = self.clubdialog.show(self.clubid)
 
         if self.clubid:
             club = data.clubs.get_club_by_id(self.clubid)
@@ -539,7 +537,7 @@ class AttributeDialog(Gtk.Dialog):
 
         self.clubid = attribute.club
         club = data.clubs.get_club_by_id(attribute.club)
-        self.buttonClub.set_label("%s" % (club.name))
+        self.buttonClub.set_label(attribute.get_club_name())
 
         self.comboboxPosition.set_active_id(attribute.position)
 
@@ -588,11 +586,11 @@ class AttributeDialog(Gtk.Dialog):
             player = data.players.get_player_by_id(self.playerid)
             years = [attribute.year for attribute in player.attributes.values()]
 
-            self.populate_years(years)
-
             self.attributeid = player.add_attribute()
 
             self.clubid = None
+
+            self.populate_years(years)
 
         self.show_all()
 

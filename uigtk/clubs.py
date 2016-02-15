@@ -337,20 +337,20 @@ class AttributeEdit(uigtk.widgets.Grid):
         self.liststore.clear()
 
         for attributeid, attribute in club.attributes.items():
-            stadium = data.stadiums.get_stadium_by_id(attribute.stadium)
-
             self.liststore.append([attributeid,
                                    attribute.year,
                                    attribute.manager,
                                    attribute.chairman,
                                    attribute.stadium,
-                                   stadium.name,
+                                   attribute.get_stadium_name(),
                                    attribute.reputation,
                                    attribute.get_player_count()])
 
 
 class AttributeDialog(Gtk.Dialog):
     def __init__(self):
+        self.stadiumid = None
+
         Gtk.Dialog.__init__(self)
         self.set_transient_for(data.window)
         self.set_default_size(-1, 300)
@@ -516,7 +516,7 @@ class AttributeDialog(Gtk.Dialog):
 
         self.stadiumid = self.model[self.treeiter][4]
         self.stadium = data.stadiums.get_stadium_by_id(self.stadiumid)
-        self.buttonStadium.set_label(self.stadium.name)
+        self.buttonStadium.set_label(self.attribute.get_stadium_name())
 
         self.spinbuttonReputation.set_value(self.model[self.treeiter][6])
 
