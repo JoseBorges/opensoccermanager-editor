@@ -76,36 +76,38 @@ class ActionButtons(Gtk.ButtonBox):
         self.add(self.buttonUpdate)
 
 
-class ItemList(Gtk.ScrolledWindow):
+class ItemList(uigtk.widgets.Grid):
     def __init__(self):
-        Gtk.ScrolledWindow.__init__(self)
-        self.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        uigtk.widgets.Grid.__init__(self)
         self.set_border_width(5)
 
         grid = uigtk.widgets.Grid()
         self.add(grid)
 
+        self.labelCount = uigtk.widgets.Label(leftalign=True)
+        grid.attach(self.labelCount, 0, 0, 1, 1)
+
         scrolledwindow = uigtk.widgets.ScrolledWindow()
-        grid.attach(scrolledwindow, 0, 0, 1, 1)
+        grid.attach(scrolledwindow, 0, 1, 1, 1)
 
-        self.liststore = Gtk.ListStore(int, str)
+        self.liststore = Gtk.ListStore(int, int, str)
         treemodelsort = Gtk.TreeModelSort(self.liststore)
-        treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
+        treemodelsort.set_sort_column_id(2, Gtk.SortType.ASCENDING)
 
-        treeview = uigtk.widgets.TreeView()
-        treeview.set_hexpand(True)
-        treeview.set_vexpand(True)
-        treeview.set_model(treemodelsort)
-        treeview.set_headers_visible(False)
-        treeview.treeselection.connect("changed", self.on_treeselection_changed)
-        scrolledwindow.add(treeview)
+        self.treeview = uigtk.widgets.TreeView()
+        self.treeview.set_hexpand(True)
+        self.treeview.set_vexpand(True)
+        self.treeview.set_model(treemodelsort)
+        self.treeview.set_headers_visible(False)
+        self.treeview.treeselection.connect("changed", self.on_treeselection_changed)
+        scrolledwindow.add(self.treeview)
 
-        treeviewcolumn = uigtk.widgets.TreeViewColumn(column=1)
-        treeview.append_column(treeviewcolumn)
+        treeviewcolumn = uigtk.widgets.TreeViewColumn(column=2)
+        self.treeview.append_column(treeviewcolumn)
 
         buttonbox = uigtk.widgets.ButtonBox()
         buttonbox.set_layout(Gtk.ButtonBoxStyle.END)
-        grid.attach(buttonbox, 0, 1, 1, 1)
+        grid.attach(buttonbox, 0, 2, 1, 1)
 
         self.buttonAdd = Gtk.Button.new_from_icon_name("gtk-add",
                                                        Gtk.IconSize.BUTTON)
