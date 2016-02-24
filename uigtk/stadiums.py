@@ -213,6 +213,8 @@ class StadiumEdit(uigtk.widgets.Grid):
         treepath = model.get_path(treeiter)
         Stadiums.search.treeview.scroll_to_cell(treepath)
 
+        data.unsaved = True
+
     def set_details(self, stadiumid):
         '''
         Update selected stadium with details to be displayed.
@@ -232,6 +234,8 @@ class StadiumEdit(uigtk.widgets.Grid):
         Clear visible attributes.
         '''
         self.entryName.set_text("")
+
+        self.attributes.liststore.clear()
 
 
 class AttributeEdit(uigtk.widgets.Grid):
@@ -290,9 +294,7 @@ class AttributeEdit(uigtk.widgets.Grid):
             attributeid = model[treeiter][0]
 
             stadium = data.stadiums.get_stadium_by_id(self.stadiumid)
-            del stadium.attributes[attributeid]
-
-            data.unsaved = True
+            stadium.attributes.remove_attribute(attributeid)
 
             self.populate_data()
 
@@ -334,6 +336,17 @@ class AttributeDialog(Gtk.Dialog):
         self.add_button("_Add", Gtk.ResponseType.OK)
         self.set_default_response(Gtk.ResponseType.OK)
         self.vbox.set_border_width(5)
+        self.vbox.set_spacing(5)
+
+        grid = uigtk.widgets.Grid()
+        self.vbox.add(grid)
+
+        label = uigtk.widgets.Label("_Year", leftalign=True)
+        grid.attach(label, 0, 0, 1, 1)
+        self.comboboxYear = Gtk.ComboBoxText()
+        self.comboboxYear.set_tooltip_text("Year to add attribute data.")
+        label.set_mnemonic_widget(self.comboboxYear)
+        grid.attach(self.comboboxYear, 1, 0, 1, 1)
 
         notebook = Gtk.Notebook()
         self.vbox.add(notebook)
@@ -433,12 +446,15 @@ class AttributeDialog(Gtk.Dialog):
 
         names = structures.buildings.BuildingNames()
 
+        self.buildings = []
+
         for count, name in enumerate(names.get_names()):
             label = uigtk.widgets.Label("_%s" % (name), leftalign=True)
             grid.attach(label, 0, count, 1, 1)
             spinbutton = Gtk.SpinButton.new_with_range(0, 10, 1)
             label.set_mnemonic_widget(spinbutton)
             grid.attach(spinbutton, 1, count, 1, 1)
+            self.buildings.append(spinbutton)
 
     def populate_years(self, years=None):
         '''
@@ -464,6 +480,24 @@ class AttributeDialog(Gtk.Dialog):
         '''
         Load attributes for given club and attribute.
         '''
+        self.stadium = data.stadiums.get_stadium_by_id(self.stadiumid)
+        self.attribute = self.stadium.attributes[self.attributeid]
+
+        self.comboboxYear.set_active_id(str(self.attribute.year))
+
+        for count, stand in enumerate(self.main_stands):
+            stand.capacity.set_value(self.attribute.main[count])
+            stand.roof.set_active(self.attribute.roof[count])
+            stand.seating.set_active(self.attribute.seating[count])
+            stand.box.set_value(self.attribute.box[count])
+
+        for count, stand in enumerate(self.corner_stands):
+            stand.capacity.set_value(self.attribute.corner[count])
+            stand.roof.set_active(self.attribute.roof[count])
+            stand.seating.set_active(self.attribute.seating[count])
+
+        for count, building in enumerate(self.buildings):
+            building.set_value(self.attribute.buildings[count])
 
     def clear_attributes(self):
         '''
@@ -480,7 +514,7 @@ class AttributeDialog(Gtk.Dialog):
             self.set_title("Edit Attribute")
             button.set_label("_Edit")
 
-            #self.populate_years()
+            self.populate_years()
 
             self.load_attributes()
         else:
@@ -490,7 +524,9 @@ class AttributeDialog(Gtk.Dialog):
             stadium = data.stadiums.get_stadium_by_id(stadiumid)
             years = [attribute.year for attribute in stadium.attributes.values()]
 
-            #self.populate_years(years)
+            self.attributeid = stadium.add_attribute()
+
+            self.populate_years(years)
 
         self.show_all()
 
@@ -499,8 +535,6 @@ class AttributeDialog(Gtk.Dialog):
 
         self.clear_attributes()
         self.hide()
-
-        return
 
 
 class MainStand:

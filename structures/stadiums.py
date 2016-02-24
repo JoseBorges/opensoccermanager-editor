@@ -118,6 +118,8 @@ class Stadiums:
                 attribute.main = value[3:7]
                 attribute.corner = value[7:11]
                 attribute.box = value[11:15]
+                attribute.roof = value[15:23]
+                attribute.seating = value[23:31]
                 attribute.buildings = value[31:39]
 
                 if attributeid > stadium.attributeid:
