@@ -120,6 +120,9 @@ class Stadiums:
                 attribute.box = value[11:15]
                 attribute.buildings = value[31:39]
 
+                if attributeid > stadium.attributeid:
+                    stadium.attributeid = attributeid
+
             if stadiumid > self.stadiumid:
                 self.stadiumid = stadiumid
 
@@ -131,7 +134,7 @@ class Stadiums:
             if stadiumid in stadiums:
                 data.database.cursor.execute("UPDATE stadium SET name=? WHERE id=?", (stadium.name, stadiumid))
             else:
-                data.database.cursor.execute("INSERT INTO stadium VALUES (null, ?)", (stadium.name))
+                data.database.cursor.execute("INSERT INTO stadium VALUES (null, ?)", (stadium.name,))
 
         for stadiumid in stadiums:
             if stadiumid in self.deletions:
@@ -192,16 +195,9 @@ class Attribute(structures.attributes.Attribute):
         '''
         Return total stadium capacity.
         '''
-        capacity = 0
-
-        for value in self.main:
-            capacity += value
-
-        for value in self.corner:
-            capacity += value
-
-        for value in self.box:
-            capacity += value
+        capacity = sum(value for value in self.main)
+        capacity += sum(value for value in self.corner)
+        capacity += sum(value for value in self.box)
 
         return capacity
 
@@ -209,6 +205,4 @@ class Attribute(structures.attributes.Attribute):
         '''
         Return number of buildings assigned.
         '''
-        buildings = sum(self.buildings)
-
-        return buildings
+        return sum(self.buildings)
