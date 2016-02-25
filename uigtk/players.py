@@ -88,10 +88,8 @@ class Players(uigtk.widgets.Grid):
 
                 if dialog.show():
                     self.delete_player(playerid)
-                    self.populate_data()
             else:
                 self.delete_player(playerid)
-                self.populate_data()
 
     def delete_player(self, playerid):
         '''

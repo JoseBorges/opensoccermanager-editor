@@ -472,12 +472,11 @@ class AttributeDialog(Gtk.Dialog):
         '''
         Display stadium selection dialog.
         '''
-        if self.stadiumid:
-            stadium = data.stadiums.get_stadium_by_id(self.stadiumid)
-
-        attribute = self.club.attributes[self.attributeid]
-
-        self.stadiumid = self.stadiumdialog.show(stadiumid=attribute.stadium)
+        if self.attributeid:
+            attribute = self.club.attributes[self.attributeid]
+            self.stadiumid = self.stadiumdialog.show(stadiumid=attribute.stadium)
+        else:
+            self.stadiumid = self.stadiumdialog.show()
 
         if self.stadiumid:
             self.stadium = data.stadiums.get_stadium_by_id(self.stadiumid)
@@ -527,6 +526,7 @@ class AttributeDialog(Gtk.Dialog):
         Save attributes for given club.
         '''
         if not self.treeiter:
+            self.attributeid = self.club.add_attribute()
             self.treeiter = self.model.append([self.attributeid, 0, "", "", 0, "", 0, 0])
 
         self.model[self.treeiter][1] = int(self.comboboxYear.get_active_id())
@@ -590,7 +590,7 @@ class AttributeDialog(Gtk.Dialog):
             club = data.clubs.get_club_by_id(clubid)
             years = [attribute.year for attribute in club.attributes.values()]
 
-            self.attributeid = club.add_attribute()
+            self.attributeid = None
 
             self.stadiumid = None
             self.stadium = None

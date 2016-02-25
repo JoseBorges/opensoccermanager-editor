@@ -268,7 +268,7 @@ class AttributeEdit(uigtk.widgets.Grid):
         '''
         Display add dialog for new attribute.
         '''
-        self.attributedialog.show(StadiumEdit.stadiumid)
+        self.attributedialog.show(StadiumEdit.stadiumid, self.liststore)
 
         self.populate_data()
 
@@ -277,9 +277,9 @@ class AttributeEdit(uigtk.widgets.Grid):
         Display edit dialog for selected attribute.
         '''
         model, treeiter = self.attributes.treeselection.get_selected()
-        attributeid = model[treeiter][0]
+        treeiter1 = model.convert_iter_to_child_iter(treeiter)
 
-        self.attributedialog.show(StadiumEdit.stadiumid, attributeid)
+        self.attributedialog.show(StadiumEdit.stadiumid, self.liststore, treeiter1)
 
         self.populate_data()
 
@@ -291,12 +291,11 @@ class AttributeEdit(uigtk.widgets.Grid):
 
         if dialog.show():
             model, treeiter = self.attributes.treeselection.get_selected()
-            attributeid = model[treeiter][0]
+            treeiter1 = model.convert_iter_to_child_iter(treeiter)
 
-            stadium = data.stadiums.get_stadium_by_id(self.stadiumid)
-            stadium.attributes.remove_attribute(attributeid)
+            self.liststore.remove(treeiter1)
 
-            self.populate_data()
+            data.unsaved = True
 
     def on_row_activated(self, *args):
         '''
@@ -345,6 +344,7 @@ class AttributeDialog(Gtk.Dialog):
         grid.attach(label, 0, 0, 1, 1)
         self.comboboxYear = Gtk.ComboBoxText()
         self.comboboxYear.set_tooltip_text("Year to add attribute data.")
+        self.comboboxYear.connect("changed", self.update_commit_button)
         label.set_mnemonic_widget(self.comboboxYear)
         grid.attach(self.comboboxYear, 1, 0, 1, 1)
 
@@ -456,6 +456,17 @@ class AttributeDialog(Gtk.Dialog):
             grid.attach(spinbutton, 1, count, 1, 1)
             self.buildings.append(spinbutton)
 
+    def update_commit_button(self, *args):
+        '''
+        Update sensitivity of commit button on dialog.
+        '''
+        sensitive = False
+
+        if self.comboboxYear.get_active_id():
+            sensitive = True
+
+        self.set_response_sensitive(Gtk.ResponseType.OK, sensitive)
+
     def populate_years(self, years=None):
         '''
         Customise available year values for add and edit actions.
@@ -480,7 +491,6 @@ class AttributeDialog(Gtk.Dialog):
         '''
         Load attributes for given club and attribute.
         '''
-        self.stadium = data.stadiums.get_stadium_by_id(self.stadiumid)
         self.attribute = self.stadium.attributes[self.attributeid]
 
         self.comboboxYear.set_active_id(str(self.attribute.year))
@@ -499,20 +509,51 @@ class AttributeDialog(Gtk.Dialog):
         for count, building in enumerate(self.buildings):
             building.set_value(self.attribute.buildings[count])
 
+    def save_attributes(self):
+        '''
+        Save attributes for given stadium.
+        '''
+        if not self.treeiter:
+            self.treeiter = self.model.append([self.attributeid, 0, 0, 0])
+
+        self.model[self.treeiter][1] = int(self.comboboxYear.get_active_id())
+        self.model[self.treeiter][2] = 0
+        self.model[self.treeiter][3] = 0
+
     def clear_attributes(self):
         '''
         Reset data entry fields on close of dialog.
         '''
+        self.comboboxYear.set_active(0)
 
-    def show(self, stadiumid, attributeid=None):
+        for stand in self.main_stands:
+            stand.capacity.set_value(0)
+            stand.roof.set_active(False)
+            stand.standing.set_active(True)
+            stand.box.set_value(0)
+
+        for stand in self.corner_stands:
+            stand.capacity.set_value(0)
+            stand.roof.set_active(False)
+            stand.standing.set_active(True)
+
+        for building in self.buildings:
+            building.set_value(0)
+
+    def show(self, stadiumid, model, treeiter=None):
         self.stadiumid = stadiumid
-        self.attributeid = attributeid
+        self.stadium = data.stadiums.get_stadium_by_id(stadiumid)
+
+        self.model = model
+        self.treeiter = treeiter
 
         button = self.get_widget_for_response(Gtk.ResponseType.OK)
 
-        if attributeid:
+        if treeiter:
             self.set_title("Edit Attribute")
             button.set_label("_Edit")
+
+            self.attributeid = model[treeiter][0]
 
             self.populate_years()
 
@@ -528,10 +569,12 @@ class AttributeDialog(Gtk.Dialog):
 
             self.populate_years(years)
 
+        self.update_commit_button()
+
         self.show_all()
 
         if self.run() == Gtk.ResponseType.OK:
-            pass
+            self.save_attributes()
 
         self.clear_attributes()
         self.hide()
