@@ -79,16 +79,16 @@ class Leagues:
         data.database.cursor.execute("SELECT * FROM league")
 
         for item in data.database.cursor.fetchall():
-            leagueid = item[0]
-            league = League(leagueid)
-            league.name = item[1]
-            self.leagues[leagueid] = league
+            league = League(item[0])
+            self.leagues[league.leagueid] = league
 
-            data.database.cursor.execute("SELECT * FROM leagueattr WHERE league=?", (leagueid,))
+            league.name = item[1]
+
+            data.database.cursor.execute("SELECT * FROM leagueattr WHERE league=?", (league.leagueid,))
             leagueattrs = data.database.cursor.fetchall()
 
             for value in leagueattrs:
-                attribute = Attribute(leagueid)
+                attribute = Attribute(league.leagueid)
                 attributeid = value[0]
                 attribute.year = value[2]
                 league.attributes[attributeid] = attribute
@@ -96,8 +96,8 @@ class Leagues:
                 if attributeid > league.attributeid:
                     league.attributeid = attributeid
 
-            if leagueid > self.leagueid:
-                self.leagueid = leagueid
+            if league.leagueid > self.leagueid:
+                self.leagueid = league.leagueid
 
     def save_data(self):
         data.database.cursor.execute("SELECT * FROM league")

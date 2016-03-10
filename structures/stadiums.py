@@ -100,12 +100,12 @@ class Stadiums:
         data.database.cursor.execute("SELECT * FROM stadium")
 
         for item in data.database.cursor.fetchall():
-            stadium = Stadium()
-            stadiumid = item[0]
-            stadium.name = item[1]
-            self.stadiums[stadiumid] = stadium
+            stadium = Stadium(item[0])
+            self.stadiums[stadium.stadiumid] = stadium
 
-            data.database.cursor.execute("SELECT * FROM stadiumattr WHERE stadium=?", (stadiumid,))
+            stadium.name = item[1]
+
+            data.database.cursor.execute("SELECT * FROM stadiumattr WHERE stadium=?", (stadium.stadiumid,))
             stadiumattrs = data.database.cursor.fetchall()
 
             for value in stadiumattrs:
@@ -125,8 +125,8 @@ class Stadiums:
                 if attributeid > stadium.attributeid:
                     stadium.attributeid = attributeid
 
-            if stadiumid > self.stadiumid:
-                self.stadiumid = stadiumid
+            if stadium.stadiumid > self.stadiumid:
+                self.stadiumid = stadium.stadiumid
 
     def save_data(self):
         data.database.cursor.execute("SELECT * FROM stadium")
@@ -146,7 +146,8 @@ class Stadiums:
 
 
 class Stadium:
-    def __init__(self):
+    def __init__(self, stadiumid):
+        self.stadiumid = stadiumid
         self.name = ""
 
         self.attributes = {}

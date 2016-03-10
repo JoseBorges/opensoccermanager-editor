@@ -78,15 +78,14 @@ class Nations:
         data.database.cursor.execute("SELECT * FROM nation")
 
         for item in data.database.cursor.fetchall():
-            nation = Nation()
-            nationid = item[0]
-            self.nations[nationid] = nation
+            nation = Nation(item[0])
+            self.nations[nation.nationid] = nation
 
             nation.name = item[1]
             nation.denonym = item[2]
 
-            if nationid > self.nationid:
-                self.nationid = nationid
+            if nation.nationid > self.nationid:
+                self.nationid = nation.nationid
 
     def save_data(self):
         data.database.cursor.execute("SELECT * FROM nation")
@@ -106,6 +105,7 @@ class Nations:
 
 
 class Nation:
-    def __init__(self):
+    def __init__(self, nationid):
+        self.nationid = nationid
         self.name = ""
         self.denonym = ""

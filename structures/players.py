@@ -80,9 +80,8 @@ class Players:
         players = data.database.cursor.fetchall()
 
         for item in players:
-            player = Player()
-            playerid = item[0]
-            self.players[playerid] = player
+            player = Player(item[0])
+            self.players[player.playerid] = player
 
             player.first_name = item[1]
             player.second_name = item[2]
@@ -90,7 +89,7 @@ class Players:
             player.date_of_birth = tuple(map(int, item[4].split("-")))
             player.nationality = item[5]
 
-            data.database.cursor.execute("SELECT * FROM playerattr WHERE player=?", (playerid,))
+            data.database.cursor.execute("SELECT * FROM playerattr WHERE player=?", (player.playerid,))
             playerattrs = data.database.cursor.fetchall()
 
             for value in playerattrs:
@@ -115,8 +114,8 @@ class Players:
                 if attributeid > player.attributeid:
                     player.attributeid = attributeid
 
-            if playerid > self.playerid:
-                self.playerid = playerid
+            if player.playerid > self.playerid:
+                self.playerid = player.playerid
 
     def save_data(self):
         data.database.cursor.execute("SELECT * FROM player")
@@ -147,7 +146,8 @@ class Players:
 
 
 class Player:
-    def __init__(self):
+    def __init__(self, playerid):
+        self.playerid = playerid
         self.first_name = ""
         self.second_name = ""
         self.common_name = ""

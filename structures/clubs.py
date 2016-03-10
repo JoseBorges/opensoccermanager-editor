@@ -82,18 +82,17 @@ class Clubs:
         data.database.cursor.execute("SELECT * FROM club")
 
         for item in data.database.cursor.fetchall():
-            clubid = item[0]
-            club = Club(clubid)
-            self.clubs[clubid] = club
+            club = Club(item[0])
+            self.clubs[club.clubid] = club
 
             club.name = item[1]
             club.nickname = item[2]
 
-            data.database.cursor.execute("SELECT * FROM clubattr WHERE club=?", (clubid,))
+            data.database.cursor.execute("SELECT * FROM clubattr WHERE club=?", (club.clubid,))
             clubattrs = data.database.cursor.fetchall()
 
             for value in clubattrs:
-                attribute = Attribute(clubid)
+                attribute = Attribute(club.clubid)
                 attributeid = value[0]
                 club.attributes[attributeid] = attribute
 
@@ -107,8 +106,8 @@ class Clubs:
                 if attributeid > club.attributeid:
                     club.attributeid = attributeid
 
-            if clubid > self.clubid:
-                self.clubid = clubid
+            if club.clubid > self.clubid:
+                self.clubid = club.clubid
 
     def save_data(self):
         data.database.cursor.execute("SELECT * FROM club")

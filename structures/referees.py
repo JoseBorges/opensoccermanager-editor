@@ -79,13 +79,12 @@ class Referees:
         data.database.cursor.execute("SELECT * FROM referee")
 
         for item in data.database.cursor.fetchall():
-            refereeid = item[0]
-            referee = Referee(refereeid)
-            self.referees[refereeid] = referee
+            referee = Referee(item[0])
+            self.referees[referee.refereeid] = referee
 
             referee.name = item[1]
 
-            data.database.cursor.execute("SELECT * FROM refereeattr WHERE referee=?", (refereeid,))
+            data.database.cursor.execute("SELECT * FROM refereeattr WHERE referee=?", (referee.refereeid,))
             refereeattrs = data.database.cursor.fetchall()
 
             for value in refereeattrs:
@@ -98,8 +97,8 @@ class Referees:
                 if attributeid > referee.attributeid:
                     referee.attributeid = attributeid
 
-            if refereeid > self.refereeid:
-                self.refereeid = refereeid
+            if referee.refereeid > self.refereeid:
+                self.refereeid = referee.refereeid
 
     def save_data(self):
         data.database.cursor.execute("SELECT * FROM referee")
