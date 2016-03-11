@@ -21,7 +21,8 @@ import re
 import unicodedata
 
 import data
-import structures.nations
+import uigtk.dialogs
+import uigtk.interface
 import uigtk.search
 import uigtk.widgets
 

@@ -167,5 +167,6 @@ class Referee:
 class Attribute(structures.attributes.Attribute):
     def __init__(self, refereeid):
         self.refereeid = refereeid
+        self.league = None
 
         structures.attributes.Attribute.__init__(self)

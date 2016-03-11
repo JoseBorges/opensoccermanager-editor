@@ -21,6 +21,8 @@ import re
 import unicodedata
 
 import data
+import uigtk.dialogs
+import uigtk.interface
 import uigtk.search
 import uigtk.widgets
 
@@ -365,6 +367,15 @@ class AttributeDialog(Gtk.Dialog):
             for year in data.years.get_years():
                 self.comboboxYear.append(str(year), str(year))
 
+    def populate_leagues(self):
+        '''
+        List selection of leagues available for referee.
+        '''
+        self.comboboxLeague.remove_all()
+
+        for leagueid, league in data.leagues.get_leagues():
+            self.comboboxLeague.append(str(leagueid), league.name)
+
     def load_attributes(self):
         '''
         Load attributes for given club and attribute.
@@ -373,6 +384,15 @@ class AttributeDialog(Gtk.Dialog):
         self.attribute = self.referee.attributes[self.attributeid]
 
         self.comboboxYear.set_active_id(str(self.attribute.year))
+        self.comboboxLeague.set_active_id(str(self.attribute.league))
+
+    def save_attributes(self):
+        '''
+        Save attributes for given refere.
+        '''
+        if not self.treeiter:
+            self.attributeid = self.referee.add_attribute()
+            self.treeiter = self.model.append([self.attributeid, 0, ""])
 
     def clear_attributes(self):
         '''
@@ -390,6 +410,7 @@ class AttributeDialog(Gtk.Dialog):
             button.set_label("_Edit")
 
             self.populate_years()
+            self.populate_leagues()
 
             self.load_attributes()
         else:
@@ -400,11 +421,13 @@ class AttributeDialog(Gtk.Dialog):
             years = [attribute.year for attribute in referee.attributes.values()]
 
             self.populate_years(years)
+            self.populate_leagues()
 
         self.show_all()
 
         if self.run() == Gtk.ResponseType.OK:
-            pass
+            referee = data.referees.get_referee_by_id(self.refereeid)
+            self.save_attributes()
 
         self.clear_attributes()
         self.hide()

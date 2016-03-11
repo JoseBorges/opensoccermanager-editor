@@ -22,6 +22,8 @@ import unicodedata
 
 import data
 import structures.clubs
+import uigtk.dialogs
+import uigtk.interface
 import uigtk.search
 import uigtk.widgets
 
