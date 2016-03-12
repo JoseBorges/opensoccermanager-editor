@@ -243,7 +243,7 @@ class AttributeEdit(LeagueEdit, uigtk.widgets.Grid):
     def __init__(self):
         uigtk.widgets.Grid.__init__(self)
 
-        self.liststore = Gtk.ListStore(int, int, int)
+        self.liststore = Gtk.ListStore(int, int, int, int)
         treemodelsort = Gtk.TreeModelSort(self.liststore)
         treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
 
@@ -259,6 +259,8 @@ class AttributeEdit(LeagueEdit, uigtk.widgets.Grid):
         treeviewcolumn = uigtk.widgets.TreeViewColumn(title="Year", column=1)
         self.attributes.treeview.append_column(treeviewcolumn)
         treeviewcolumn = uigtk.widgets.TreeViewColumn(title="Clubs", column=2)
+        self.attributes.treeview.append_column(treeviewcolumn)
+        treeviewcolumn = uigtk.widgets.TreeViewColumn(title="Referees", column=3)
         self.attributes.treeview.append_column(treeviewcolumn)
 
         self.attributedialog = AttributeDialog()
@@ -278,7 +280,7 @@ class AttributeEdit(LeagueEdit, uigtk.widgets.Grid):
         model, treeiter = self.attributes.treeselection.get_selected()
         attributeid = model[treeiter][0]
 
-        self.attributedialog.show(LeagueEdit.leagueid, attributeid)
+        self.attributedialog.show(self.leagueid, attributeid)
 
         self.populate_data()
 
@@ -323,7 +325,8 @@ class AttributeEdit(LeagueEdit, uigtk.widgets.Grid):
         for attributeid, attribute in league.attributes.items():
             self.liststore.append([attributeid,
                                    attribute.year,
-                                   attribute.get_club_count()])
+                                   attribute.get_club_count(),
+                                   attribute.get_referee_count()])
 
 
 class AttributeDialog(Gtk.Dialog):
@@ -370,17 +373,20 @@ class AttributeDialog(Gtk.Dialog):
         self.league = data.leagues.get_league_by_id(self.leagueid)
         self.attribute = self.league.attributes[self.attributeid]
 
+        self.clublist.labelCount.set_label("%i/20 Clubs" % (self.attribute.get_club_count()))
+        self.refereelist.labelCount.set_label("%i Referees" % (self.attribute.get_referee_count()))
+
         for clubid, club in data.clubs.get_clubs():
             for attributeid, attribute in club.attributes.items():
                 if attribute.league == self.leagueid:
                     if attribute.year == self.attribute.year:
-                        self.clublist.liststore.append([clubid, club.name])
+                        self.clublist.liststore.append([clubid, attributeid, club.name])
 
         for refereeid, referee in data.referees.get_referees():
             for attributeid, attribute in referee.attributes.items():
                 if attribute.league == self.leagueid:
                     if attribute.year == self.attribute.year:
-                        self.refereelist.liststore.append([refereeid, referee.name])
+                        self.refereelist.liststore.append([refereeid, attributeid, referee.name])
 
     def clear_attributes(self):
         '''

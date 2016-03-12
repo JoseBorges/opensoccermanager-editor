@@ -186,3 +186,17 @@ class Attribute(structures.attributes.Attribute):
                         count += 1
 
         return count
+
+    def get_referee_count(self):
+        '''
+        Return number of referees associated with attribute data.
+        '''
+        count = 0
+
+        for refereeid, referee in data.referees.get_referees():
+            for attributeid, attribute in referee.attributes.items():
+                if attribute.year == self.year:
+                    if attribute.league == self.leagueid:
+                        count += 1
+
+        return count

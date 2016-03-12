@@ -413,11 +413,11 @@ class AttributeDialog(Gtk.Dialog):
         label.set_mnemonic_widget(self.spinbuttonReputation)
         grid.attach(self.spinbuttonReputation, 1, 4, 1, 1)
 
-        self.itemlist = uigtk.interface.ItemList()
-        self.itemlist.set_border_width(5)
-        self.itemlist.buttonAdd.connect("clicked", self.on_add_player_clicked)
-        self.itemlist.buttonRemove.connect("clicked", self.on_remove_player_clicked)
-        notebook.append_page(self.itemlist, uigtk.widgets.Label("_Squad"))
+        self.playerlist = uigtk.interface.ItemList()
+        self.playerlist.set_border_width(5)
+        self.playerlist.buttonAdd.connect("clicked", self.on_add_player_clicked)
+        self.playerlist.buttonRemove.connect("clicked", self.on_remove_player_clicked)
+        notebook.append_page(self.playerlist, uigtk.widgets.Label("_Squad"))
 
         self.stadiumdialog = uigtk.selectors.StadiumSelectorDialog()
         self.playerdialog = uigtk.selectors.PlayerSelectorDialog()
@@ -459,7 +459,7 @@ class AttributeDialog(Gtk.Dialog):
         '''
         Remove selected player from club and remove club attribute.
         '''
-        model, treeiter = self.itemlist.treeview.treeselection.get_selected()
+        model, treeiter = self.playerlist.treeview.treeselection.get_selected()
 
         playerid = model[treeiter][0]
         attributeid = model[treeiter][1]
@@ -550,20 +550,21 @@ class AttributeDialog(Gtk.Dialog):
         self.stadiumid = None
         self.stadium = None
 
-        self.itemlist.liststore.clear()
+        self.playerlist.liststore.clear()
 
     def populate_squad(self):
         '''
         Load squad for club attribute being displayed.
         '''
-        self.itemlist.liststore.clear()
+        self.playerlist.liststore.clear()
+
+        self.playerlist.labelCount.set_label("%i/30 Players" % (self.attribute.get_player_count()))
 
         for playerid, player in data.players.get_players():
             for attributeid, attribute in player.attributes.items():
                 if attribute.club == self.clubid:
                     if attribute.year == self.attribute.year:
-                        self.itemlist.labelCount.set_label("%i/30 Players" % (self.attribute.get_player_count()))
-                        self.itemlist.liststore.append([playerid,
+                        self.playerlist.liststore.append([playerid,
                                                         attributeid,
                                                         player.get_name()])
 
