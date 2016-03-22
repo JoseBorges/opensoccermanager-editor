@@ -149,7 +149,7 @@ class Referee:
         Add referee attribute to data structure.
         '''
         attributeid = self.get_attributeid()
-        self.attributes[attributeid] = Attribute()
+        self.attributes[attributeid] = Attribute(self.refereeid)
 
         data.unsaved = True
 

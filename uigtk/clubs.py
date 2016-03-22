@@ -431,8 +431,11 @@ class AttributeDialog(Gtk.Dialog):
         if self.comboboxYear.get_active_id():
             sensitive = True
 
-        sensitive = self.entryManager.get_text_length() > 0
-        sensitive = self.entryChairman.get_text_length() > 0
+        if sensitive:
+            sensitive = self.entryManager.get_text_length() > 0
+
+        if sensitive:
+            sensitive = self.entryChairman.get_text_length() > 0
 
         if self.stadiumid:
             sensitive = True
@@ -446,14 +449,16 @@ class AttributeDialog(Gtk.Dialog):
         Add selected player to squad.
         '''
         playerid = self.playerdialog.show()
-        player = data.players.get_player_by_id(playerid)
 
-        for attributeid, attribute in player.attributes.items():
-            if int(self.comboboxYear.get_active_id()) == attribute.year:
-                attribute.club = self.clubid
-                break
+        if playerid:
+            player = data.players.get_player_by_id(playerid)
 
-        self.populate_squad()
+            for attributeid, attribute in player.attributes.items():
+                if int(self.comboboxYear.get_active_id()) == attribute.year:
+                    attribute.club = self.clubid
+                    break
+
+            self.populate_squad()
 
     def on_remove_player_clicked(self, *args):
         '''

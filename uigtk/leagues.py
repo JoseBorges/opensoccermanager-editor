@@ -269,7 +269,7 @@ class AttributeEdit(LeagueEdit, uigtk.widgets.Grid):
         '''
         Display add dialog for new attribute.
         '''
-        self.attributedialog.show(LeagueEdit.leagueid)
+        self.attributedialog.show(LeagueEdit.leagueid, self.liststore)
 
         self.populate_data()
 
@@ -278,9 +278,9 @@ class AttributeEdit(LeagueEdit, uigtk.widgets.Grid):
         Display edit dialog for selected attribute.
         '''
         model, treeiter = self.attributes.treeselection.get_selected()
-        attributeid = model[treeiter][0]
+        treeiter1 = model.convert_iter_to_child_iter(treeiter)
 
-        self.attributedialog.show(self.leagueid, attributeid)
+        self.attributedialog.show(LeagueEdit.leagueid, self.liststore, treeiter1)
 
         self.populate_data()
 
@@ -366,6 +366,26 @@ class AttributeDialog(Gtk.Dialog):
         self.refereelist = uigtk.interface.ItemList()
         notebook.append_page(self.refereelist, uigtk.widgets.Label("_Referees"))
 
+    def populate_years(self, years=None):
+        '''
+        Customise available year values for add and edit actions.
+        '''
+        self.comboboxYear.remove_all()
+
+        if years:
+            added = False
+
+            for year in data.years.get_years():
+                if year not in years:
+                    self.comboboxYear.append(str(year), str(year))
+                    added = True
+
+            self.comboboxYear.set_sensitive(added)
+            self.comboboxYear.set_active(0)
+        else:
+            for year in data.years.get_years():
+                self.comboboxYear.append(str(year), str(year))
+
     def load_attributes(self):
         '''
         Load attributes for given league and attribute.
@@ -388,6 +408,11 @@ class AttributeDialog(Gtk.Dialog):
                     if attribute.year == self.attribute.year:
                         self.refereelist.liststore.append([refereeid, attributeid, referee.name])
 
+    def save_attributes(self):
+        '''
+        Save attributes for given club.
+        '''
+
     def clear_attributes(self):
         '''
         Reset data entry fields on close of dialog.
@@ -395,25 +420,39 @@ class AttributeDialog(Gtk.Dialog):
         self.clublist.liststore.clear()
         self.refereelist.liststore.clear()
 
-    def show(self, leagueid, attributeid=None):
+    def show(self, leagueid, model, treeiter=None):
         self.leagueid = leagueid
-        self.attributeid = attributeid
+        self.league = data.leagues.get_league_by_id(self.leagueid)
+
+        self.model = model
+        self.treeiter = treeiter
 
         button = self.get_widget_for_response(Gtk.ResponseType.OK)
 
-        if attributeid:
+        if treeiter:
             self.set_title("Edit Attribute")
             button.set_label("_Edit")
+
+            self.attributeid = model[treeiter][0]
+
+            self.populate_years()
 
             self.load_attributes()
         else:
             self.set_title("Add Attribute")
             button.set_label("_Add")
 
+            league = data.leagues.get_league_by_id(leagueid)
+            years = [attribute.year for attribute in league.attributes.values()]
+
+            self.attributeid = None
+
+            self.populate_years(years)
+
         self.show_all()
 
         if self.run() == Gtk.ResponseType.OK:
-            pass
+            self.save_attributes()
 
         self.clear_attributes()
         self.hide()

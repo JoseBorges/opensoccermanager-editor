@@ -151,6 +151,8 @@ class PlayerSelectorDialog(SelectorDialog):
             self.liststore.append([playerid, player.get_name()])
 
     def show(self, playerid=None):
+        self.playerid = playerid
+
         self.populate_data()
         self.select_item(playerid)
 

@@ -233,7 +233,7 @@ class AttributeEdit(uigtk.widgets.Grid):
     def __init__(self):
         uigtk.widgets.Grid.__init__(self)
 
-        self.liststore = Gtk.ListStore(int, int, str)
+        self.liststore = Gtk.ListStore(int, int, int, str)
         treemodelsort = Gtk.TreeModelSort(self.liststore)
         treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
 
@@ -248,7 +248,7 @@ class AttributeEdit(uigtk.widgets.Grid):
 
         treeviewcolumn = uigtk.widgets.TreeViewColumn(title="Year", column=1)
         self.attributes.treeview.append_column(treeviewcolumn)
-        treeviewcolumn = uigtk.widgets.TreeViewColumn(title="League", column=2)
+        treeviewcolumn = uigtk.widgets.TreeViewColumn(title="League", column=3)
         self.attributes.treeview.append_column(treeviewcolumn)
 
         self.attributedialog = AttributeDialog()
@@ -257,7 +257,7 @@ class AttributeEdit(uigtk.widgets.Grid):
         '''
         Display add dialog for new attribute.
         '''
-        self.attributedialog.show(RefereeEdit.refereeid)
+        self.attributedialog.show(RefereeEdit.refereeid, self.liststore)
 
         self.populate_data()
 
@@ -315,6 +315,7 @@ class AttributeEdit(uigtk.widgets.Grid):
 
             self.liststore.append([attributeid,
                                    attribute.year,
+                                   attribute.league,
                                    league.name])
 
 
@@ -337,6 +338,7 @@ class AttributeDialog(Gtk.Dialog):
         grid.attach(label, 0, 0, 1, 1)
         self.comboboxYear = Gtk.ComboBoxText()
         self.comboboxYear.set_tooltip_text("Year to add attribute data.")
+        self.comboboxYear.connect("changed", self.update_commit_button)
         label.set_mnemonic_widget(self.comboboxYear)
         grid.attach(self.comboboxYear, 1, 0, 1, 1)
 
@@ -344,8 +346,26 @@ class AttributeDialog(Gtk.Dialog):
         grid.attach(label, 0, 1, 1, 1)
         self.comboboxLeague = Gtk.ComboBoxText()
         self.comboboxLeague.set_tooltip_text("League selection for this referee.")
+        self.comboboxLeague.connect("changed", self.update_commit_button)
         label.set_mnemonic_widget(self.comboboxLeague)
         grid.attach(self.comboboxLeague, 1, 1, 1, 1)
+
+    def update_commit_button(self, *args):
+        '''
+        Update sensitivity of commit button on dialog.
+        '''
+        sensitive = False
+
+        if self.comboboxYear.get_active_id():
+            sensitive = True
+
+        if sensitive:
+            if self.comboboxLeague.get_active_id():
+                sensitive = True
+            else:
+                sensitive = False
+
+        self.set_response_sensitive(Gtk.ResponseType.OK, sensitive)
 
     def populate_years(self, years=None):
         '''
@@ -388,26 +408,39 @@ class AttributeDialog(Gtk.Dialog):
 
     def save_attributes(self):
         '''
-        Save attributes for given refere.
+        Save attributes for given referee.
         '''
         if not self.treeiter:
             self.attributeid = self.referee.add_attribute()
-            self.treeiter = self.model.append([self.attributeid, 0, ""])
+            self.treeiter = self.model.append([self.attributeid, 0, 0, ""])
+
+        self.model[self.treeiter][1] = int(self.comboboxYear.get_active_id())
+        self.model[self.treeiter][2] = self.leagueid
+        self.model[self.treeiter][3] = self.league.name
 
     def clear_attributes(self):
         '''
         Reset data entry fields on close of dialog.
         '''
+        self.leagueid = None
+        self.league = None
 
-    def show(self, refereeid, attributeid=None):
+        self.refereelist.liststore.clear()
+
+    def show(self, refereeid, model, treeiter=None):
         self.refereeid = refereeid
-        self.attributeid = attributeid
+        self.referee = data.referees.get_referee_by_id(self.refereeid)
+
+        self.model = model
+        self.treeiter = treeiter
 
         button = self.get_widget_for_response(Gtk.ResponseType.OK)
 
-        if attributeid:
+        if treeiter:
             self.set_title("Edit Attribute")
             button.set_label("_Edit")
+
+            self.attributeid = model[treeiter][0]
 
             self.populate_years()
             self.populate_leagues()
@@ -420,13 +453,19 @@ class AttributeDialog(Gtk.Dialog):
             referee = data.referees.get_referee_by_id(refereeid)
             years = [attribute.year for attribute in referee.attributes.values()]
 
+            self.attributeid = None
+
+            self.leagueid = None
+            self.league = None
+
             self.populate_years(years)
             self.populate_leagues()
+
+        self.update_commit_button()
 
         self.show_all()
 
         if self.run() == Gtk.ResponseType.OK:
-            referee = data.referees.get_referee_by_id(self.refereeid)
             self.save_attributes()
 
         self.clear_attributes()
