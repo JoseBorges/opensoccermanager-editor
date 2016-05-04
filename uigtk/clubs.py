@@ -55,9 +55,9 @@ class Clubs(uigtk.widgets.Grid):
         '''
         Add item into model and load attributes for editing.
         '''
-        clubid = data.clubs.add_club()
+        club = data.clubs.add_club()
 
-        treeiter = self.search.liststore.insert(0, [clubid, ""])
+        treeiter = self.search.liststore.insert(0, [club.clubid, ""])
         treeiter1 = self.search.treemodelfilter.convert_child_iter_to_iter(treeiter)
         treeiter2 = self.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
         treepath = self.search.treemodelsort.get_path(treeiter2[1])
@@ -65,7 +65,7 @@ class Clubs(uigtk.widgets.Grid):
         self.search.activate_row(treepath)
 
         self.clubedit.clear_details()
-        self.clubedit.clubid = clubid
+        self.clubedit.club = club
 
         self.clubedit.entryName.grab_focus()
 
@@ -137,7 +137,9 @@ class Clubs(uigtk.widgets.Grid):
         if treepath:
             clubid = model[treepath][0]
 
-            self.clubedit.set_details(clubid)
+            club = data.clubs.get_club_by_id(clubid)
+
+            self.clubedit.set_details(club)
             self.clubedit.set_sensitive(True)
 
     def on_treeselection_changed(self, treeselection):
@@ -165,8 +167,6 @@ class Clubs(uigtk.widgets.Grid):
 
 
 class ClubEdit(uigtk.widgets.Grid):
-    clubid = None
-
     def __init__(self):
         uigtk.widgets.Grid.__init__(self)
 
@@ -201,17 +201,15 @@ class ClubEdit(uigtk.widgets.Grid):
         '''
         Update current values into working data.
         '''
-        club = data.clubs.get_club_by_id(self.clubid)
+        self.club.name = self.entryName.get_text()
+        self.club.nickname = self.entryNickname.get_text()
 
-        club.name = self.entryName.get_text()
-        club.nickname = self.entryNickname.get_text()
-
-        club.attributes = {}
+        self.club.attributes = {}
 
         for row in self.attributes.liststore:
             attributeid = row[0]
-            club.attributes[attributeid] = structures.clubs.Attribute(self.clubid)
-            attribute = club.attributes[attributeid]
+            self.club.attributes[attributeid] = structures.clubs.Attribute(self.clubid)
+            attribute = self.club.attributes[attributeid]
 
             attribute.year = row[1]
             attribute.manager = row[2]
@@ -223,7 +221,7 @@ class ClubEdit(uigtk.widgets.Grid):
         child_treeiter = model.convert_iter_to_child_iter(treeiter)
 
         liststore = model.get_model()
-        liststore[child_treeiter][1] = club.name
+        liststore[child_treeiter][1] = self.club.name
 
         model, treeiter = Clubs.search.treeselection.get_selected()
         treepath = model.get_path(treeiter)
@@ -231,19 +229,18 @@ class ClubEdit(uigtk.widgets.Grid):
 
         data.unsaved = True
 
-    def set_details(self, clubid):
+    def set_details(self, club):
         '''
         Update selected player with details to be displayed.
         '''
         self.clear_details()
 
-        ClubEdit.clubid = clubid
-        club = data.clubs.get_club_by_id(clubid)
+        self.club = club
 
         self.entryName.set_text(club.name)
         self.entryNickname.set_text(club.nickname)
 
-        self.attributes.clubid = clubid
+        self.attributes.club = club
         self.attributes.populate_data()
 
     def clear_details(self, *args):
@@ -292,7 +289,7 @@ class AttributeEdit(uigtk.widgets.Grid):
         '''
         Display add dialog for new attribute.
         '''
-        self.attributedialog.show(ClubEdit.clubid, self.liststore)
+        self.attributedialog.show(self.club.clubid, self.liststore)
 
     def on_edit_clicked(self, *args):
         '''
@@ -301,7 +298,7 @@ class AttributeEdit(uigtk.widgets.Grid):
         model, treeiter = self.attributes.treeselection.get_selected()
         treeiter1 = model.convert_iter_to_child_iter(treeiter)
 
-        self.attributedialog.show(ClubEdit.clubid, self.liststore, treeiter1)
+        self.attributedialog.show(self.club.clubid, self.liststore, treeiter1)
 
     def on_remove_clicked(self, *args):
         '''
@@ -334,11 +331,9 @@ class AttributeEdit(uigtk.widgets.Grid):
             self.attributes.buttonRemove.set_sensitive(False)
 
     def populate_data(self):
-        club = data.clubs.get_club_by_id(self.clubid)
-
         self.liststore.clear()
 
-        for attributeid, attribute in club.attributes.items():
+        for attributeid, attribute in self.club.attributes.items():
             self.liststore.append([attributeid,
                                    attribute.year,
                                    attribute.manager,

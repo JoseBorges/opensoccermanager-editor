@@ -81,11 +81,12 @@ class Stadiums:
         Add stadium to data structure.
         '''
         stadiumid = self.get_stadiumid()
-        self.stadiums[stadiumid] = Stadium()
+        stadium = Stadium(stadiumid)
+        self.stadiums[stadiumid] = stadium
 
         data.unsaved = True
 
-        return stadiumid
+        return stadium
 
     def remove_stadium(self, stadiumid):
         '''

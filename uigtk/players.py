@@ -58,9 +58,9 @@ class Players(uigtk.widgets.Grid):
         '''
         Add item into model and load attributes for editing.
         '''
-        playerid = data.players.add_player()
+        player = data.players.add_player()
 
-        treeiter = self.search.liststore.insert(0, [playerid, ""])
+        treeiter = self.search.liststore.insert(0, [player.playerid, ""])
         treeiter1 = self.search.treemodelfilter.convert_child_iter_to_iter(treeiter)
         treeiter2 = self.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
         treepath = self.search.treemodelsort.get_path(treeiter2[1])
@@ -68,7 +68,7 @@ class Players(uigtk.widgets.Grid):
         self.search.activate_row(treepath)
 
         self.playeredit.clear_details()
-        self.playeredit.playerid = playerid
+        self.playeredit.player = player
 
         self.playeredit.entryFirstName.grab_focus()
 
@@ -144,7 +144,9 @@ class Players(uigtk.widgets.Grid):
         if treeiter:
             playerid = model[treeiter][0]
 
-            self.playeredit.set_details(playerid)
+            player = data.players.get_player_by_id(playerid)
+
+            self.playeredit.set_details(player)
             self.playeredit.set_sensitive(True)
 
     def on_treeselection_changed(self, treeselection):
@@ -172,8 +174,6 @@ class Players(uigtk.widgets.Grid):
 
 
 class PlayerEdit(uigtk.widgets.Grid):
-    playerid = None
-
     def __init__(self):
         uigtk.widgets.Grid.__init__(self)
 
@@ -229,20 +229,18 @@ class PlayerEdit(uigtk.widgets.Grid):
         '''
         Save current values into working data.
         '''
-        player = data.players.get_player_by_id(self.playerid)
+        self.player.first_name = self.entryFirstName.get_text()
+        self.player.second_name = self.entrySecondName.get_text()
+        self.player.common_name = self.entryCommonName.get_text()
 
-        player.first_name = self.entryFirstName.get_text()
-        player.second_name = self.entrySecondName.get_text()
-        player.common_name = self.entryCommonName.get_text()
-
-        player.date_of_birth = self.dialogDateOfBirth.get_date_of_birth()
-        player.nationality = self.dialogNationality.get_nationality()
+        self.player.date_of_birth = self.dialogDateOfBirth.get_date_of_birth()
+        self.player.nationality = self.dialogNationality.get_nationality()
 
         model, treeiter = Players.search.treeselection.get_selected()
         child_treeiter = model.convert_iter_to_child_iter(treeiter)
 
         liststore = model.get_model()
-        liststore[child_treeiter][1] = player.get_name()
+        liststore[child_treeiter][1] = self.player.get_name()
 
         model, treeiter = Players.search.treeselection.get_selected()
         treepath = model.get_path(treeiter)
@@ -269,14 +267,13 @@ class PlayerEdit(uigtk.widgets.Grid):
         if self.dialogNationality.show(self.player.nationality):
             self.update_nationality_button()
 
-    def set_details(self, playerid):
+    def set_details(self, player):
         '''
         Update selected player with details to be displayed.
         '''
         self.clear_details()
 
-        PlayerEdit.playerid = playerid
-        self.player = data.players.get_player_by_id(playerid)
+        self.player = player
 
         self.entryFirstName.set_text(self.player.first_name)
         self.entrySecondName.set_text(self.player.second_name)
@@ -288,7 +285,7 @@ class PlayerEdit(uigtk.widgets.Grid):
         self.dialogNationality.nationid = self.player.nationality
         self.update_nationality_button()
 
-        self.attributes.playerid = playerid
+        self.attributes.player = player
         self.attributes.populate_data()
 
     def clear_details(self):
@@ -373,7 +370,7 @@ class AttributeEdit(uigtk.widgets.Grid):
         '''
         Add new attribute for loaded player.
         '''
-        self.attributedialog.show(PlayerEdit.playerid)
+        self.attributedialog.show(self.player.playerid)
 
         self.populate_data()
 
@@ -384,7 +381,7 @@ class AttributeEdit(uigtk.widgets.Grid):
         model, treeiter = self.attributes.treeselection.get_selected()
         attributeid = model[treeiter][0]
 
-        self.attributedialog.show(self.playerid, attributeid)
+        self.attributedialog.show(self.player.playerid, attributeid)
 
         self.populate_data()
 
@@ -398,8 +395,7 @@ class AttributeEdit(uigtk.widgets.Grid):
             model, treeiter = self.attributes.treeselection.get_selected()
             attributeid = model[treeiter][0]
 
-            player = data.players.get_player_by_id(self.playerid)
-            player.attributes.remove_attribute(attributeid)
+            self.player.remove_attribute(attributeid)
 
             self.populate_data()
 
@@ -420,15 +416,15 @@ class AttributeEdit(uigtk.widgets.Grid):
             self.attributes.buttonRemove.set_sensitive(False)
 
     def populate_data(self):
-        player = data.players.get_player_by_id(self.playerid)
-
         self.liststore.clear()
 
-        for attributeid, attribute in player.attributes.items():
+        for attributeid, attribute in self.player.attributes.items():
+            club = attribute.get_club_name()
+
             self.liststore.append([attributeid,
                                    attribute.year,
-                                   attribute.get_club_name(),
-                                   player.get_age(attribute.year),
+                                   club,
+                                   self.player.get_age(attribute.year),
                                    attribute.position,
                                    attribute.keeping,
                                    attribute.tackling,

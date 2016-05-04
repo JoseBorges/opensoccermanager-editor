@@ -60,11 +60,12 @@ class Players:
         Add player to the data structure.
         '''
         playerid = self.get_playerid()
-        self.players[playerid] = Player()
+        player = Player(playerid)
+        self.players[playerid] = player
 
         data.unsaved = True
 
-        return playerid
+        return player
 
     def remove_player(self, playerid):
         '''
@@ -239,6 +240,18 @@ class Player:
 class Attribute(structures.attributes.Attribute):
     def __init__(self):
         structures.attributes.Attribute.__init__(self)
+        self.club = None
+        self.position = ""
+        self.keeping = 0
+        self.tackling = 0
+        self.passing = 0
+        self.shooting = 0
+        self.heading = 0
+        self.pace = 0
+        self.stamina = 0
+        self.ball_control = 0
+        self.set_pieces = 0
+        self.training = 0
 
     def get_club_name(self):
         '''

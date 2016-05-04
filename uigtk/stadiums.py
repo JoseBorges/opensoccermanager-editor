@@ -56,9 +56,9 @@ class Stadiums(uigtk.widgets.Grid):
         '''
         Add item into model and load attributes for editing.
         '''
-        stadiumid = data.stadiums.add_stadium()
+        stadium = data.stadiums.add_stadium()
 
-        treeiter = self.search.liststore.insert(0, [stadiumid, ""])
+        treeiter = self.search.liststore.insert(0, [stadium.stadiumid, ""])
         treeiter1 = self.search.treemodelfilter.convert_child_iter_to_iter(treeiter)
         treeiter2 = self.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
         treepath = self.search.treemodelsort.get_path(treeiter2[1])
@@ -66,7 +66,7 @@ class Stadiums(uigtk.widgets.Grid):
         self.search.activate_row(treepath)
 
         self.stadiumedit.clear_details()
-        self.stadiumedit.stadiumid = stadiumid
+        self.stadiumedit.stadium = stadium
 
         self.stadiumedit.entryName.grab_focus()
 
@@ -170,8 +170,6 @@ class Stadiums(uigtk.widgets.Grid):
 
 
 class StadiumEdit(uigtk.widgets.Grid):
-    stadiumid = None
-
     def __init__(self):
         uigtk.widgets.Grid.__init__(self)
 
@@ -180,14 +178,14 @@ class StadiumEdit(uigtk.widgets.Grid):
         grid.set_vexpand(True)
         self.attach(grid, 0, 0, 1, 1)
 
-        grid2 = uigtk.widgets.Grid()
-        grid.attach(grid2, 0, 0, 1, 1)
+        grid1 = uigtk.widgets.Grid()
+        grid.attach(grid1, 0, 0, 1, 1)
 
         label = uigtk.widgets.Label("_Name", leftalign=True)
-        grid2.attach(label, 0, 0, 1, 1)
+        grid1.attach(label, 0, 0, 1, 1)
         self.entryName = Gtk.Entry()
         label.set_mnemonic_widget(self.entryName)
-        grid2.attach(self.entryName, 1, 0, 1, 1)
+        grid1.attach(self.entryName, 1, 0, 1, 1)
 
         self.attributes = AttributeEdit()
         grid.attach(self.attributes, 0, 1, 1, 1)

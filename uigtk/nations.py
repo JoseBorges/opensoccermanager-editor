@@ -54,9 +54,9 @@ class Nations(uigtk.widgets.Grid):
         '''
         Add item into model and load attributes for editing.
         '''
-        nationid = data.nations.add_nation()
+        nation = data.nations.add_nation()
 
-        treeiter = self.search.liststore.insert(0, [nationid, ""])
+        treeiter = self.search.liststore.insert(0, [nation.nationid, ""])
         treeiter1 = self.search.treemodelfilter.convert_child_iter_to_iter(treeiter)
         treeiter2 = self.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
         treepath = self.search.treemodelsort.get_path(treeiter2[1])
@@ -64,7 +64,7 @@ class Nations(uigtk.widgets.Grid):
         self.search.activate_row(treepath)
 
         self.nationedit.clear_details()
-        self.nationedit.nationid = nationid
+        self.nationedit.nation = nation
 
         self.nationedit.entryName.grab_focus()
 
@@ -172,9 +172,7 @@ class Nations(uigtk.widgets.Grid):
         self.search.activate_first_item()
 
 
-class NationEdit(Nations, uigtk.widgets.Grid):
-    nationid = None
-
+class NationEdit(uigtk.widgets.Grid):
     def __init__(self):
         uigtk.widgets.Grid.__init__(self)
 

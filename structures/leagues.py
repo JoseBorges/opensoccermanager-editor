@@ -57,14 +57,15 @@ class Leagues:
 
     def add_league(self):
         '''
-        Add referee to the data structure.
+        Add  to the data structure.
         '''
         leagueid = self.get_leagueid()
-        self.leagues[leagueid] = League(leagueid)
+        league = League(leagueid)
+        self.leagues[leagueid] = league
 
         data.unsaved = True
 
-        return leagueid
+        return league
 
     def remove_league(self, leagueid):
         '''

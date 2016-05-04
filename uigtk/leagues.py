@@ -54,9 +54,9 @@ class Leagues(uigtk.widgets.Grid):
         '''
         Add item into model and load attributes for editing.
         '''
-        leagueid = data.leagues.add_league()
+        league = data.leagues.add_league()
 
-        treeiter = self.search.liststore.insert(0, [leagueid, ""])
+        treeiter = self.search.liststore.insert(0, [league.leagueid, ""])
         treeiter1 = self.search.treemodelfilter.convert_child_iter_to_iter(treeiter)
         treeiter2 = self.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
         treepath = self.search.treemodelsort.get_path(treeiter2[1])
@@ -64,7 +64,7 @@ class Leagues(uigtk.widgets.Grid):
         self.search.activate_row(treepath)
 
         self.leagueedit.clear_details()
-        self.leagueedit.leagueid = leagueid
+        self.leagueedit.league = league
 
         self.leagueedit.entryName.grab_focus()
 
@@ -142,7 +142,9 @@ class Leagues(uigtk.widgets.Grid):
         if treeiter:
             leagueid = model[treeiter][0]
 
-            self.leagueedit.set_details(leagueid)
+            league = data.leagues.get_league_by_id(leagueid)
+
+            self.leagueedit.set_details(league)
             self.leagueedit.set_sensitive(True)
 
     def on_treeselection_changed(self, treeselection):
@@ -169,9 +171,7 @@ class Leagues(uigtk.widgets.Grid):
         self.search.activate_first_item()
 
 
-class LeagueEdit(Leagues, uigtk.widgets.Grid):
-    leagueid = None
-
+class LeagueEdit(uigtk.widgets.Grid):
     def __init__(self):
         uigtk.widgets.Grid.__init__(self)
 
@@ -200,15 +200,13 @@ class LeagueEdit(Leagues, uigtk.widgets.Grid):
         '''
         Save current values into working data.
         '''
-        league = data.leagues.get_league_by_id(self.leagueid)
-
-        league.name = self.entryName.get_text()
+        self.league.name = self.entryName.get_text()
 
         model, treeiter = Leagues.search.treeselection.get_selected()
         child_treeiter = model.convert_iter_to_child_iter(treeiter)
 
         liststore = model.get_model()
-        liststore[child_treeiter][1] = league.name
+        liststore[child_treeiter][1] = self.league.name
 
         model, treeiter = Leagues.search.treeselection.get_selected()
         treepath = model.get_path(treeiter)
@@ -216,18 +214,17 @@ class LeagueEdit(Leagues, uigtk.widgets.Grid):
 
         data.unsaved = True
 
-    def set_details(self, leagueid):
+    def set_details(self, league):
         '''
         Update selected player with details to be displayed.
         '''
         self.clear_details()
 
-        LeagueEdit.leagueid = leagueid
-        league = data.leagues.get_league_by_id(leagueid)
+        self.league = league
 
         self.entryName.set_text(league.name)
 
-        self.attributes.leagueid = leagueid
+        self.attributes.league = league
         self.attributes.populate_data()
 
     def clear_details(self):
@@ -239,7 +236,7 @@ class LeagueEdit(Leagues, uigtk.widgets.Grid):
         self.attributes.liststore.clear()
 
 
-class AttributeEdit(LeagueEdit, uigtk.widgets.Grid):
+class AttributeEdit(uigtk.widgets.Grid):
     def __init__(self):
         uigtk.widgets.Grid.__init__(self)
 
@@ -269,7 +266,7 @@ class AttributeEdit(LeagueEdit, uigtk.widgets.Grid):
         '''
         Display add dialog for new attribute.
         '''
-        self.attributedialog.show(LeagueEdit.leagueid, self.liststore)
+        self.attributedialog.show(self.league, self.liststore)
 
         self.populate_data()
 
@@ -280,7 +277,7 @@ class AttributeEdit(LeagueEdit, uigtk.widgets.Grid):
         model, treeiter = self.attributes.treeselection.get_selected()
         treeiter1 = model.convert_iter_to_child_iter(treeiter)
 
-        self.attributedialog.show(LeagueEdit.leagueid, self.liststore, treeiter1)
+        self.attributedialog.show(LeagueEdit.league, self.liststore, treeiter1)
 
         self.populate_data()
 
@@ -294,8 +291,7 @@ class AttributeEdit(LeagueEdit, uigtk.widgets.Grid):
             model, treeiter = self.attributes.treeselection.get_selected()
             attributeid = model[treeiter][0]
 
-            league = data.leagues.get_league_by_id(LeagueEdit.leagueid)
-            del league.attributes[attributeid]
+            del self.league.attributes[attributeid]
 
             data.unsaved = True
 
@@ -318,11 +314,9 @@ class AttributeEdit(LeagueEdit, uigtk.widgets.Grid):
             self.attributes.buttonRemove.set_sensitive(False)
 
     def populate_data(self):
-        league = data.leagues.get_league_by_id(self.leagueid)
-
         self.liststore.clear()
 
-        for attributeid, attribute in league.attributes.items():
+        for attributeid, attribute in self.league.attributes.items():
             self.liststore.append([attributeid,
                                    attribute.year,
                                    attribute.get_club_count(),
@@ -390,21 +384,22 @@ class AttributeDialog(Gtk.Dialog):
         '''
         Load attributes for given league and attribute.
         '''
-        self.league = data.leagues.get_league_by_id(self.leagueid)
         self.attribute = self.league.attributes[self.attributeid]
+
+        self.comboboxYear.set_active_id(str(self.attribute.year))
 
         self.clublist.labelCount.set_label("%i/20 Clubs" % (self.attribute.get_club_count()))
         self.refereelist.labelCount.set_label("%i Referees" % (self.attribute.get_referee_count()))
 
         for clubid, club in data.clubs.get_clubs():
             for attributeid, attribute in club.attributes.items():
-                if attribute.league == self.leagueid:
+                if attribute.league == self.league.leagueid:
                     if attribute.year == self.attribute.year:
                         self.clublist.liststore.append([clubid, attributeid, club.name])
 
         for refereeid, referee in data.referees.get_referees():
             for attributeid, attribute in referee.attributes.items():
-                if attribute.league == self.leagueid:
+                if attribute.league == self.league.leagueid:
                     if attribute.year == self.attribute.year:
                         self.refereelist.liststore.append([refereeid, attributeid, referee.name])
 
@@ -412,6 +407,11 @@ class AttributeDialog(Gtk.Dialog):
         '''
         Save attributes for given club.
         '''
+        if not self.treeiter:
+            self.attributeid = self.league.add_attribute()
+            self.treeiter = self.model.append([self.attributeid, 0, 0, 0])
+
+        self.model[self.treeiter][1] = int(self.comboboxYear.get_active_id())
 
     def clear_attributes(self):
         '''
@@ -420,9 +420,8 @@ class AttributeDialog(Gtk.Dialog):
         self.clublist.liststore.clear()
         self.refereelist.liststore.clear()
 
-    def show(self, leagueid, model, treeiter=None):
-        self.leagueid = leagueid
-        self.league = data.leagues.get_league_by_id(self.leagueid)
+    def show(self, league, model, treeiter=None):
+        self.league = league
 
         self.model = model
         self.treeiter = treeiter
@@ -442,7 +441,6 @@ class AttributeDialog(Gtk.Dialog):
             self.set_title("Add Attribute")
             button.set_label("_Add")
 
-            league = data.leagues.get_league_by_id(leagueid)
             years = [attribute.year for attribute in league.attributes.values()]
 
             self.attributeid = None

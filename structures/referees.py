@@ -60,11 +60,12 @@ class Referees:
         Add referee to the data structure.
         '''
         refereeid = self.get_refereeid()
-        self.referees[refereeid] = Referee(refereeid)
+        referee = Referee(refereeid)
+        self.referees[refereeid] = referee
 
         data.unsaved = True
 
-        return refereeid
+        return referee
 
     def remove_referee(self, refereeid):
         '''

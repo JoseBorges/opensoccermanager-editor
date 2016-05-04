@@ -63,11 +63,12 @@ class Clubs:
         Add club to the data structure.
         '''
         clubid = self.get_clubid()
-        self.clubs[clubid] = Club(clubid)
+        club = Club(clubid)
+        self.clubs[clubid] = club
 
         data.unsaved = True
 
-        return clubid
+        return club
 
     def remove_club(self, clubid):
         '''

@@ -54,9 +54,9 @@ class Referees(uigtk.widgets.Grid):
         '''
         Add item into model and load attributes for editing.
         '''
-        refereeid = data.referees.add_referee()
+        referee = data.referees.add_referee()
 
-        treeiter = self.search.liststore.insert(0, [refereeid, ""])
+        treeiter = self.search.liststore.insert(0, [referee.refereeid, ""])
         treeiter1 = self.search.treemodelfilter.convert_child_iter_to_iter(treeiter)
         treeiter2 = self.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
         treepath = self.search.treemodelsort.get_path(treeiter2[1])
@@ -64,7 +64,7 @@ class Referees(uigtk.widgets.Grid):
         self.search.activate_row(treepath)
 
         self.refereeedit.clear_details()
-        self.refereeedit.refereeid = refereeid
+        self.refereeedit.referee = referee
 
         self.refereeedit.entryName.grab_focus()
 
@@ -134,7 +134,9 @@ class Referees(uigtk.widgets.Grid):
         if treeiter:
             refereeid = model[treeiter][0]
 
-            self.refereeedit.set_details(refereeid)
+            referee = data.referees.get_referee_by_id(refereeid)
+
+            self.refereeedit.set_details(referee)
             self.refereeedit.set_sensitive(True)
 
     def on_treeselection_changed(self, treeselection):
@@ -162,8 +164,6 @@ class Referees(uigtk.widgets.Grid):
 
 
 class RefereeEdit(uigtk.widgets.Grid):
-    refereeid = None
-
     def __init__(self):
         uigtk.widgets.Grid.__init__(self)
 
@@ -192,15 +192,13 @@ class RefereeEdit(uigtk.widgets.Grid):
         '''
         Save current values into working data.
         '''
-        referee = data.referees.get_referee_by_id(self.refereeid)
-
-        referee.name = self.entryName.get_text()
+        self.referee.name = self.entryName.get_text()
 
         model, treeiter = Referees.search.treeselection.get_selected()
         child_treeiter = model.convert_iter_to_child_iter(treeiter)
 
         liststore = model.get_model()
-        liststore[child_treeiter][1] = referee.name
+        liststore[child_treeiter][1] = self.referee.name
 
         model, treeiter = Referees.search.treeselection.get_selected()
         treepath = model.get_path(treeiter)
@@ -208,18 +206,15 @@ class RefereeEdit(uigtk.widgets.Grid):
 
         data.unsaved = True
 
-    def set_details(self, refereeid):
+    def set_details(self, referee):
         '''
         Update selected referee with details to be displayed.
         '''
         self.clear_details()
 
-        RefereeEdit.refereeid = refereeid
-        referee = data.referees.get_referee_by_id(refereeid)
-
         self.entryName.set_text(referee.name)
 
-        self.attributes.refereeid = refereeid
+        self.attributes.referee = referee
         self.attributes.populate_data()
 
     def clear_details(self):
@@ -257,7 +252,7 @@ class AttributeEdit(uigtk.widgets.Grid):
         '''
         Display add dialog for new attribute.
         '''
-        self.attributedialog.show(RefereeEdit.refereeid, self.liststore)
+        self.attributedialog.show(self.referee, self.liststore)
 
         self.populate_data()
 
@@ -268,7 +263,7 @@ class AttributeEdit(uigtk.widgets.Grid):
         model, treeiter = self.attributes.treeselection.get_selected()
         attributeid = model[treeiter][0]
 
-        self.attributedialog.show(RefereeEdit.refereeid, attributeid)
+        self.attributedialog.show(self.referee, attributeid)
 
         self.populate_data()
 
@@ -282,7 +277,7 @@ class AttributeEdit(uigtk.widgets.Grid):
             model, treeiter = self.attributes.treeselection.get_selected()
             attributeid = model[treeiter][0]
 
-            referee = data.referees.get_referee_by_id(RefereeEdit.refereeid)
+            referee = data.referees.get_referee_by_id(self.referee.refereeid)
             del referee.attributes[attributeid]
 
             data.unsaved = True
@@ -306,11 +301,9 @@ class AttributeEdit(uigtk.widgets.Grid):
             self.attributes.buttonRemove.set_sensitive(False)
 
     def populate_data(self):
-        referee = data.referees.get_referee_by_id(self.refereeid)
-
         self.liststore.clear()
 
-        for attributeid, attribute in referee.attributes.items():
+        for attributeid, attribute in self.referee.attributes.items():
             league = data.leagues.get_league_by_id(attribute.league)
 
             self.liststore.append([attributeid,
@@ -425,11 +418,8 @@ class AttributeDialog(Gtk.Dialog):
         self.leagueid = None
         self.league = None
 
-        self.refereelist.liststore.clear()
-
-    def show(self, refereeid, model, treeiter=None):
-        self.refereeid = refereeid
-        self.referee = data.referees.get_referee_by_id(self.refereeid)
+    def show(self, referee, model, treeiter=None):
+        self.referee = referee
 
         self.model = model
         self.treeiter = treeiter
@@ -450,7 +440,6 @@ class AttributeDialog(Gtk.Dialog):
             self.set_title("Add Attribute")
             button.set_label("_Add")
 
-            referee = data.referees.get_referee_by_id(refereeid)
             years = [attribute.year for attribute in referee.attributes.values()]
 
             self.attributeid = None

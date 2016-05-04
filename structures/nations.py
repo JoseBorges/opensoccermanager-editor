@@ -59,7 +59,8 @@ class Nations:
         Add nation to the data structure.
         '''
         nationid = self.get_nationid()
-        self.nations[nationid] = Nation(nationid)
+        nation = Nation(nationid)
+        self.nations[nationid] = nation
 
         data.unsaved = True
 
