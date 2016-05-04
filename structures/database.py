@@ -17,14 +17,34 @@
 
 
 import os
-import sqlite3
 
 import data
 
 
 class Database:
-    def __init__(self, filepath):
-        self.connection = sqlite3.connect(filepath)
+    def __init__(self):
+        try:
+            import sqlite3
+
+            self.initialise(sqlite3, "python-sqlite2")
+        except ImportError:
+            try:
+                import apsw
+
+                self.initialise(apsw, "apsw")
+            except ImportError:
+                print("Requires python-sqlite3 or apsw for the database.")
+                exit()
+
+    def initialise(self, binding, name):
+        self.binding = binding
+        self.binding.name = name
+
+        self.connection = None
+        self.cursor = None
+
+    def connect(self, filepath):
+        self.connection = self.binding.Connection(filepath)
         self.cursor = self.connection.cursor()
         self.cursor.execute("PRAGMA foreign_keys = on")
 
@@ -41,7 +61,8 @@ class Database:
         self.cursor.execute("CREATE TABLE IF NOT EXISTS player (id INTEGER PRIMARY KEY AUTOINCREMENT, firstname TEXT, secondname TEXT, commonname TEXT, dateofbirth TEXT, nation INTEGER, FOREIGN KEY(nation) REFERENCES nation(id))")
         self.cursor.execute("CREATE TABLE IF NOT EXISTS playerattr (id INTEGER PRIMARY KEY AUTOINCREMENT, player INTEGER, year INTEGER, club INTEGER, position TEXT, keeping INTEGER, tackling INTEGER, passing INTEGER, shooting INTEGER, heading INTEGER, pace INTEGER, stamina INTEGER, ballcontrol INTEGER, setpieces INTEGER, training INTEGER, FOREIGN KEY(player) REFERENCES player(id), FOREIGN KEY(club) REFERENCES club(id), FOREIGN KEY(year) REFERENCES year(year))")
 
-        self.connection.commit()
+        if self.binding.name == "sqlite3":
+            self.connection.commit()
 
     def save_database(self, *args):
         '''
@@ -55,7 +76,8 @@ class Database:
         data.clubs.save_data()
         data.players.save_data()
 
-        self.connection.commit()
+        if self.binding.name == "sqlite3":
+            self.connection.commit()
 
         data.unsaved = False
 

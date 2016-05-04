@@ -92,7 +92,9 @@ class Welcome(Gtk.Grid):
         if filename:
             data.window.set_title("Editor - %s" % (filename))
 
-            data.database = structures.database.Database(filename)
+            data.database = structures.database.Database()
+            data.database.connect(filename)
+
             data.years = structures.years.Years()
             data.nations = structures.nations.Nations()
             data.referees = structures.referees.Referees()
