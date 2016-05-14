@@ -100,6 +100,9 @@ class Players(uigtk.widgets.Grid):
         self.populate_data()
 
     def filter_visible(self, model, treeiter, data):
+        '''
+        Filter listing for matching criteria when searching.
+        '''
         criteria = self.search.entrySearch.get_text()
 
         visible = True
@@ -370,7 +373,7 @@ class AttributeEdit(uigtk.widgets.Grid):
         '''
         Add new attribute for loaded player.
         '''
-        self.attributedialog.show(self.player.playerid)
+        self.attributedialog.show(self.player)
 
         self.populate_data()
 
@@ -381,7 +384,7 @@ class AttributeEdit(uigtk.widgets.Grid):
         model, treeiter = self.attributes.treeselection.get_selected()
         attributeid = model[treeiter][0]
 
-        self.attributedialog.show(self.player.playerid, attributeid)
+        self.attributedialog.show(self.player, attributeid)
 
         self.populate_data()
 
@@ -406,6 +409,9 @@ class AttributeEdit(uigtk.widgets.Grid):
         self.on_edit_clicked()
 
     def on_treeselection_changed(self, treeselection):
+        '''
+        Update visible details when selection is changed.
+        '''
         model, treeiter = treeselection.get_selected()
 
         if treeiter:
@@ -511,7 +517,7 @@ class AttributeDialog(Gtk.Dialog):
         '''
         Display club selection dialog.
         '''
-        player = data.players.get_player_by_id(self.playerid)
+        player = data.players.get_player_by_id(self.player.playerid)
         attribute = player.attributes[self.attributeid]
 
         self.clubid = self.clubdialog.show(self.clubid)
@@ -524,14 +530,11 @@ class AttributeDialog(Gtk.Dialog):
         '''
         Load selected player and attribute data.
         '''
-        player = data.players.get_player_by_id(self.playerid)
-        attribute = player.attributes[self.attributeid]
+        attribute = self.player.attributes[self.attributeid]
 
         self.comboboxYear.set_active_id(str(attribute.year))
 
-        self.clubid = attribute.club
-        club = data.clubs.get_club_by_id(attribute.club)
-        self.buttonClub.set_label(attribute.get_club_name())
+        self.buttonClub.set_label(attribute.club.name)
 
         self.comboboxPosition.set_active_id(attribute.position)
 
@@ -560,8 +563,8 @@ class AttributeDialog(Gtk.Dialog):
             for year in data.years.get_years():
                 self.comboboxYear.append(str(year), str(year))
 
-    def show(self, playerid, attributeid=None):
-        self.playerid = playerid
+    def show(self, player, attributeid=None):
+        self.player = player
         self.attributeid = attributeid
 
         button = self.get_widget_for_response(Gtk.ResponseType.OK)
@@ -577,7 +580,6 @@ class AttributeDialog(Gtk.Dialog):
             self.set_title("Add Attribute")
             button.set_label("_Add")
 
-            player = data.players.get_player_by_id(self.playerid)
             years = [attribute.year for attribute in player.attributes.values()]
 
             self.attributeid = player.add_attribute()

@@ -98,6 +98,9 @@ class Stadiums(uigtk.widgets.Grid):
         self.populate_data()
 
     def filter_visible(self, model, treeiter, data):
+        '''
+        Filter listing for matching criteria when searching.
+        '''
         criteria = self.search.entrySearch.get_text()
 
         visible = True
@@ -303,6 +306,9 @@ class AttributeEdit(uigtk.widgets.Grid):
         self.on_edit_clicked()
 
     def on_treeselection_changed(self, treeselection):
+        '''
+        Update visible details when selection is changed.
+        '''
         model, treeiter = treeselection.get_selected()
 
         if treeiter:
@@ -539,9 +545,8 @@ class AttributeDialog(Gtk.Dialog):
         for building in self.buildings:
             building.set_value(0)
 
-    def show(self, stadiumid, model, treeiter=None):
-        self.stadiumid = stadiumid
-        self.stadium = data.stadiums.get_stadium_by_id(stadiumid)
+    def show(self, stadium, model, treeiter=None):
+        self.stadium = stadium
 
         self.model = model
         self.treeiter = treeiter
@@ -561,7 +566,6 @@ class AttributeDialog(Gtk.Dialog):
             self.set_title("Add Attribute")
             button.set_label("_Add")
 
-            stadium = data.stadiums.get_stadium_by_id(stadiumid)
             years = [attribute.year for attribute in stadium.attributes.values()]
 
             self.attributeid = stadium.add_attribute()

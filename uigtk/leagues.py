@@ -98,6 +98,9 @@ class Leagues(uigtk.widgets.Grid):
         self.populate_data()
 
     def filter_visible(self, model, treeiter, data):
+        '''
+        Filter listing for matching criteria when searching.
+        '''
         criteria = self.search.entrySearch.get_text()
 
         visible = True
@@ -277,7 +280,7 @@ class AttributeEdit(uigtk.widgets.Grid):
         model, treeiter = self.attributes.treeselection.get_selected()
         treeiter1 = model.convert_iter_to_child_iter(treeiter)
 
-        self.attributedialog.show(LeagueEdit.league, self.liststore, treeiter1)
+        self.attributedialog.show(self.league, self.liststore, treeiter1)
 
         self.populate_data()
 
@@ -304,6 +307,9 @@ class AttributeEdit(uigtk.widgets.Grid):
         self.on_edit_clicked()
 
     def on_treeselection_changed(self, treeselection):
+        '''
+        Update visible details when selection is changed.
+        '''
         model, treeiter = treeselection.get_selected()
 
         if treeiter:

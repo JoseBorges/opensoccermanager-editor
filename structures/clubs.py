@@ -101,7 +101,7 @@ class Clubs:
                 attribute.league = value[3]
                 attribute.manager = value[4]
                 attribute.chairman = value[5]
-                attribute.stadium = value[6]
+                attribute.stadium = data.stadiums.get_stadium_by_id(value[6])
                 attribute.reputation = value[7]
 
                 if attributeid > club.attributeid:
@@ -199,9 +199,7 @@ class Attribute(structures.attributes.Attribute):
         Return name of stadium associated with attribute.
         '''
         if self.stadium:
-            stadium = data.stadiums.get_stadium_by_id(self.stadium)
-
-            return stadium.name
+            return self.stadium.name
         else:
             return ""
 

@@ -99,7 +99,7 @@ class Players:
                 player.attributes[attributeid] = attribute
 
                 attribute.year = value[2]
-                attribute.club = value[3]
+                attribute.club = data.clubs.get_club_by_id(value[3])
                 attribute.position = value[4]
                 attribute.keeping = value[5]
                 attribute.tackling = value[6]
@@ -258,9 +258,7 @@ class Attribute(structures.attributes.Attribute):
         Return name of club associated with attribute.
         '''
         if self.club:
-            club = data.clubs.get_club_by_id(self.club)
-
-            return club.name
+            return self.club.name
         else:
             return ""
 

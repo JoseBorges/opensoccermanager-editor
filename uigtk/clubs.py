@@ -94,6 +94,9 @@ class Clubs(uigtk.widgets.Grid):
                 self.populate_data()
 
     def filter_visible(self, model, treeiter, data):
+        '''
+        Filter listing for matching criteria when searching.
+        '''
         criteria = self.search.entrySearch.get_text()
 
         visible = True
@@ -208,8 +211,8 @@ class ClubEdit(uigtk.widgets.Grid):
 
         for row in self.attributes.liststore:
             attributeid = row[0]
-            self.club.attributes[attributeid] = structures.clubs.Attribute(self.clubid)
-            attribute = self.club.attributes[attributeid]
+            attribute = structures.clubs.Attribute(self.club.clubid)
+            self.club.attributes[attributeid] = attribute
 
             attribute.year = row[1]
             attribute.manager = row[2]
@@ -289,7 +292,7 @@ class AttributeEdit(uigtk.widgets.Grid):
         '''
         Display add dialog for new attribute.
         '''
-        self.attributedialog.show(self.club.clubid, self.liststore)
+        self.attributedialog.show(self.club, self.liststore)
 
     def on_edit_clicked(self, *args):
         '''
@@ -298,7 +301,7 @@ class AttributeEdit(uigtk.widgets.Grid):
         model, treeiter = self.attributes.treeselection.get_selected()
         treeiter1 = model.convert_iter_to_child_iter(treeiter)
 
-        self.attributedialog.show(self.club.clubid, self.liststore, treeiter1)
+        self.attributedialog.show(self.club, self.liststore, treeiter1)
 
     def on_remove_clicked(self, *args):
         '''
@@ -312,7 +315,7 @@ class AttributeEdit(uigtk.widgets.Grid):
 
             self.liststore.remove(treeiter1)
 
-            data.unsaved = True
+            data.unsaved = True;
 
     def on_row_activated(self, *args):
         '''
@@ -321,6 +324,9 @@ class AttributeEdit(uigtk.widgets.Grid):
         self.on_edit_clicked()
 
     def on_treeselection_changed(self, treeselection):
+        '''
+        Update visible details when selection is changed.
+        '''
         model, treeiter = treeselection.get_selected()
 
         if treeiter:
@@ -334,20 +340,20 @@ class AttributeEdit(uigtk.widgets.Grid):
         self.liststore.clear()
 
         for attributeid, attribute in self.club.attributes.items():
+            stadium = attribute.get_stadium_name()
+
             self.liststore.append([attributeid,
                                    attribute.year,
                                    attribute.manager,
                                    attribute.chairman,
-                                   attribute.stadium,
-                                   attribute.get_stadium_name(),
+                                   attribute.stadium.stadiumid,
+                                   stadium,
                                    attribute.reputation,
                                    attribute.get_player_count()])
 
 
 class AttributeDialog(Gtk.Dialog):
     def __init__(self):
-        self.stadiumid = None
-
         Gtk.Dialog.__init__(self)
         self.set_transient_for(data.window)
         self.set_default_size(-1, 300)
@@ -432,10 +438,11 @@ class AttributeDialog(Gtk.Dialog):
         if sensitive:
             sensitive = self.entryChairman.get_text_length() > 0
 
-        if self.stadiumid:
-            sensitive = True
-        else:
-            sensitive = False
+        if sensitive:
+            if self.stadiumid:
+                sensitive = True
+            else:
+                sensitive = False
 
         self.set_response_sensitive(Gtk.ResponseType.OK, sensitive)
 
@@ -517,7 +524,8 @@ class AttributeDialog(Gtk.Dialog):
 
         self.stadiumid = self.model[self.treeiter][4]
         self.stadium = data.stadiums.get_stadium_by_id(self.stadiumid)
-        self.buttonStadium.set_label(self.attribute.get_stadium_name())
+
+        self.buttonStadium.set_label(self.attribute.stadium.name)
 
         self.spinbuttonReputation.set_value(self.model[self.treeiter][6])
 
@@ -562,15 +570,14 @@ class AttributeDialog(Gtk.Dialog):
 
         for playerid, player in data.players.get_players():
             for attributeid, attribute in player.attributes.items():
-                if attribute.club == self.clubid:
+                if attribute.club == self.club.clubid:
                     if attribute.year == self.attribute.year:
                         self.playerlist.liststore.append([playerid,
-                                                        attributeid,
-                                                        player.get_name()])
+                                                          attributeid,
+                                                          player.get_name()])
 
-    def show(self, clubid, model, treeiter=None):
-        self.clubid = clubid
-        self.club = data.clubs.get_club_by_id(self.clubid)
+    def show(self, club, model, treeiter=None):
+        self.club = club
 
         self.model = model
         self.treeiter = treeiter
@@ -590,7 +597,6 @@ class AttributeDialog(Gtk.Dialog):
             self.set_title("Add Attribute")
             button.set_label("_Add")
 
-            club = data.clubs.get_club_by_id(clubid)
             years = [attribute.year for attribute in club.attributes.values()]
 
             self.attributeid = None

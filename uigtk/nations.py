@@ -96,6 +96,9 @@ class Nations(uigtk.widgets.Grid):
         self.populate_data()
 
     def filter_visible(self, model, treeiter, data):
+        '''
+        Filter listing for matching criteria when searching.
+        '''
         criteria = self.search.entrySearch.get_text()
 
         visible = True
