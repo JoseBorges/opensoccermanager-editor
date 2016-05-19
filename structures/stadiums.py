@@ -110,7 +110,7 @@ class Stadiums:
             stadiumattrs = data.database.cursor.fetchall()
 
             for value in stadiumattrs:
-                attribute = Attribute()
+                attribute = Attribute(stadium.stadiumid)
                 attributeid = value[0]
                 stadium.attributes[attributeid] = attribute
 
@@ -167,7 +167,7 @@ class Stadium:
         Add stadium attribute to data structure.
         '''
         attributeid = self.get_attributeid()
-        self.attributes[attributeid] = Attribute()
+        self.attributes[attributeid] = Attribute(self.stadiumid)
 
         data.unsaved = True
 
@@ -189,11 +189,10 @@ class Stadium:
 
 
 class Attribute(structures.attributes.Attribute):
-    def __init__(self):
+    def __init__(self, stadiumid):
         structures.attributes.Attribute.__init__(self)
 
-        self.main = []
-        self.corner = []
+        self.stadiumid = stadiumid
 
     def get_capacity(self):
         '''

@@ -185,14 +185,14 @@ class Club:
 
 class Attribute(structures.attributes.Attribute):
     def __init__(self, clubid):
+        structures.attributes.Attribute.__init__(self)
+
         self.clubid = clubid
         self.league = None
         self.manager = ""
         self.chairman = ""
         self.stadium = None
         self.reputation = 1
-
-        structures.attributes.Attribute.__init__(self)
 
     def get_stadium_name(self):
         '''

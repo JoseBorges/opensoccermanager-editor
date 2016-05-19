@@ -240,6 +240,7 @@ class Player:
 class Attribute(structures.attributes.Attribute):
     def __init__(self):
         structures.attributes.Attribute.__init__(self)
+
         self.club = None
         self.position = ""
         self.keeping = 0

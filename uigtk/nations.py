@@ -36,7 +36,8 @@ class Nations(uigtk.widgets.Grid):
         uigtk.widgets.Grid.__init__(self)
         self.set_border_width(5)
 
-        self.search.treemodelfilter.set_visible_func(self.filter_visible, data.nations.get_nations())
+        self.search.treemodelfilter.set_visible_func(self.filter_visible,
+                                                     data.nations.get_nations())
         self.search.treeview.connect("row-activated", self.on_row_activated)
         self.search.treeselection.connect("changed", self.on_treeselection_changed)
         self.search.entrySearch.connect("activate", self.on_search_activated)

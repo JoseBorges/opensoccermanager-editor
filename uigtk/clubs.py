@@ -37,7 +37,8 @@ class Clubs(uigtk.widgets.Grid):
         uigtk.widgets.Grid.__init__(self)
         self.set_border_width(5)
 
-        self.search.treemodelfilter.set_visible_func(self.filter_visible, data.clubs.get_clubs())
+        self.search.treemodelfilter.set_visible_func(self.filter_visible,
+                                                     data.clubs.get_clubs())
         self.search.treeview.connect("row-activated", self.on_row_activated)
         self.search.treeselection.connect("changed", self.on_treeselection_changed)
         self.search.entrySearch.connect("activate", self.on_search_activated)
@@ -315,7 +316,7 @@ class AttributeEdit(uigtk.widgets.Grid):
 
             self.liststore.remove(treeiter1)
 
-            data.unsaved = True;
+            data.unsaved = True
 
     def on_row_activated(self, *args):
         '''

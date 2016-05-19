@@ -36,7 +36,8 @@ class Leagues(uigtk.widgets.Grid):
         uigtk.widgets.Grid.__init__(self)
         self.set_border_width(5)
 
-        self.search.treemodelfilter.set_visible_func(self.filter_visible, data.leagues.get_leagues())
+        self.search.treemodelfilter.set_visible_func(self.filter_visible,
+                                                     data.leagues.get_leagues())
         self.search.treeview.connect("row-activated", self.on_row_activated)
         self.search.treeselection.connect("changed", self.on_treeselection_changed)
         self.search.entrySearch.connect("activate", self.on_search_activated)

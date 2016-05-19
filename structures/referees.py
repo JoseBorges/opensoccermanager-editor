@@ -111,7 +111,6 @@ class Referees:
             else:
                 data.database.cursor.execute("INSERT INTO referee VALUES (null, ?)", (referee.name,))
 
-            '''
             data.database.cursor.execute("SELECT * FROM refereeattr WHERE referee=?", (refereeid,))
             attributes = [attribute[0] for attribute in data.database.cursor.fetchall()]
 
@@ -119,8 +118,7 @@ class Referees:
                 if attributeid in attributes:
                     data.database.cursor.execute("UPDATE refereeattr SET referee=?, year=?, league=? WHERE id=?", (refereeid, attribute.year, attribute.league, attributeid))
                 else:
-                    data.database.cursor.execute("INSERT INTO refereeattr VALUES (null, ?, ?, ?)", (attributeid, refereeid, attribute.year, attribute.league))
-            '''
+                    data.database.cursor.execute("INSERT INTO refereeattr VALUES (null, ?, ?, ?)", (refereeid, attribute.year, attribute.league))
 
         for refereeid in referees:
             if refereeid in self.deletions:
@@ -167,7 +165,7 @@ class Referee:
 
 class Attribute(structures.attributes.Attribute):
     def __init__(self, refereeid):
+        structures.attributes.Attribute.__init__(self)
+
         self.refereeid = refereeid
         self.league = None
-
-        structures.attributes.Attribute.__init__(self)

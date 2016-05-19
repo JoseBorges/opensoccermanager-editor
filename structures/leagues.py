@@ -170,9 +170,9 @@ class League:
 
 class Attribute(structures.attributes.Attribute):
     def __init__(self, leagueid):
-        self.leagueid = leagueid
-
         structures.attributes.Attribute.__init__(self)
+
+        self.leagueid = leagueid
 
     def get_club_count(self):
         '''

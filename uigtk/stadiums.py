@@ -38,7 +38,8 @@ class Stadiums(uigtk.widgets.Grid):
         uigtk.widgets.Grid.__init__(self)
         self.set_border_width(5)
 
-        self.search.treemodelfilter.set_visible_func(self.filter_visible, data.stadiums.get_stadiums())
+        self.search.treemodelfilter.set_visible_func(self.filter_visible,
+                                                     data.stadiums.get_stadiums())
         self.search.treeview.connect("row-activated", self.on_row_activated)
         self.search.treeselection.connect("changed", self.on_treeselection_changed)
         self.search.entrySearch.connect("activate", self.on_search_activated)
@@ -145,7 +146,9 @@ class Stadiums(uigtk.widgets.Grid):
         if treeiter:
             stadiumid = model[treeiter][0]
 
-            self.stadiumedit.set_details(stadiumid)
+            stadium = data.stadiums.get_stadium_by_id(stadiumid)
+
+            self.stadiumedit.set_details(stadium)
             self.stadiumedit.set_sensitive(True)
 
     def on_treeselection_changed(self, treeselection):
@@ -217,18 +220,17 @@ class StadiumEdit(uigtk.widgets.Grid):
 
         data.unsaved = True
 
-    def set_details(self, stadiumid):
+    def set_details(self, stadium):
         '''
         Update selected stadium with details to be displayed.
         '''
         self.clear_details()
 
-        StadiumEdit.stadiumid = stadiumid
-        stadium = data.stadiums.get_stadium_by_id(stadiumid)
+        self.stadium = stadium
 
         self.entryName.set_text(stadium.name)
 
-        self.attributes.stadiumid = stadiumid
+        self.attributes.stadium = stadium
         self.attributes.populate_data()
 
     def clear_details(self):
@@ -270,7 +272,7 @@ class AttributeEdit(uigtk.widgets.Grid):
         '''
         Display add dialog for new attribute.
         '''
-        self.attributedialog.show(StadiumEdit.stadiumid, self.liststore)
+        self.attributedialog.show(self.stadium, self.liststore)
 
         self.populate_data()
 
@@ -281,7 +283,7 @@ class AttributeEdit(uigtk.widgets.Grid):
         model, treeiter = self.attributes.treeselection.get_selected()
         treeiter1 = model.convert_iter_to_child_iter(treeiter)
 
-        self.attributedialog.show(StadiumEdit.stadiumid, self.liststore, treeiter1)
+        self.attributedialog.show(self.stadium, self.liststore, treeiter1)
 
         self.populate_data()
 
@@ -319,11 +321,9 @@ class AttributeEdit(uigtk.widgets.Grid):
             self.attributes.buttonRemove.set_sensitive(False)
 
     def populate_data(self):
-        stadium = data.stadiums.get_stadium_by_id(self.stadiumid)
-
         self.liststore.clear()
 
-        for attributeid, attribute in stadium.attributes.items():
+        for attributeid, attribute in self.stadium.attributes.items():
             self.liststore.append([attributeid,
                                    attribute.year,
                                    attribute.get_capacity(),
