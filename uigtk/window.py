@@ -16,6 +16,8 @@
 #  OpenSoccerManager.  If not, see <http://www.gnu.org/licenses/>.
 
 
+import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from gi.repository import GdkPixbuf
 import os
@@ -96,6 +98,8 @@ class Window(Gtk.Window):
         self.show_all()
 
         self.toolbar.set_visible(data.preferences.show_toolbar)
+        
+        Gtk.main()
 
 
 class UnsavedDialog(Gtk.MessageDialog):

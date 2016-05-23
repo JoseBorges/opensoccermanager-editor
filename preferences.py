@@ -42,7 +42,17 @@ class Preferences:
         '''
         Create the initial config when it doesn't exist.
         '''
-        self.confighandler["INTERFACE"] = {"Maximized": False}
+        self.confighandler["INTERFACE"] = {"Maximized": False,
+                                           "ConfirmRemove": True,
+                                           "ConfirmQuit": True,
+                                           "ShowToolbar": True,
+                                           "Width": 832,
+                                           "Height": 534,
+                                           "XPosition": 0,
+                                           "YPosition": 0}
+        
+        with open(self.preferences_path, "w") as config:
+            self.confighandler.write(config)
 
     def read_from_config(self):
         '''

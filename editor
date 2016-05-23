@@ -20,14 +20,9 @@
 #  MA 02110-1301, USA.
 
 
-from gi.repository import Gtk
-
 import data
 import uigtk.window
 
 
 data.window = uigtk.window.Window()
 data.window.run()
-
-if __name__ == "__main__":
-    Gtk.main()
