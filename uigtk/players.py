@@ -223,15 +223,15 @@ class PlayerEdit(uigtk.widgets.Grid):
         grid.attach(self.attributes, 0, 1, 1, 1)
 
         self.actionbuttons = uigtk.interface.ActionButtons()
-        self.actionbuttons.buttonUpdate.connect("clicked", self.on_save_clicked)
+        self.actionbuttons.buttonUpdate.connect("clicked", self.on_update_clicked)
         self.attach(self.actionbuttons, 0, 1, 1, 1)
 
         self.dialogDateOfBirth = uigtk.dateofbirth.DateOfBirth()
         self.dialogNationality = uigtk.selectors.NationSelectorDialog()
 
-    def on_save_clicked(self, *args):
+    def on_update_clicked(self, *args):
         '''
-        Save current values into working data.
+        Update current values into working data.
         '''
         self.player.first_name = self.entryFirstName.get_text()
         self.player.second_name = self.entrySecondName.get_text()

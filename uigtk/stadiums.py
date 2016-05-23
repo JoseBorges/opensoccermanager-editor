@@ -197,22 +197,20 @@ class StadiumEdit(uigtk.widgets.Grid):
         grid.attach(self.attributes, 0, 1, 1, 1)
 
         self.actionbuttons = uigtk.interface.ActionButtons()
-        self.actionbuttons.buttonUpdate.connect("clicked", self.on_save_clicked)
+        self.actionbuttons.buttonUpdate.connect("clicked", self.on_update_clicked)
         self.attach(self.actionbuttons, 0, 1, 1, 1)
 
-    def on_save_clicked(self, *args):
+    def on_update_clicked(self, *args):
         '''
-        Save current values into working data.
+        Update current values into working data.
         '''
-        stadium = data.stadiums.get_stadium_by_id(self.stadiumid)
-
-        stadium.name = self.entryName.get_text()
+        self.stadium.name = self.entryName.get_text()
 
         model, treeiter = Stadiums.search.treeselection.get_selected()
         child_treeiter = model.convert_iter_to_child_iter(treeiter)
 
         liststore = model.get_model()
-        liststore[child_treeiter][1] = stadium.name
+        liststore[child_treeiter][1] = self.stadium.name
 
         model, treeiter = Stadiums.search.treeselection.get_selected()
         treepath = model.get_path(treeiter)

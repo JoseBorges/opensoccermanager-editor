@@ -189,12 +189,12 @@ class RefereeEdit(uigtk.widgets.Grid):
         grid.attach(self.attributes, 0, 1, 1, 1)
 
         self.actionbuttons = uigtk.interface.ActionButtons()
-        self.actionbuttons.buttonUpdate.connect("clicked", self.on_save_clicked)
+        self.actionbuttons.buttonUpdate.connect("clicked", self.on_update_clicked)
         self.attach(self.actionbuttons, 0, 1, 1, 1)
 
-    def on_save_clicked(self, *args):
+    def on_update_clicked(self, *args):
         '''
-        Save current values into working data.
+        Update current values into working data.
         '''
         self.referee.name = self.entryName.get_text()
 

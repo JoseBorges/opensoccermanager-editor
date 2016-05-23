@@ -56,7 +56,7 @@ class Nations(uigtk.widgets.Grid):
         Add item into model and load attributes for editing.
         '''
         nation = data.nations.add_nation()
-
+        
         treeiter = self.search.liststore.insert(0, [nation.nationid, ""])
         treeiter1 = self.search.treemodelfilter.convert_child_iter_to_iter(treeiter)
         treeiter2 = self.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
@@ -198,12 +198,12 @@ class NationEdit(uigtk.widgets.Grid):
         grid.attach(self.entryDenonym, 1, 1, 1, 1)
 
         self.actionbuttons = uigtk.interface.ActionButtons()
-        self.actionbuttons.buttonUpdate.connect("clicked", self.on_save_clicked)
+        self.actionbuttons.buttonUpdate.connect("clicked", self.on_update_clicked)
         self.attach(self.actionbuttons, 0, 1, 1, 1)
 
-    def on_save_clicked(self, *args):
+    def on_update_clicked(self, *args):
         '''
-        Save updated details to working data, and update search list.
+        Update current values into working data.
         '''
         nation = data.nations.get_nation_by_id(self.nationid)
 

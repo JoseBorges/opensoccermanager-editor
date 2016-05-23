@@ -64,7 +64,7 @@ class Nations:
 
         data.unsaved = True
 
-        return nationid
+        return nation
 
     def remove_nation(self, nationid):
         '''
