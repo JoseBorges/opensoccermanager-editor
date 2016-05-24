@@ -80,6 +80,9 @@ class SelectorDialog(Gtk.Dialog):
         return visible
 
     def on_treeselection_changed(self, treeselection):
+        '''
+        Update Select button based on current selection.
+        '''
         model, treeiter = treeselection.get_selected()
         treeview = treeselection.get_tree_view()
 
@@ -131,6 +134,15 @@ class SelectorDialog(Gtk.Dialog):
                     self.treeview.scroll_to_cell(treepath)
                     self.treeview.set_cursor(treepath, None, False)
                     self.treeselection.select_path(treepath)
+    
+    def populate_data(self):
+        '''
+        Populate selection dialog with data values.
+        '''
+        self.liststore.clear()
+
+        for itemid, item in self.values():
+            self.liststore.append([itemid, item.name])
 
     def display(self):
         self.show_all()
@@ -142,9 +154,13 @@ class PlayerSelectorDialog(SelectorDialog):
         SelectorDialog.__init__(self)
         self.set_title("Select Player")
 
-        self.treemodelfilter.set_visible_func(self.filter_visible, data.players)
+        self.treemodelfilter.set_visible_func(self.filter_visible, 
+                                              data.players.get_players)
 
     def populate_data(self):
+        '''
+        Populate selection dialog with data values.
+        '''
         self.liststore.clear()
 
         for playerid, player in data.players.get_players():
@@ -169,16 +185,13 @@ class PlayerSelectorDialog(SelectorDialog):
 
 class ClubSelectorDialog(SelectorDialog):
     def __init__(self):
+        self.values = data.clubs.get_clubs
+        
         SelectorDialog.__init__(self)
         self.set_title("Select Club")
 
-        self.treemodelfilter.set_visible_func(self.filter_visible, data.clubs)
-
-    def populate_data(self):
-        self.liststore.clear()
-
-        for clubid, club in data.clubs.get_clubs():
-            self.liststore.append([clubid, club.name])
+        self.treemodelfilter.set_visible_func(self.filter_visible, 
+                                              data.clubs.get_clubs)
 
     def show(self, clubid=None):
         self.clubid = clubid
@@ -199,21 +212,13 @@ class ClubSelectorDialog(SelectorDialog):
 
 class NationSelectorDialog(SelectorDialog):
     def __init__(self):
-        self.nationid = None
+        self.values = data.nations.get_nations
 
         SelectorDialog.__init__(self)
         self.set_title("Select Nation")
 
-        self.treemodelfilter.set_visible_func(self.filter_visible, data.nations)
-
-    def populate_data(self):
-        self.liststore.clear()
-
-        for nationid, nation in data.nations.get_nations():
-            self.liststore.append([nationid, nation.name])
-
-    def get_nationality(self):
-        return self.nationid
+        self.treemodelfilter.set_visible_func(self.filter_visible, 
+                                              data.nations.get_nations)
 
     def show(self, nationid=None):
         self.nationid = nationid
@@ -234,16 +239,13 @@ class NationSelectorDialog(SelectorDialog):
 
 class StadiumSelectorDialog(SelectorDialog):
     def __init__(self):
+        self.values = data.stadiums.get_stadiums
+        
         SelectorDialog.__init__(self)
         self.set_title("Select Nation")
 
-        self.treemodelfilter.set_visible_func(self.filter_visible, data.stadiums)
-
-    def populate_data(self):
-        self.liststore.clear()
-
-        for stadiumid, stadium in data.stadiums.get_stadiums():
-            self.liststore.append([stadiumid, stadium.name])
+        self.treemodelfilter.set_visible_func(self.filter_visible, 
+                                              data.stadiums.get_stadiums)
 
     def show(self, stadiumid=None):
         self.populate_data()
@@ -268,7 +270,13 @@ class Button(Gtk.Button):
         self.set_use_underline(True)
 
     def get_selected_item(self):
+        '''
+        Retured selected item from button.
+        '''
         return self.selected
 
     def set_selected_item(self, label):
+        '''
+        Set label of selected item.
+        '''
         self.set_label(label)
