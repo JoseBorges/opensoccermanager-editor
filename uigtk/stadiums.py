@@ -298,6 +298,8 @@ class AttributeEdit(uigtk.widgets.Grid):
             self.liststore.remove(treeiter1)
 
             data.unsaved = True
+            
+            self.populate_data()
 
     def on_row_activated(self, *args):
         '''

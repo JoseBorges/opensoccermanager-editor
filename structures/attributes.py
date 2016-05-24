@@ -32,16 +32,3 @@ class Attribute:
         self.attributeid += 1
 
         return self.attributeid
-
-    def add_attribute(self):
-        attributeid = self.get_attributeid()
-        self.attributes[attributeid] = Attribute()
-
-        data.unsaved = True
-
-        return attributeid
-
-    def remove_attribute(self, attributeid):
-        del self.attributes[attributeid]
-
-        data.unsaved = True

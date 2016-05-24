@@ -331,8 +331,8 @@ class AttributeEdit(uigtk.widgets.Grid):
     def __init__(self):
         uigtk.widgets.Grid.__init__(self)
 
-        self.liststore = Gtk.ListStore(int, int, str, int, str, int, int, int,
-                                       int, int, int, int, int, int, int)
+        self.liststore = Gtk.ListStore(int, int, int, str, int, str, int, int, 
+                                       int, int, int, int, int, int, int, int)
         self.treemodelsort = Gtk.TreeModelSort(self.liststore)
         self.treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
 
@@ -347,25 +347,25 @@ class AttributeEdit(uigtk.widgets.Grid):
 
         treeviewcolumn = uigtk.widgets.TreeViewColumn(title="Year", column=1)
         self.attributes.treeview.append_column(treeviewcolumn)
-        treeviewcolumn = uigtk.widgets.TreeViewColumn(title="Club", column=2)
+        treeviewcolumn = uigtk.widgets.TreeViewColumn(title="Club", column=3)
         treeviewcolumn.set_expand(True)
         self.attributes.treeview.append_column(treeviewcolumn)
-        treeviewcolumn = uigtk.widgets.TreeViewColumn(title="Age", column=3)
+        treeviewcolumn = uigtk.widgets.TreeViewColumn(title="Age", column=4)
         self.attributes.treeview.append_column(treeviewcolumn)
-        treeviewcolumn = uigtk.widgets.TreeViewColumn(title="Position", column=4)
+        treeviewcolumn = uigtk.widgets.TreeViewColumn(title="Position", column=5)
         self.attributes.treeview.append_column(treeviewcolumn)
 
         skills = structures.skills.Skills()
 
-        for count, item in enumerate(skills.get_short_skills(), start=5):
+        for count, item in enumerate(skills.get_short_skills(), start=6):
             label = Gtk.Label("%s" % (item))
-            label.set_tooltip_text(skills.get_skills()[count - 5])
+            label.set_tooltip_text(skills.get_skills()[count - 6])
             label.show()
             treeviewcolumn = uigtk.widgets.TreeViewColumn(column=count)
             treeviewcolumn.set_widget(label)
             self.attributes.treeview.append_column(treeviewcolumn)
 
-        treeviewcolumn = uigtk.widgets.TreeViewColumn(title="Training", column=14)
+        treeviewcolumn = uigtk.widgets.TreeViewColumn(title="Training", column=15)
         self.attributes.treeview.append_column(treeviewcolumn)
 
         self.attributedialog = AttributeDialog()
@@ -374,20 +374,16 @@ class AttributeEdit(uigtk.widgets.Grid):
         '''
         Add new attribute for loaded player.
         '''
-        self.attributedialog.show(self.player)
-
-        self.populate_data()
+        self.attributedialog.show(self.player, self.liststore)
 
     def on_edit_clicked(self, *args):
         '''
         Handle editing of attribute for selected item.
         '''
         model, treeiter = self.attributes.treeselection.get_selected()
-        attributeid = model[treeiter][0]
+        treeiter1 = model.convert_iter_to_child_iter(treeiter)
 
-        self.attributedialog.show(self.player, attributeid)
-
-        self.populate_data()
+        self.attributedialog.show(self.player, self.liststore, treeiter1)
 
     def on_remove_clicked(self, *args):
         '''
@@ -401,6 +397,8 @@ class AttributeEdit(uigtk.widgets.Grid):
 
             self.player.remove_attribute(attributeid)
 
+            data.unsaved = True
+            
             self.populate_data()
 
     def on_row_activated(self, *args):
@@ -430,6 +428,7 @@ class AttributeEdit(uigtk.widgets.Grid):
 
             self.liststore.append([attributeid,
                                    attribute.year,
+                                   attribute.club.clubid,
                                    club,
                                    self.player.get_age(attribute.year),
                                    attribute.position,
@@ -454,6 +453,7 @@ class AttributeDialog(Gtk.Dialog):
         self.add_button("_Cancel", Gtk.ResponseType.CANCEL)
         self.add_button("_Add", Gtk.ResponseType.OK)
         self.set_default_response(Gtk.ResponseType.OK)
+        self.set_response_sensitive(Gtk.ResponseType.OK, False)
         self.vbox.set_border_width(5)
 
         grid = uigtk.widgets.Grid()
@@ -463,6 +463,7 @@ class AttributeDialog(Gtk.Dialog):
         grid.attach(label, 0, 0, 1, 1)
         self.comboboxYear = Gtk.ComboBoxText()
         self.comboboxYear.set_tooltip_text("Year to add attribute data.")
+        self.comboboxYear.connect("changed", self.update_commit_button)
         label.set_mnemonic_widget(self.comboboxYear)
         grid.attach(self.comboboxYear, 1, 0, 1, 1)
 
@@ -513,19 +514,31 @@ class AttributeDialog(Gtk.Dialog):
         grid.attach(self.spinbuttonTraining, 1, 13, 1, 1)
 
         self.clubdialog = uigtk.selectors.ClubSelectorDialog()
+    
+    def update_commit_button(self, *args):
+        '''
+        Update sensitivity of commit button on dialog.
+        '''
+        if self.comboboxYear.get_active_id():
+            sensitive = True
+        else:
+            sensitive = False
+        
+        self.set_response_sensitive(Gtk.ResponseType.OK, sensitive)
 
     def on_club_clicked(self, *args):
         '''
         Display club selection dialog.
         '''
-        player = data.players.get_player_by_id(self.player.playerid)
-        attribute = player.attributes[self.attributeid]
-
-        self.clubid = self.clubdialog.show(self.clubid)
+        if self.attributeid:
+            attribute = self.player.attributes[self.attributeid]
+            self.clubid = self.clubdialog.show(attribute.club)
+        else:
+            self.clubid = self.clubdialog.show()
 
         if self.clubid:
-            club = data.clubs.get_club_by_id(self.clubid)
-            self.buttonClub.set_label(club.name)
+            self.club = data.clubs.get_club_by_id(self.clubid)
+            self.buttonClub.set_label(self.club.name)
 
     def load_attributes(self):
         '''
@@ -543,6 +556,68 @@ class AttributeDialog(Gtk.Dialog):
             self.spinbuttonSkills[count].set_value(skill)
 
         self.spinbuttonTraining.set_value(attribute.training)
+    
+    def save_attributes(self):
+        '''
+        Save attributes for given club.
+        '''
+        if not self.treeiter:
+            self.attributeid = self.player.add_attribute()
+            self.treeiter = self.model.append([self.attributeid,
+                                               0,
+                                               0,
+                                               "",
+                                               0,
+                                               "",
+                                               0,
+                                               0,
+                                               0,
+                                               0,
+                                               0,
+                                               0,
+                                               0,
+                                               0,
+                                               0,
+                                               0])
+    
+        self.model[self.treeiter][1] = int(self.comboboxYear.get_active_id())
+        self.model[self.treeiter][2] = self.club.clubid
+        self.model[self.treeiter][3] = self.club.name
+        self.model[self.treeiter][4] = 0 #Age
+        self.model[self.treeiter][5] = self.comboboxPosition.get_active_id()
+        self.model[self.treeiter][6] = self.spinbuttonSkills[0].get_value_as_int()
+        self.model[self.treeiter][7] = self.spinbuttonSkills[1].get_value_as_int()
+        self.model[self.treeiter][8] = self.spinbuttonSkills[2].get_value_as_int()
+        self.model[self.treeiter][9] = self.spinbuttonSkills[3].get_value_as_int()
+        self.model[self.treeiter][10] = self.spinbuttonSkills[4].get_value_as_int()
+        self.model[self.treeiter][11] = self.spinbuttonSkills[5].get_value_as_int()
+        self.model[self.treeiter][12] = self.spinbuttonSkills[6].get_value_as_int()
+        self.model[self.treeiter][13] = self.spinbuttonSkills[7].get_value_as_int()
+        self.model[self.treeiter][14] = self.spinbuttonSkills[8].get_value_as_int()
+        self.model[self.treeiter][15] = self.spinbuttonTraining.get_value_as_int()
+    
+    def clear_attributes(self):
+        '''
+        Reset data entry fields on close of dialog.
+        '''
+        self.comboboxYear.set_active(0)
+        self.buttonClub.set_label("")
+        self.comboboxPosition.set_active(0)
+        
+        self.spinbuttonSkills[0].set_value(0)
+        self.spinbuttonSkills[1].set_value(0)
+        self.spinbuttonSkills[2].set_value(0)
+        self.spinbuttonSkills[3].set_value(0)
+        self.spinbuttonSkills[4].set_value(0)
+        self.spinbuttonSkills[5].set_value(0)
+        self.spinbuttonSkills[6].set_value(0)
+        self.spinbuttonSkills[7].set_value(0)
+        self.spinbuttonSkills[8].set_value(0)
+        
+        self.spinbuttonTraining.set_value(1)
+        
+        self.clubid = None
+        self.club = None
 
     def populate_years(self, years=None):
         '''
@@ -564,15 +639,19 @@ class AttributeDialog(Gtk.Dialog):
             for year in data.years.get_years():
                 self.comboboxYear.append(str(year), str(year))
 
-    def show(self, player, attributeid=None):
+    def show(self, player, model, treeiter=None):
         self.player = player
-        self.attributeid = attributeid
+        
+        self.model = model
+        self.treeiter = treeiter
 
         button = self.get_widget_for_response(Gtk.ResponseType.OK)
 
-        if attributeid:
+        if treeiter:
             self.set_title("Edit Attribute")
             button.set_label("_Edit")
+            
+            self.attributeid = model[treeiter][0]
 
             self.populate_years()
 
@@ -583,30 +662,19 @@ class AttributeDialog(Gtk.Dialog):
 
             years = [attribute.year for attribute in player.attributes.values()]
 
-            self.attributeid = player.add_attribute()
+            self.attributeid = None
 
             self.clubid = None
+            self.club = None
 
             self.populate_years(years)
+        
+        self.update_commit_button()
 
         self.show_all()
 
         if self.run() == Gtk.ResponseType.OK:
-            player = data.players.get_player_by_id(self.playerid)
-            attribute = player.attributes[self.attributeid]
+            self.save_attributes()
 
-            attribute.year = int(self.comboboxYear.get_active_id())
-            attribute.club = self.clubid
-            attribute.position = self.comboboxPosition.get_active_text()
-            attribute.keeping = self.spinbuttonSkills[0].get_value_as_int()
-            attribute.tackling = self.spinbuttonSkills[1].get_value_as_int()
-            attribute.passing = self.spinbuttonSkills[2].get_value_as_int()
-            attribute.shooting = self.spinbuttonSkills[3].get_value_as_int()
-            attribute.heading = self.spinbuttonSkills[4].get_value_as_int()
-            attribute.pace = self.spinbuttonSkills[5].get_value_as_int()
-            attribute.stamina = self.spinbuttonSkills[6].get_value_as_int()
-            attribute.ball_control = self.spinbuttonSkills[7].get_value_as_int()
-            attribute.set_pieces = self.spinbuttonSkills[8].get_value_as_int()
-            attribute.training = self.spinbuttonTraining.get_value_as_int()
-
+        self.clear_attributes()
         self.hide()
