@@ -87,7 +87,10 @@ class Players:
             player.first_name = item[1]
             player.second_name = item[2]
             player.common_name = item[3]
-            player.date_of_birth = tuple(map(int, item[4].split("-")))
+
+            if item[4]:
+                player.date_of_birth = tuple(map(int, item[4].split("-")))
+
             player.nationality = item[5]
 
             data.database.cursor.execute("SELECT * FROM playerattr WHERE player=?", (player.playerid,))
@@ -123,7 +126,10 @@ class Players:
         players = [player[0] for player in data.database.cursor.fetchall()]
 
         for playerid, player in self.players.items():
-            date_of_birth = "%i-%i-%i" % (player.date_of_birth)
+            if player.date_of_birth:
+                date_of_birth = "%i-%i-%i" % (player.date_of_birth)
+            else:
+                date_of_birth = None
 
             if playerid in players:
                 data.database.cursor.execute("UPDATE player SET firstname=?, secondname=?, commonname=?, dateofbirth=?, nation=? WHERE id=?", (player.first_name, player.second_name, player.common_name, date_of_birth, player.nationality, playerid))
@@ -139,8 +145,13 @@ class Players:
                 else:
                     data.database.cursor.execute("INSERT INTO playerattr VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (playerid, attribute.year, attribute.club, attribute.position, attribute.keeping, attribute.tackling, attribute.passing, attribute.shooting, attribute.heading, attribute.pace, attribute.stamina, attribute.ball_control, attribute.set_pieces, attribute.training))
 
+            for attributeid in attributes:
+                if attributeid not in player.attributes.keys():
+                    data.database.cursor.execute("DELETE FROM playerattr WHERE id=?", (attributeid,))
+
         for playerid in players:
             if playerid in self.deletions:
+                data.database.cursor.execute("DELETE FROM playerattr WHERE player=?", (playerid,))
                 data.database.cursor.execute("DELETE FROM player WHERE id=?", (playerid,))
 
         self.deletions.clear()

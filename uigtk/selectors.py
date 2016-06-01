@@ -134,7 +134,7 @@ class SelectorDialog(Gtk.Dialog):
                     self.treeview.scroll_to_cell(treepath)
                     self.treeview.set_cursor(treepath, None, False)
                     self.treeselection.select_path(treepath)
-    
+
     def populate_data(self):
         '''
         Populate selection dialog with data values.
@@ -154,7 +154,7 @@ class PlayerSelectorDialog(SelectorDialog):
         SelectorDialog.__init__(self)
         self.set_title("Select Player")
 
-        self.treemodelfilter.set_visible_func(self.filter_visible, 
+        self.treemodelfilter.set_visible_func(self.filter_visible,
                                               data.players.get_players)
 
     def populate_data(self):
@@ -186,11 +186,11 @@ class PlayerSelectorDialog(SelectorDialog):
 class ClubSelectorDialog(SelectorDialog):
     def __init__(self):
         self.values = data.clubs.get_clubs
-        
+
         SelectorDialog.__init__(self)
         self.set_title("Select Club")
 
-        self.treemodelfilter.set_visible_func(self.filter_visible, 
+        self.treemodelfilter.set_visible_func(self.filter_visible,
                                               data.clubs.get_clubs)
 
     def show(self, clubid=None):
@@ -217,8 +217,11 @@ class NationSelectorDialog(SelectorDialog):
         SelectorDialog.__init__(self)
         self.set_title("Select Nation")
 
-        self.treemodelfilter.set_visible_func(self.filter_visible, 
+        self.treemodelfilter.set_visible_func(self.filter_visible,
                                               data.nations.get_nations)
+
+    def get_nationality(self):
+        return self.nationid
 
     def show(self, nationid=None):
         self.nationid = nationid
@@ -240,11 +243,11 @@ class NationSelectorDialog(SelectorDialog):
 class StadiumSelectorDialog(SelectorDialog):
     def __init__(self):
         self.values = data.stadiums.get_stadiums
-        
+
         SelectorDialog.__init__(self)
         self.set_title("Select Nation")
 
-        self.treemodelfilter.set_visible_func(self.filter_visible, 
+        self.treemodelfilter.set_visible_func(self.filter_visible,
                                               data.stadiums.get_stadiums)
 
     def show(self, stadiumid=None):

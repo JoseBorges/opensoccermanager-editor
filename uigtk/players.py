@@ -240,6 +240,24 @@ class PlayerEdit(uigtk.widgets.Grid):
         self.player.date_of_birth = self.dialogDateOfBirth.get_date_of_birth()
         self.player.nationality = self.dialogNationality.get_nationality()
 
+        for row in self.attributes.liststore:
+            attribute = self.player.attributes[row[0]]
+
+            attribute.year = row[1]
+            attribute.club = row[2]
+            attribute.date_of_birth = row[3]
+            attribute.position = row[5]
+            attribute.keeping = row[6]
+            attribute.tackling = row[7]
+            attribute.passing = row[8]
+            attribute.shooting = row[9]
+            attribute.heading = row[10]
+            attribute.pace = row[11]
+            attribute.stamina = row[12]
+            attribute.ball_control = row[13]
+            attribute.set_pieces = row[14]
+            attribute.training = row[15]
+
         model, treeiter = Players.search.treeselection.get_selected()
         child_treeiter = model.convert_iter_to_child_iter(treeiter)
 
@@ -424,11 +442,16 @@ class AttributeEdit(uigtk.widgets.Grid):
         self.liststore.clear()
 
         for attributeid, attribute in self.player.attributes.items():
-            club = attribute.get_club_name()
+            if attribute.club:
+                clubid = attribute.club.clubid
+                club = attribute.get_club_name()
+            else:
+                clubid = None
+                club = ""
 
             self.liststore.append([attributeid,
                                    attribute.year,
-                                   attribute.club.clubid,
+                                   clubid,
                                    club,
                                    self.player.get_age(attribute.year),
                                    attribute.position,
@@ -471,10 +494,17 @@ class AttributeDialog(Gtk.Dialog):
         grid.attach(label, 0, 1, 1, 1)
         self.buttonClub = Gtk.Button("")
         self.buttonClub.set_hexpand(True)
+        self.buttonClub.set_sensitive(False)
         self.buttonClub.connect("clicked", self.on_club_clicked)
         self.buttonClub.set_tooltip_text("Club player is contracted to.")
         label.set_mnemonic_widget(self.buttonClub)
         grid.attach(self.buttonClub, 1, 1, 2, 1)
+
+        self.checkbuttonFreeAgent = uigtk.widgets.CheckButton("_Free Agent")
+        self.checkbuttonFreeAgent.set_active(True)
+        self.checkbuttonFreeAgent.set_tooltip_text("Set whether player is uncontracted.")
+        self.checkbuttonFreeAgent.connect("toggled", self.on_free_agent_toggled)
+        grid.attach(self.checkbuttonFreeAgent, 3, 1, 1, 1)
 
         label = uigtk.widgets.Label("_Position", leftalign=True)
         grid.attach(label, 0, 2, 1, 1)
@@ -540,6 +570,16 @@ class AttributeDialog(Gtk.Dialog):
             self.club = data.clubs.get_club_by_id(clubid)
             self.buttonClub.set_label(self.club.name)
 
+    def on_free_agent_toggled(self, checkbutton):
+        '''
+        Toggle sensitivity on free agent toggle.
+        '''
+        if checkbutton.get_active():
+            self.buttonClub.set_sensitive(False)
+            self.buttonClub.set_label("")
+        else:
+            self.buttonClub.set_sensitive(True)
+
     def load_attributes(self):
         '''
         Load selected player and attribute data.
@@ -549,7 +589,10 @@ class AttributeDialog(Gtk.Dialog):
 
         self.comboboxYear.set_active_id(str(attribute.year))
 
-        self.buttonClub.set_label(attribute.club.name)
+        if attribute.club:
+            self.buttonClub.set_label(attribute.club.name)
+        else:
+            self.buttonClub.set_label("")
 
         self.comboboxPosition.set_active_id(attribute.position)
 
@@ -581,10 +624,20 @@ class AttributeDialog(Gtk.Dialog):
                                                0,
                                                0,
                                                0])
+        else:
+            self.attributeid = self.model[self.treeiter][0]
+            attribute = self.player.attributes[self.attributeid]
+
+        if self.club:
+            clubid = self.club.clubid
+            club = self.club.name
+        else:
+            clubid = None
+            club = ""
 
         self.model[self.treeiter][1] = int(self.comboboxYear.get_active_id())
-        self.model[self.treeiter][2] = self.club.clubid
-        self.model[self.treeiter][3] = self.club.name
+        self.model[self.treeiter][2] = clubid
+        self.model[self.treeiter][3] = club
         self.model[self.treeiter][4] = self.player.get_age(attribute.year)
         self.model[self.treeiter][5] = self.comboboxPosition.get_active_id()
         self.model[self.treeiter][6] = self.spinbuttonSkills[0].get_value_as_int()

@@ -33,7 +33,7 @@ class Database:
 
                 self.initialise(apsw, "apsw")
             except ImportError:
-                print("Requires python-sqlite3 or apsw for the database.")
+                print("Requires python-sqlite2 or apsw for the database.")
                 exit()
 
     def initialise(self, binding, name):
@@ -76,7 +76,7 @@ class Database:
         data.clubs.save_data()
         data.players.save_data()
 
-        if self.binding.name == "sqlite3":
+        if self.binding.name == "python-sqlite2":
             self.connection.commit()
 
         data.unsaved = False
