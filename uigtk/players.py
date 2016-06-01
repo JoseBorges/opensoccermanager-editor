@@ -244,7 +244,7 @@ class PlayerEdit(uigtk.widgets.Grid):
             attribute = self.player.attributes[row[0]]
 
             attribute.year = row[1]
-            attribute.club = row[2]
+            attribute.club = data.clubs.get_club_by_id(row[2])
             attribute.date_of_birth = row[3]
             attribute.position = row[5]
             attribute.keeping = row[6]
@@ -280,7 +280,9 @@ class PlayerEdit(uigtk.widgets.Grid):
             date_of_birth = self.player.date_of_birth
 
         if self.dialogDateOfBirth.show(date_of_birth):
+            date_of_birth = self.dialogDateOfBirth.get_date_of_birth()
             self.update_date_of_birth_button()
+            self.attributes.populate_data(date_of_birth[0])
 
     def on_nationality_clicked(self, *args):
         '''
@@ -438,7 +440,7 @@ class AttributeEdit(uigtk.widgets.Grid):
             self.attributes.buttonEdit.set_sensitive(False)
             self.attributes.buttonRemove.set_sensitive(False)
 
-    def populate_data(self):
+    def populate_data(self, year=None):
         self.liststore.clear()
 
         for attributeid, attribute in self.player.attributes.items():
@@ -453,7 +455,7 @@ class AttributeEdit(uigtk.widgets.Grid):
                                    attribute.year,
                                    clubid,
                                    club,
-                                   self.player.get_age(attribute.year),
+                                   self.player.get_age(attribute.year, year),
                                    attribute.position,
                                    attribute.keeping,
                                    attribute.tackling,
@@ -561,13 +563,11 @@ class AttributeDialog(Gtk.Dialog):
         Display club selection dialog.
         '''
         if self.attributeid:
-            attribute = self.player.attributes[self.attributeid]
-            clubid = self.clubdialog.show(attribute.club)
+            self.club = self.clubdialog.show(self.club)
         else:
-            clubid = self.clubdialog.show()
+            self.club = self.clubdialog.show()
 
-        if clubid:
-            self.club = data.clubs.get_club_by_id(clubid)
+        if self.club:
             self.buttonClub.set_label(self.club.name)
 
     def on_free_agent_toggled(self, checkbutton):
@@ -577,6 +577,7 @@ class AttributeDialog(Gtk.Dialog):
         if checkbutton.get_active():
             self.buttonClub.set_sensitive(False)
             self.buttonClub.set_label("")
+            self.club = None
         else:
             self.buttonClub.set_sensitive(True)
 
@@ -591,8 +592,10 @@ class AttributeDialog(Gtk.Dialog):
 
         if attribute.club:
             self.buttonClub.set_label(attribute.club.name)
+            self.checkbuttonFreeAgent.set_active(False)
         else:
             self.buttonClub.set_label("")
+            self.checkbuttonFreeAgent.set_active(True)
 
         self.comboboxPosition.set_active_id(attribute.position)
 
@@ -606,9 +609,9 @@ class AttributeDialog(Gtk.Dialog):
         Save attributes for given club.
         '''
         if not self.treeiter:
-            self.attributeid = self.player.add_attribute()
-            attribute = self.player.attributes[self.attributeid]
-            self.treeiter = self.model.append([self.attributeid,
+            self.attribute = self.player.add_attribute()
+            attribute = self.player.attributes[self.attribute.attributeid]
+            self.treeiter = self.model.append([self.attribute.attributeid,
                                                0,
                                                0,
                                                "",

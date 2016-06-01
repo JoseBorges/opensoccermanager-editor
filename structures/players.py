@@ -97,8 +97,8 @@ class Players:
             playerattrs = data.database.cursor.fetchall()
 
             for value in playerattrs:
-                attribute = Attribute()
                 attributeid = value[0]
+                attribute = Attribute(attributeid)
                 player.attributes[attributeid] = attribute
 
                 attribute.year = value[2]
@@ -141,9 +141,9 @@ class Players:
 
             for attributeid, attribute in player.attributes.items():
                 if attributeid in attributes:
-                    data.database.cursor.execute("UPDATE playerattr SET player=?, year=?, club=?, position=?, keeping=?, tackling=?, passing=?, shooting=?, heading=?, pace=?, stamina=?, ballcontrol=?, setpieces=?, training=? WHERE id=?", (playerid, attribute.year, attribute.club, attribute.position, attribute.keeping, attribute.tackling, attribute.passing, attribute.shooting, attribute.heading, attribute.pace, attribute.stamina, attribute.ball_control, attribute.set_pieces, attribute.training, attributeid))
+                    data.database.cursor.execute("UPDATE playerattr SET player=?, year=?, club=?, position=?, keeping=?, tackling=?, passing=?, shooting=?, heading=?, pace=?, stamina=?, ballcontrol=?, setpieces=?, training=? WHERE id=?", (playerid, attribute.year, attribute.club.clubid, attribute.position, attribute.keeping, attribute.tackling, attribute.passing, attribute.shooting, attribute.heading, attribute.pace, attribute.stamina, attribute.ball_control, attribute.set_pieces, attribute.training, attributeid))
                 else:
-                    data.database.cursor.execute("INSERT INTO playerattr VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (playerid, attribute.year, attribute.club, attribute.position, attribute.keeping, attribute.tackling, attribute.passing, attribute.shooting, attribute.heading, attribute.pace, attribute.stamina, attribute.ball_control, attribute.set_pieces, attribute.training))
+                    data.database.cursor.execute("INSERT INTO playerattr VALUES (null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", (playerid, attribute.year, attribute.club.clubid, attribute.position, attribute.keeping, attribute.tackling, attribute.passing, attribute.shooting, attribute.heading, attribute.pace, attribute.stamina, attribute.ball_control, attribute.set_pieces, attribute.training))
 
             for attributeid in attributes:
                 if attributeid not in player.attributes.keys():
@@ -209,11 +209,14 @@ class Player:
         else:
             return None
 
-    def get_age(self, year):
+    def get_age(self, year, birth=None):
         '''
         Return age of player calculated from passed year attribute value.
         '''
-        age = year - self.date_of_birth[0]
+        if birth:
+            age = year - birth
+        else:
+            age = year - self.date_of_birth[0]
 
         if (self.date_of_birth[1], self.date_of_birth[2]) > (8, 1):
             age -= 1
@@ -233,11 +236,12 @@ class Player:
         Add player attribute to data structure.
         '''
         attributeid = self.get_attributeid()
-        self.attributes[attributeid] = Attribute()
+        attribute = Attribute(attributeid)
+        self.attributes[attributeid] = attribute
 
         data.unsaved = True
 
-        return attributeid
+        return attribute
 
     def remove_attribute(self, attributeid):
         '''
@@ -249,8 +253,9 @@ class Player:
 
 
 class Attribute(structures.attributes.Attribute):
-    def __init__(self):
+    def __init__(self, attributeid):
         structures.attributes.Attribute.__init__(self)
+        self.attributeid = attributeid
 
         self.club = None
         self.position = ""

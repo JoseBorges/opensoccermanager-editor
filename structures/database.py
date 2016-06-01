@@ -61,8 +61,10 @@ class Database:
         self.cursor.execute("CREATE TABLE IF NOT EXISTS player (id INTEGER PRIMARY KEY AUTOINCREMENT, firstname TEXT, secondname TEXT, commonname TEXT, dateofbirth TEXT, nation INTEGER, FOREIGN KEY(nation) REFERENCES nation(id))")
         self.cursor.execute("CREATE TABLE IF NOT EXISTS playerattr (id INTEGER PRIMARY KEY AUTOINCREMENT, player INTEGER, year INTEGER, club INTEGER, position TEXT, keeping INTEGER, tackling INTEGER, passing INTEGER, shooting INTEGER, heading INTEGER, pace INTEGER, stamina INTEGER, ballcontrol INTEGER, setpieces INTEGER, training INTEGER, FOREIGN KEY(player) REFERENCES player(id), FOREIGN KEY(club) REFERENCES club(id), FOREIGN KEY(year) REFERENCES year(year))")
 
-        if self.binding.name == "sqlite3":
+        if self.binding.name == "python-sqlite2":
             self.connection.commit()
+
+        data.unsaved = False
 
     def save_database(self, *args):
         '''

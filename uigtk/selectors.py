@@ -193,21 +193,23 @@ class ClubSelectorDialog(SelectorDialog):
         self.treemodelfilter.set_visible_func(self.filter_visible,
                                               data.clubs.get_clubs)
 
-    def show(self, clubid=None):
-        self.clubid = clubid
+    def show(self, club=None):
+        self.club = club
 
         self.populate_data()
-        self.select_item(clubid)
+        self.select_item(club.clubid)
 
         self.display()
 
         if self.run() == Gtk.ResponseType.OK:
             model, treeiter = self.treeselection.get_selected()
-            self.clubid = model[treeiter][0]
+            clubid = model[treeiter][0]
+
+            self.club = data.clubs.get_club_by_id(clubid)
 
         self.hide()
 
-        return self.clubid
+        return self.club
 
 
 class NationSelectorDialog(SelectorDialog):
