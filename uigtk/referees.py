@@ -34,13 +34,10 @@ class Referees(uigtk.widgets.Grid):
         uigtk.widgets.Grid.__init__(self)
         self.set_border_width(5)
 
-        self.search = uigtk.search.Search(data.referees.get_referees)
-        self.search.treeview.connect("row-activated", self.on_row_activated)
-        self.search.treeselection.connect("changed", self.on_treeselection_changed)
-        self.search.entrySearch.connect("activate", self.on_search_activated)
-        self.search.entrySearch.connect("changed", self.on_search_changed)
-        self.search.entrySearch.connect("icon-press", self.on_search_cleared)
-        self.attach(self.search, 0, 0, 1, 1)
+        Referees.search = uigtk.search.Search(data.referees.get_referees)
+        Referees.search.treeview.connect("row-activated", self.on_row_activated)
+        Referees.search.treeselection.connect("changed", self.on_treeselection_changed)
+        self.attach(Referees.search, 0, 0, 1, 1)
 
         self.refereeedit = RefereeEdit()
         self.refereeedit.set_sensitive(False)
@@ -54,12 +51,12 @@ class Referees(uigtk.widgets.Grid):
         '''
         referee = data.referees.add_referee()
 
-        treeiter = self.search.liststore.insert(0, [referee.refereeid, ""])
-        treeiter1 = self.search.treemodelfilter.convert_child_iter_to_iter(treeiter)
-        treeiter2 = self.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
-        treepath = self.search.treemodelsort.get_path(treeiter2[1])
+        treeiter = Referees.search.liststore.insert(0, [referee.refereeid, ""])
+        treeiter1 = Referees.search.treemodelfilter.convert_child_iter_to_iter(treeiter)
+        treeiter2 = Referees.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
+        treepath = Referees.search.treemodelsort.get_path(treeiter2[1])
 
-        self.search.activate_row(treepath)
+        Referees.search.activate_row(treepath)
 
         self.refereeedit.clear_details()
         self.refereeedit.referee = referee
@@ -70,7 +67,7 @@ class Referees(uigtk.widgets.Grid):
         '''
         Query removal of selected referee if dialog enabled.
         '''
-        model, treeiter = self.search.treeselection.get_selected()
+        model, treeiter = Referees.search.treeselection.get_selected()
 
         if treeiter:
             refereeid = model[treeiter][0]
@@ -118,12 +115,12 @@ class Referees(uigtk.widgets.Grid):
             self.refereeedit.set_sensitive(False)
 
     def populate_data(self):
-        self.search.liststore.clear()
+        Referees.search.liststore.clear()
 
         for refereeid, referee in data.referees.get_referees():
-            self.search.liststore.append([refereeid, referee.name])
+            Referees.search.liststore.append([refereeid, referee.name])
 
-        self.search.activate_first_item()
+        Referees.search.activate_first_item()
 
 
 class RefereeEdit(uigtk.widgets.Grid):

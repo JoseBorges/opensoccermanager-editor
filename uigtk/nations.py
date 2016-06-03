@@ -34,13 +34,10 @@ class Nations(uigtk.widgets.Grid):
         uigtk.widgets.Grid.__init__(self)
         self.set_border_width(5)
 
-        self.search = uigtk.search.Search(data.nations.get_nations)
-        self.search.treeview.connect("row-activated", self.on_row_activated)
-        self.search.treeselection.connect("changed", self.on_treeselection_changed)
-        self.search.entrySearch.connect("activate", self.on_search_activated)
-        self.search.entrySearch.connect("changed", self.on_search_changed)
-        self.search.entrySearch.connect("icon-press", self.on_search_cleared)
-        self.attach(self.search, 0, 0, 1, 1)
+        Nations.search = uigtk.search.Search(data.nations.get_nations)
+        Nations.search.treeview.connect("row-activated", self.on_row_activated)
+        Nations.search.treeselection.connect("changed", self.on_treeselection_changed)
+        self.attach(Nations.search, 0, 0, 1, 1)
 
         self.nationedit = NationEdit()
         self.nationedit.set_sensitive(False)
@@ -54,12 +51,12 @@ class Nations(uigtk.widgets.Grid):
         '''
         nation = data.nations.add_nation()
 
-        treeiter = self.search.liststore.insert(0, [nation.nationid, ""])
-        treeiter1 = self.search.treemodelfilter.convert_child_iter_to_iter(treeiter)
-        treeiter2 = self.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
-        treepath = self.search.treemodelsort.get_path(treeiter2[1])
+        treeiter = Nations.search.liststore.insert(0, [nation.nationid, ""])
+        treeiter1 = Nations.search.treemodelfilter.convert_child_iter_to_iter(treeiter)
+        treeiter2 = Nations.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
+        treepath = Nations.search.treemodelsort.get_path(treeiter2[1])
 
-        self.search.activate_row(treepath)
+        Nations.search.activate_row(treepath)
 
         self.nationedit.clear_details()
         self.nationedit.nation = nation
@@ -70,7 +67,7 @@ class Nations(uigtk.widgets.Grid):
         '''
         Query removal of selected nation if dialog enabled.
         '''
-        model, treeiter = self.search.treeselection.get_selected()
+        model, treeiter = Nations.search.treeselection.get_selected()
 
         if treeiter:
             nationid = model[treeiter][0]
@@ -127,12 +124,12 @@ class Nations(uigtk.widgets.Grid):
             self.nationedit.set_sensitive(False)
 
     def populate_data(self):
-        self.search.liststore.clear()
+        Nations.search.liststore.clear()
 
         for nationid, nation in data.nations.get_nations():
-            self.search.liststore.append([nationid, nation.name])
+            Nations.search.liststore.append([nationid, nation.name])
 
-        self.search.activate_first_item()
+        Nations.search.activate_first_item()
 
 
 class NationEdit(uigtk.widgets.Grid):

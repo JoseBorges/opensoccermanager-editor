@@ -38,10 +38,10 @@ class Players(uigtk.widgets.Grid):
         uigtk.widgets.Grid.__init__(self)
         self.set_border_width(5)
 
-        self.search = uigtk.search.Search(data.players.get_players)
-        self.search.treeview.connect("row-activated", self.on_row_activated)
-        self.search.treeselection.connect("changed", self.on_treeselection_changed)
-        self.attach(self.search, 0, 0, 1, 1)
+        Players.search = uigtk.search.Search(data.players.get_players)
+        Players.search.treeview.connect("row-activated", self.on_row_activated)
+        Players.search.treeselection.connect("changed", self.on_treeselection_changed)
+        self.attach(Players.search, 0, 0, 1, 1)
 
         self.playeredit = PlayerEdit()
         self.playeredit.set_sensitive(False)
@@ -55,12 +55,12 @@ class Players(uigtk.widgets.Grid):
         '''
         player = data.players.add_player()
 
-        treeiter = self.search.liststore.insert(0, [player.playerid, ""])
-        treeiter1 = self.search.treemodelfilter.convert_child_iter_to_iter(treeiter)
-        treeiter2 = self.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
-        treepath = self.search.treemodelsort.get_path(treeiter2[1])
+        treeiter = Players.search.liststore.insert(0, [player.playerid, ""])
+        treeiter1 = Players.search.treemodelfilter.convert_child_iter_to_iter(treeiter)
+        treeiter2 = Players.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
+        treepath = Players.search.treemodelsort.get_path(treeiter2[1])
 
-        self.search.activate_row(treepath)
+        Players.search.activate_row(treepath)
 
         self.playeredit.clear_details()
         self.playeredit.player = player
@@ -71,7 +71,7 @@ class Players(uigtk.widgets.Grid):
         '''
         Query removal of selected player if dialog enabled.
         '''
-        model, treeiter = self.search.treeselection.get_selected()
+        model, treeiter = Players.search.treeselection.get_selected()
 
         if treeiter:
             playerid = model[treeiter][0]
@@ -125,12 +125,12 @@ class Players(uigtk.widgets.Grid):
             self.playeredit.set_sensitive(False)
 
     def populate_data(self):
-        self.search.liststore.clear()
+        Players.search.liststore.clear()
 
         for playerid, player in data.players.get_players():
-            self.search.liststore.append([playerid, player.get_name()])
+            Players.search.liststore.append([playerid, player.get_name()])
 
-        self.search.activate_first_item()
+        Players.search.activate_first_item()
 
 
 class PlayerEdit(uigtk.widgets.Grid):

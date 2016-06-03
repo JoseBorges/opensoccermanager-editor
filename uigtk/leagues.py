@@ -34,13 +34,10 @@ class Leagues(uigtk.widgets.Grid):
         uigtk.widgets.Grid.__init__(self)
         self.set_border_width(5)
 
-        self.search = uigtk.search.Search(data.leagues.get_leagues)
-        self.search.treeview.connect("row-activated", self.on_row_activated)
-        self.search.treeselection.connect("changed", self.on_treeselection_changed)
-        self.search.entrySearch.connect("activate", self.on_search_activated)
-        self.search.entrySearch.connect("changed", self.on_search_changed)
-        self.search.entrySearch.connect("icon-press", self.on_search_cleared)
-        self.attach(self.search, 0, 0, 1, 1)
+        Leagues.search = uigtk.search.Search(data.leagues.get_leagues)
+        Leagues.search.treeview.connect("row-activated", self.on_row_activated)
+        Leagues.search.treeselection.connect("changed", self.on_treeselection_changed)
+        self.attach(Leagues.search, 0, 0, 1, 1)
 
         self.leagueedit = LeagueEdit()
         self.leagueedit.set_sensitive(False)
@@ -54,12 +51,12 @@ class Leagues(uigtk.widgets.Grid):
         '''
         league = data.leagues.add_league()
 
-        treeiter = self.search.liststore.insert(0, [league.leagueid, ""])
-        treeiter1 = self.search.treemodelfilter.convert_child_iter_to_iter(treeiter)
-        treeiter2 = self.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
-        treepath = self.search.treemodelsort.get_path(treeiter2[1])
+        treeiter = Leagues.search.liststore.insert(0, [league.leagueid, ""])
+        treeiter1 = Leagues.search.treemodelfilter.convert_child_iter_to_iter(treeiter)
+        treeiter2 = Leagues.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
+        treepath = Leagues.search.treemodelsort.get_path(treeiter2[1])
 
-        self.search.activate_row(treepath)
+        Leagues.search.activate_row(treepath)
 
         self.leagueedit.clear_details()
         self.leagueedit.league = league
@@ -70,7 +67,7 @@ class Leagues(uigtk.widgets.Grid):
         '''
         Query removal of selected player if dialog enabled.
         '''
-        model, treeiter = self.search.treeselection.get_selected()
+        model, treeiter = Leagues.search.treeselection.get_selected()
 
         if treeiter:
             leagueid = model[treeiter][0]
@@ -126,12 +123,12 @@ class Leagues(uigtk.widgets.Grid):
             self.leagueedit.set_sensitive(False)
 
     def populate_data(self):
-        self.search.liststore.clear()
+        Leagues.search.liststore.clear()
 
         for leagueid, league in data.leagues.get_leagues():
-            self.search.liststore.append([leagueid, league.name])
+            Leagues.search.liststore.append([leagueid, league.name])
 
-        self.search.activate_first_item()
+        Leagues.search.activate_first_item()
 
 
 class LeagueEdit(uigtk.widgets.Grid):

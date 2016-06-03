@@ -35,13 +35,10 @@ class Clubs(uigtk.widgets.Grid):
         uigtk.widgets.Grid.__init__(self)
         self.set_border_width(5)
 
-        self.search = uigtk.search.Search(data.clubs.get_clubs)
-        self.search.treeview.connect("row-activated", self.on_row_activated)
-        self.search.treeselection.connect("changed", self.on_treeselection_changed)
-        self.search.entrySearch.connect("activate", self.on_search_activated)
-        self.search.entrySearch.connect("changed", self.on_search_changed)
-        self.search.entrySearch.connect("icon-press", self.on_search_cleared)
-        self.attach(self.search, 0, 0, 1, 1)
+        Clubs.search = uigtk.search.Search(data.clubs.get_clubs)
+        Clubs.search.treeview.connect("row-activated", self.on_row_activated)
+        Clubs.search.treeselection.connect("changed", self.on_treeselection_changed)
+        self.attach(Clubs.search, 0, 0, 1, 1)
 
         self.clubedit = ClubEdit()
         self.clubedit.set_sensitive(False)
@@ -55,12 +52,12 @@ class Clubs(uigtk.widgets.Grid):
         '''
         club = data.clubs.add_club()
 
-        treeiter = self.search.liststore.insert(0, [club.clubid, ""])
-        treeiter1 = self.search.treemodelfilter.convert_child_iter_to_iter(treeiter)
-        treeiter2 = self.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
-        treepath = self.search.treemodelsort.get_path(treeiter2[1])
+        treeiter = Clubs.search.liststore.insert(0, [club.clubid, ""])
+        treeiter1 = Clubs.search.treemodelfilter.convert_child_iter_to_iter(treeiter)
+        treeiter2 = Clubs.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
+        treepath = Clubs.search.treemodelsort.get_path(treeiter2[1])
 
-        self.search.activate_row(treepath)
+        Clubs.search.activate_row(treepath)
 
         self.clubedit.clear_details()
         self.clubedit.club = club
@@ -71,7 +68,7 @@ class Clubs(uigtk.widgets.Grid):
         '''
         Query removal of selected club if dialog enabled.
         '''
-        model, treeiter = self.search.treeselection.get_selected()
+        model, treeiter = Clubs.search.treeselection.get_selected()
 
         if treeiter:
             clubid = model[treeiter][0]
@@ -121,12 +118,12 @@ class Clubs(uigtk.widgets.Grid):
             self.clubedit.set_sensitive(False)
 
     def populate_data(self):
-        self.search.liststore.clear()
+        Clubs.search.liststore.clear()
 
         for clubid, club in data.clubs.get_clubs():
-            self.search.liststore.append([clubid, club.name])
+            Clubs.search.liststore.append([clubid, club.name])
 
-        self.search.activate_first_item()
+        Clubs.search.activate_first_item()
 
 
 class ClubEdit(uigtk.widgets.Grid):

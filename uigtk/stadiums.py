@@ -36,13 +36,10 @@ class Stadiums(uigtk.widgets.Grid):
         uigtk.widgets.Grid.__init__(self)
         self.set_border_width(5)
 
-        self.search = uigtk.search.Search(data.stadiums.get_stadiums)
-        self.search.treeview.connect("row-activated", self.on_row_activated)
-        self.search.treeselection.connect("changed", self.on_treeselection_changed)
-        self.search.entrySearch.connect("activate", self.on_search_activated)
-        self.search.entrySearch.connect("changed", self.on_search_changed)
-        self.search.entrySearch.connect("icon-press", self.on_search_cleared)
-        self.attach(self.search, 0, 0, 1, 1)
+        Stadiums.search = uigtk.search.Search(data.stadiums.get_stadiums)
+        Stadiums.search.treeview.connect("row-activated", self.on_row_activated)
+        Stadiums.search.treeselection.connect("changed", self.on_treeselection_changed)
+        self.attach(Stadiums.search, 0, 0, 1, 1)
 
         self.stadiumedit = StadiumEdit()
         self.stadiumedit.set_sensitive(False)
@@ -56,12 +53,12 @@ class Stadiums(uigtk.widgets.Grid):
         '''
         stadium = data.stadiums.add_stadium()
 
-        treeiter = self.search.liststore.insert(0, [stadium.stadiumid, ""])
-        treeiter1 = self.search.treemodelfilter.convert_child_iter_to_iter(treeiter)
-        treeiter2 = self.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
-        treepath = self.search.treemodelsort.get_path(treeiter2[1])
+        treeiter = Stadiums.search.liststore.insert(0, [stadium.stadiumid, ""])
+        treeiter1 = Stadiums.search.treemodelfilter.convert_child_iter_to_iter(treeiter)
+        treeiter2 = Stadiums.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
+        treepath = Stadiums.search.treemodelsort.get_path(treeiter2[1])
 
-        self.search.activate_row(treepath)
+        Stadiums.search.activate_row(treepath)
 
         self.stadiumedit.clear_details()
         self.stadiumedit.stadium = stadium
@@ -72,7 +69,7 @@ class Stadiums(uigtk.widgets.Grid):
         '''
         Query removal of selected player if dialog enabled.
         '''
-        model, treeiter = self.search.treeselection.get_selected()
+        model, treeiter = Stadiums.search.treeselection.get_selected()
 
         if treeiter:
             stadiumid = model[treeiter][0]
@@ -126,12 +123,12 @@ class Stadiums(uigtk.widgets.Grid):
             self.stadiumedit.set_sensitive(False)
 
     def populate_data(self):
-        self.search.liststore.clear()
+        Stadiums.search.liststore.clear()
 
         for stadiumid, stadium in data.stadiums.get_stadiums():
-            self.search.liststore.append([stadiumid, stadium.name])
+            Stadiums.search.liststore.append([stadiumid, stadium.name])
 
-        self.search.activate_first_item()
+        Stadiums.search.activate_first_item()
 
 
 class StadiumEdit(uigtk.widgets.Grid):

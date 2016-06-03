@@ -40,10 +40,8 @@ class Search(Gtk.Grid):
         self.treemodelsort = Gtk.TreeModelSort(self.treemodelfilter)
         self.treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
 
-        self.treeview = Gtk.TreeView()
+        self.treeview = uigtk.widgets.TreeView()
         self.treeview.set_vexpand(True)
-        self.treeview.set_enable_search(False)
-        self.treeview.set_search_column(-1)
         self.treeview.set_headers_visible(False)
         self.treeview.set_model(self.treemodelsort)
         self.treeview.set_activate_on_single_click(True)
@@ -51,7 +49,7 @@ class Search(Gtk.Grid):
         self.treeview.connect("key-press-event", self.on_key_press_event)
         scrolledwindow.add(self.treeview)
 
-        self.treeselection = self.treeview.get_selection()
+        self.treeselection = self.treeview.treeselection
 
         self.treeviewcolumn = uigtk.widgets.TreeViewColumn(column=1)
         self.treeview.append_column(self.treeviewcolumn)
