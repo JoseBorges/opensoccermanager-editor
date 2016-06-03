@@ -31,14 +31,11 @@ import uigtk.widgets
 class Clubs(uigtk.widgets.Grid):
     name = "Clubs"
 
-    search = uigtk.search.Search()
-
     def __init__(self):
         uigtk.widgets.Grid.__init__(self)
         self.set_border_width(5)
 
-        self.search.treemodelfilter.set_visible_func(self.filter_visible,
-                                                     data.clubs.get_clubs())
+        self.search = uigtk.search.Search(data.clubs.get_clubs)
         self.search.treeview.connect("row-activated", self.on_row_activated)
         self.search.treeselection.connect("changed", self.on_treeselection_changed)
         self.search.entrySearch.connect("activate", self.on_search_activated)
@@ -93,44 +90,6 @@ class Clubs(uigtk.widgets.Grid):
             else:
                 data.clubs.remove_club(clubid)
                 self.populate_data()
-
-    def filter_visible(self, model, treeiter, data):
-        '''
-        Filter listing for matching criteria when searching.
-        '''
-        criteria = self.search.entrySearch.get_text()
-
-        visible = True
-
-        for search in (model[treeiter][1],):
-            search = "".join((c for c in unicodedata.normalize("NFD", search) if unicodedata.category(c) != "Mn"))
-
-            if not re.findall(criteria, search, re.IGNORECASE):
-                visible = False
-                break
-
-        return visible
-
-    def on_search_activated(self, *args):
-        '''
-        Apply search filter when entry is activated.
-        '''
-        self.search.treemodelfilter.refilter()
-
-    def on_search_changed(self, entry):
-        '''
-        Reset search filter when last character is cleared.
-        '''
-        if entry.get_text_length() == 0:
-            self.search.treemodelfilter.refilter()
-
-    def on_search_cleared(self, entry, position, event):
-        '''
-        Reset search filter when clear icon is clicked.
-        '''
-        if position == Gtk.EntryIconPosition.SECONDARY:
-            entry.set_text("")
-            self.search.treemodelfilter.refilter()
 
     def on_row_activated(self, treeview, treepath, treeviewcolumn):
         '''
@@ -317,7 +276,7 @@ class AttributeEdit(uigtk.widgets.Grid):
             self.liststore.remove(treeiter1)
 
             data.unsaved = True
-            
+
             self.populate_data()
 
     def on_row_activated(self, *args):
@@ -357,6 +316,8 @@ class AttributeEdit(uigtk.widgets.Grid):
 
 class AttributeDialog(Gtk.Dialog):
     def __init__(self):
+        self.stadium = None
+
         Gtk.Dialog.__init__(self)
         self.set_transient_for(data.window)
         self.set_default_size(-1, 300)
@@ -442,7 +403,7 @@ class AttributeDialog(Gtk.Dialog):
             sensitive = self.entryChairman.get_text_length() > 0
 
         if sensitive:
-            if self.stadiumid:
+            if self.stadium:
                 sensitive = True
             else:
                 sensitive = False
@@ -486,12 +447,11 @@ class AttributeDialog(Gtk.Dialog):
         '''
         if self.attributeid:
             attribute = self.club.attributes[self.attributeid]
-            self.stadiumid = self.stadiumdialog.show(stadiumid=attribute.stadium)
+            self.stadium = self.stadiumdialog.show(stadium=attribute.stadium)
         else:
-            self.stadiumid = self.stadiumdialog.show()
+            self.stadium = self.stadiumdialog.show()
 
-        if self.stadiumid:
-            self.stadium = data.stadiums.get_stadium_by_id(self.stadiumid)
+        if self.stadium:
             self.buttonStadium.set_label(self.stadium.name)
             self.update_commit_button()
 
@@ -525,10 +485,10 @@ class AttributeDialog(Gtk.Dialog):
         self.entryManager.set_text(self.model[self.treeiter][2])
         self.entryChairman.set_text(self.model[self.treeiter][3])
 
-        self.stadiumid = self.model[self.treeiter][4]
-        self.stadium = data.stadiums.get_stadium_by_id(self.stadiumid)
+        stadiumid = self.model[self.treeiter][4]
+        self.stadium = data.stadiums.get_stadium_by_id(stadiumid)
 
-        self.buttonStadium.set_label(self.attribute.stadium.name)
+        self.buttonStadium.set_label(self.model[self.treeiter][5])
 
         self.spinbuttonReputation.set_value(self.model[self.treeiter][6])
 
@@ -545,7 +505,7 @@ class AttributeDialog(Gtk.Dialog):
         self.model[self.treeiter][1] = int(self.comboboxYear.get_active_id())
         self.model[self.treeiter][2] = self.entryManager.get_text()
         self.model[self.treeiter][3] = self.entryChairman.get_text()
-        self.model[self.treeiter][4] = self.stadiumid
+        self.model[self.treeiter][4] = self.stadium.stadiumid
         self.model[self.treeiter][5] = self.stadium.name
         self.model[self.treeiter][6] = self.spinbuttonReputation.get_value_as_int()
 
@@ -558,7 +518,6 @@ class AttributeDialog(Gtk.Dialog):
         self.buttonStadium.set_label("")
         self.spinbuttonReputation.set_value(1)
 
-        self.stadiumid = None
         self.stadium = None
 
         self.playerlist.liststore.clear()
@@ -604,7 +563,6 @@ class AttributeDialog(Gtk.Dialog):
 
             self.attributeid = None
 
-            self.stadiumid = None
             self.stadium = None
 
             self.populate_years(years)

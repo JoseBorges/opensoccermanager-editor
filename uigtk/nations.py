@@ -30,14 +30,11 @@ import uigtk.widgets
 class Nations(uigtk.widgets.Grid):
     name = "Nations"
 
-    search = uigtk.search.Search()
-
     def __init__(self):
         uigtk.widgets.Grid.__init__(self)
         self.set_border_width(5)
 
-        self.search.treemodelfilter.set_visible_func(self.filter_visible,
-                                                     data.nations.get_nations())
+        self.search = uigtk.search.Search(data.nations.get_nations)
         self.search.treeview.connect("row-activated", self.on_row_activated)
         self.search.treeselection.connect("changed", self.on_treeselection_changed)
         self.search.entrySearch.connect("activate", self.on_search_activated)
@@ -56,7 +53,7 @@ class Nations(uigtk.widgets.Grid):
         Add item into model and load attributes for editing.
         '''
         nation = data.nations.add_nation()
-        
+
         treeiter = self.search.liststore.insert(0, [nation.nationid, ""])
         treeiter1 = self.search.treemodelfilter.convert_child_iter_to_iter(treeiter)
         treeiter2 = self.search.treemodelsort.convert_child_iter_to_iter(treeiter1[1])
@@ -95,44 +92,6 @@ class Nations(uigtk.widgets.Grid):
         data.nations.remove_nation(nationid)
 
         self.populate_data()
-
-    def filter_visible(self, model, treeiter, data):
-        '''
-        Filter listing for matching criteria when searching.
-        '''
-        criteria = self.search.entrySearch.get_text()
-
-        visible = True
-
-        for search in (model[treeiter][1],):
-            search = "".join((c for c in unicodedata.normalize("NFD", search) if unicodedata.category(c) != "Mn"))
-
-            if not re.findall(criteria, search, re.IGNORECASE):
-                visible = False
-                break
-
-        return visible
-
-    def on_search_activated(self, *args):
-        '''
-        Apply search filter when entry is activated.
-        '''
-        self.search.treemodelfilter.refilter()
-
-    def on_search_changed(self, entry):
-        '''
-        Reset search filter when last character is cleared.
-        '''
-        if entry.get_text_length() == 0:
-            self.search.treemodelfilter.refilter()
-
-    def on_search_cleared(self, entry, position, event):
-        '''
-        Reset search filter when clear icon is clicked.
-        '''
-        if position == Gtk.EntryIconPosition.SECONDARY:
-            entry.set_text("")
-            self.search.treemodelfilter.refilter()
 
     def on_row_activated(self, treeview, treepath, treeviewcolumn):
         '''

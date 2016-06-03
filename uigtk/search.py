@@ -17,13 +17,15 @@
 
 
 from gi.repository import Gtk, Gdk
+import re
+import unicodedata
 
 import data
 import uigtk.widgets
 
 
 class Search(Gtk.Grid):
-    def __init__(self):
+    def __init__(self, values):
         Gtk.Grid.__init__(self)
         self.set_row_spacing(5)
 
@@ -34,6 +36,7 @@ class Search(Gtk.Grid):
 
         self.liststore = Gtk.ListStore(int, str)
         self.treemodelfilter = self.liststore.filter_new()
+        self.treemodelfilter.set_visible_func(self.filter_visible, values)
         self.treemodelsort = Gtk.TreeModelSort(self.treemodelfilter)
         self.treemodelsort.set_sort_column_id(1, Gtk.SortType.ASCENDING)
 
@@ -54,6 +57,9 @@ class Search(Gtk.Grid):
         self.treeview.append_column(self.treeviewcolumn)
 
         self.entrySearch = Gtk.SearchEntry()
+        self.entrySearch.connect("activate", self.on_search_activated)
+        self.entrySearch.connect("changed", self.on_search_changed)
+        self.entrySearch.connect("icon-press", self.on_search_cleared)
         self.attach(self.entrySearch, 0, 1, 1, 1)
 
         self.contextmenu = ContextMenu()
@@ -90,11 +96,47 @@ class Search(Gtk.Grid):
         '''
         Handle use of Delete key on search list items.
         '''
-        key = Gdk.keyval_name(event.keyval)
-
-        if key == "Delete":
+        if Gdk.keyval_name(event.keyval) == "Delete":
             page = data.window.notebook.get_page_type()
             page.remove_item()
+
+    def on_search_activated(self, *args):
+        '''
+        Apply search filter when entry is activated.
+        '''
+        self.treemodelfilter.refilter()
+
+    def on_search_changed(self, entry):
+        '''
+        Reset search filter when last character is cleared.
+        '''
+        if entry.get_text_length() == 0:
+            self.treemodelfilter.refilter()
+
+    def on_search_cleared(self, entry, position, event):
+        '''
+        Reset search filter when clear icon is clicked.
+        '''
+        if position == Gtk.EntryIconPosition.SECONDARY:
+            entry.set_text("")
+            self.treemodelfilter.refilter()
+
+    def filter_visible(self, model, treeiter, data):
+        '''
+        Filter listing for matching criteria when searching.
+        '''
+        criteria = self.entrySearch.get_text()
+
+        visible = True
+
+        for search in (model[treeiter][1],):
+            search = "".join((c for c in unicodedata.normalize("NFD", search) if unicodedata.category(c) != "Mn"))
+
+            if not re.findall(criteria, search, re.IGNORECASE):
+                visible = False
+                break
+
+        return visible
 
 
 class ContextMenu(Gtk.Menu):

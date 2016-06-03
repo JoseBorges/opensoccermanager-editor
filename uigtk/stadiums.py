@@ -32,14 +32,11 @@ import uigtk.widgets
 class Stadiums(uigtk.widgets.Grid):
     name = "Stadiums"
 
-    search = uigtk.search.Search()
-
     def __init__(self):
         uigtk.widgets.Grid.__init__(self)
         self.set_border_width(5)
 
-        self.search.treemodelfilter.set_visible_func(self.filter_visible,
-                                                     data.stadiums.get_stadiums())
+        self.search = uigtk.search.Search(data.stadiums.get_stadiums)
         self.search.treeview.connect("row-activated", self.on_row_activated)
         self.search.treeselection.connect("changed", self.on_treeselection_changed)
         self.search.entrySearch.connect("activate", self.on_search_activated)
@@ -97,44 +94,6 @@ class Stadiums(uigtk.widgets.Grid):
         data.stadiums.remove_stadium(stadiumid)
 
         self.populate_data()
-
-    def filter_visible(self, model, treeiter, data):
-        '''
-        Filter listing for matching criteria when searching.
-        '''
-        criteria = self.search.entrySearch.get_text()
-
-        visible = True
-
-        for search in (model[treeiter][1],):
-            search = "".join((c for c in unicodedata.normalize("NFD", search) if unicodedata.category(c) != "Mn"))
-
-            if not re.findall(criteria, search, re.IGNORECASE):
-                visible = False
-                break
-
-        return visible
-
-    def on_search_activated(self, *args):
-        '''
-        Apply search filter when entry is activated.
-        '''
-        self.search.treemodelfilter.refilter()
-
-    def on_search_changed(self, entry):
-        '''
-        Reset search filter when last character is cleared.
-        '''
-        if entry.get_text_length() == 0:
-            self.search.treemodelfilter.refilter()
-
-    def on_search_cleared(self, entry, position, event):
-        '''
-        Reset search filter when clear icon is clicked.
-        '''
-        if position == Gtk.EntryIconPosition.SECONDARY:
-            entry.set_text("")
-            self.search.treemodelfilter.refilter()
 
     def on_row_activated(self, treeview, treepath, treeviewcolumn):
         '''
@@ -298,7 +257,7 @@ class AttributeEdit(uigtk.widgets.Grid):
             self.liststore.remove(treeiter1)
 
             data.unsaved = True
-            
+
             self.populate_data()
 
     def on_row_activated(self, *args):

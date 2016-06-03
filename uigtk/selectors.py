@@ -197,7 +197,9 @@ class ClubSelectorDialog(SelectorDialog):
         self.club = club
 
         self.populate_data()
-        self.select_item(club.clubid)
+
+        if club:
+            self.select_item(club.clubid)
 
         self.display()
 
@@ -252,9 +254,9 @@ class StadiumSelectorDialog(SelectorDialog):
         self.treemodelfilter.set_visible_func(self.filter_visible,
                                               data.stadiums.get_stadiums)
 
-    def show(self, stadiumid=None):
+    def show(self, stadium=None):
         self.populate_data()
-        self.select_item(stadiumid)
+        self.select_item(stadium)
 
         self.display()
 
@@ -262,9 +264,11 @@ class StadiumSelectorDialog(SelectorDialog):
             model, treeiter = self.treeselection.get_selected()
             stadiumid = model[treeiter][0]
 
+            stadium = data.stadiums.get_stadium_by_id(stadiumid)
+
         self.hide()
 
-        return stadiumid
+        return stadium
 
 
 class Button(Gtk.Button):
