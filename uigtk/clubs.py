@@ -174,7 +174,7 @@ class ClubEdit(uigtk.widgets.Grid):
             attribute.year = row[1]
             attribute.manager = row[2]
             attribute.chairman = row[3]
-            attribute.stadium = row[4]
+            attribute.stadium = data.stadiums.get_stadium_by_id(row[4])
             attribute.reputation = row[6]
 
         model, treeiter = Clubs.search.treeselection.get_selected()

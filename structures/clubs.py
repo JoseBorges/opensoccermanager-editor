@@ -125,9 +125,9 @@ class Clubs:
 
             for attributeid, attribute in club.attributes.items():
                 if attributeid in attributes:
-                    data.database.cursor.execute("UPDATE clubattr SET club=?, year=?, league=?, manager=?, chairman=?, stadium=?, reputation=? WHERE id=?", (clubid, attribute.year, attribute.league, attribute.manager, attribute.chairman, attribute.stadium, attribute.reputation, attributeid))
+                    data.database.cursor.execute("UPDATE clubattr SET club=?, year=?, league=?, manager=?, chairman=?, stadium=?, reputation=? WHERE id=?", (clubid, attribute.year, attribute.league, attribute.manager, attribute.chairman, attribute.stadium.stadiumid, attribute.reputation, attributeid))
                 else:
-                    data.database.cursor.execute("INSERT INTO clubattr VALUES (null, ?, ?, ?, ?, ?, ?, ?)", (clubid, attribute.year, attribute.league, attribute.manager, attribute.chairman, attribute.stadium, attribute.reputation))
+                    data.database.cursor.execute("INSERT INTO clubattr VALUES (null, ?, ?, ?, ?, ?, ?, ?)", (clubid, attribute.year, attribute.league, attribute.manager, attribute.chairman, attribute.stadium.stadiumid, attribute.reputation))
 
             for attributeid in attributes:
                 if attributeid not in club.attributes.keys():

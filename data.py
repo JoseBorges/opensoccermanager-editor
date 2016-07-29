@@ -18,6 +18,7 @@
 
 import preferences
 
+
 window = None
 database = None
 preferences = preferences.Preferences()
